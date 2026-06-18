@@ -20,5 +20,4 @@ const nextConfig: NextConfig = {
     return [];
   },
 };
-
 export default nextConfig;
