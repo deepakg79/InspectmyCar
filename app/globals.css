@@ -1,0 +1,116 @@
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+/* 🌈 THEME VARIABLES */
+:root {
+  --primary: #6366f1;
+  --primary-light: #a5b4fc;
+  --secondary: #ec4899;
+  --bg-soft: #f8fafc;
+}
+
+/* 🌤️ BACKGROUND */
+.bg-main {
+  background: linear-gradient(135deg,
+      #f8fafc 0%,
+      #eef2ff 40%,
+      #fdf2f8 100%);
+}
+
+/* 🎨 BUTTON */
+.btn-primary {
+  background: linear-gradient(135deg, #6366f1, #ec4899);
+  color: white;
+  border-radius: 12px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3);
+}
+
+/* 🧊 GLASS CARD */
+.card-glass {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 16px;
+  transition: all 0.35s ease;
+}
+
+/* ✨ CARD HOVER */
+.card-hover:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(99, 102, 241, 0.08);
+}
+
+/* 📝 HEADINGS */
+.heading {
+  color: #1e293b;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* 🔹 SUBTEXT */
+.subtext {
+  color: #64748b;
+}
+
+/* 🌊 FADE IN */
+.fade-in {
+  animation: fadeIn 0.8s ease forwards;
+  opacity: 0;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ⬆️ SLIDE UP */
+.slide-up {
+  animation: slideUp 0.8s ease forwards;
+  opacity: 0;
+  transform: translateY(24px);
+}
+
+@keyframes slideUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ✨ IMAGE HOVER ZOOM */
+.img-hover {
+  transition: transform 0.5s ease;
+}
+
+.img-hover:hover {
+  transform: scale(1.05);
+}
+
+/* 🌟 FLOATING BADGE EFFECT */
+.floating {
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-6px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+}
