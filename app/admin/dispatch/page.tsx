@@ -3,28 +3,8 @@
 import { useState, useEffect, useMemo } from "react";
 import { db } from "@/app/lib/firebase";
 import { collection, onSnapshot } from "firebase/firestore";
-import dynamic from "next/dynamic";
 
 // ✅ Dynamic imports (NO SSR)
-const MapContainer = dynamic(
-    () => import("react-leaflet").then(mod => mod.MapContainer),
-    { ssr: false }
-);
-
-const TileLayer = dynamic(
-    () => import("react-leaflet").then(mod => mod.TileLayer),
-    { ssr: false }
-);
-
-const Marker = dynamic(
-    () => import("react-leaflet").then(mod => mod.Marker),
-    { ssr: false }
-);
-
-const Popup = dynamic(
-    () => import("react-leaflet").then(mod => mod.Popup),
-    { ssr: false }
-);
 
 interface Booking {
     id: string;
@@ -53,8 +33,7 @@ export default function LiveDispatch() {
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [inspector, setInspector] = useState<Inspector[]>([]);
     const [loading, setLoading] = useState(true);
-    const [leaflet, setLeaflet] = useState<any>(null);
-    const [mapReady, setMapReady] = useState(false);
+
     // 🔥 FIREBASE REALTIME
     useEffect(() => {
         const unsubBookings = onSnapshot(collection(db, "bookings"), (snapshot) => {
@@ -77,20 +56,7 @@ export default function LiveDispatch() {
     }, []);
 
     // ✅ Load Leaflet safely (client only)
-    useEffect(() => {
-        import("leaflet").then((L) => {
-            delete (L.Icon.Default.prototype as any)._getIconUrl;
 
-            L.Icon.Default.mergeOptions({
-                iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-                iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-                shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-            });
-
-            setLeaflet(L);
-            setMapReady(true); // ✅ IMPORTANT
-        });
-    }, []);
 
     // 🟢 ONLINE LOGIC
     const isOnline = (lastUpdated: any) => {
@@ -114,37 +80,6 @@ export default function LiveDispatch() {
         return `${mins} min ago`;
     };
 
-    // 🔥 Custom Marker Icon (SAFE)
-    const createCustomIcon = (name: string, online: boolean) => {
-        if (!leaflet) return undefined;
-
-        return leaflet.divIcon({
-            className: "",
-            html: `
-                <div style="display:flex;flex-direction:column;align-items:center;">
-                    <div style="
-                        background:${online ? "#10b981" : "#64748b"};
-                        color:white;
-                        padding:4px 8px;
-                        border-radius:8px;
-                        font-size:10px;
-                        font-weight:700;
-                        white-space:nowrap;
-                    ">
-                        ${name}
-                    </div>
-                    <div style="
-                        width:10px;
-                        height:10px;
-                        background:${online ? "#10b981" : "#64748b"};
-                        border-radius:50%;
-                        margin-top:2px;
-                    "></div>
-                </div>
-            `,
-            iconSize: [0, 0],
-        });
-    };
 
     // 📲 WhatsApp
     const sendWhatsApp = (b: Booking) => {
@@ -195,52 +130,6 @@ export default function LiveDispatch() {
                 {/* LEFT */}
                 <div className="lg:col-span-2 space-y-6">
 
-                    {/* MAP */}
-                    {/* MAP */}
-                    <div className="bg-white h-[450px] rounded-[2.5rem] overflow-hidden border border-slate-100 shadow-sm">
-
-                        {mapReady && leaflet && typeof window !== "undefined" ? (
-                            <MapContainer
-                                key="dispatch-map"
-                                center={[18.5204, 73.8567]}
-                                zoom={12}
-                                className="h-full w-full"
-
-                            >
-                                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-
-                                {inspector.map((exec, i) => {
-                                    const lat = Number(exec.lat);
-                                    const lng = Number(exec.lng);
-
-                                    if (isNaN(lat) || isNaN(lng)) return null;
-
-                                    // Optional: slight offset to avoid overlap
-                                    const offset = i * 0.0002;
-
-                                    return (
-                                        <Marker
-                                            key={exec.id}
-                                            position={[lat + offset, lng + offset]}
-                                            icon={createCustomIcon(exec.name, isOnline(exec.lastUpdated))}
-                                        >
-                                            <Popup>
-                                                <strong>{exec.name}</strong>
-                                                <br />
-                                                {isOnline(exec.lastUpdated) ? "🟢 Online" : "⚫ Offline"}
-                                            </Popup>
-                                        </Marker>
-                                    );
-                                })}
-
-                            </MapContainer>
-                        ) : (
-                            <div className="h-full flex items-center justify-center text-slate-400 text-sm">
-                                Loading Map...
-                            </div>
-                        )}
-
-                    </div>
 
                     {/* BOOKINGS */}
                     <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">

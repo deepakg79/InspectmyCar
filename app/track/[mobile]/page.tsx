@@ -3,13 +3,9 @@ import { useEffect, useState, use } from "react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import checklist from "@/app/lib/checklist";
-import dynamic from "next/dynamic";
 import { buildPDF } from "@/app/lib/pdfGenerator";
 //Map Components
-const MapContainer = dynamic(() => import("react-leaflet").then(m => m.MapContainer), { ssr: false });
-const TileLayer = dynamic(() => import("react-leaflet").then(m => m.TileLayer), { ssr: false });
-const Marker = dynamic(() => import("react-leaflet").then(m => m.Marker), { ssr: false });
-const Polyline = dynamic(() => import("react-leaflet").then(m => m.Polyline), { ssr: false });
+
 // 🔥 Firebase
 import { db } from "@/app/lib/firebase";
 import {
@@ -49,22 +45,6 @@ function calculateRange(results: any, start: number, end: number) {
     return total === 0 ? 0 : Math.round((ok / total) * 100);
 }
 
-// function convertArrayToMap(arr: number[]) {
-//     const map: any = {};
-//     const ids = [
-//         ...Array.from({ length: 300 }, (_, i) => (i + 1).toString()),
-//         "A", "B", "C", "D", "E"
-//     ];
-//     ids.forEach((id, idx) => (map[id] = arr[idx]));
-//     return map;
-// }
-
-function convertArrayToMap(arr: number[]) {
-    const map: any = {};
-    const ids = Array.from({ length: 300 }, (_, i) => (i + 1).toString());
-    ids.forEach((id, idx) => (map[id] = arr[idx]));
-    return map;
-}
 
 // --- UI COMPONENTS ---
 function SummaryBadge({ label, score, icon }: any) {
@@ -94,9 +74,7 @@ export default function CustomerTracking({ params }: { params: Promise<{ mobile:
     const [report, setReport] = useState<any>(null);
     const [inspector, setInspector] = useState<any>(null);
     const [loading, setLoading] = useState(true);
-    const [leaflet, setLeaflet] = useState<any>(null);
-    const [mapReady, setMapReady] = useState(false);
-    const [route, setRoute] = useState<any[]>([]);
+
     // 🔥 REALTIME
     useEffect(() => {
         const bookingQ = query(collection(db, "bookings"), where("mobile", "==", mobile));
@@ -123,43 +101,7 @@ export default function CustomerTracking({ params }: { params: Promise<{ mobile:
             unsubReport();
         };
     }, [mobile]);
-    useEffect(() => {
-        import("leaflet").then((L) => {
-            delete (L.Icon.Default.prototype as any)._getIconUrl;
 
-            L.Icon.Default.mergeOptions({
-                iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-                iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-                shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-            });
-
-            setLeaflet(L);
-            setMapReady(true);
-        });
-    }, []);
-    useEffect(() => {
-        if (!inspector?.lat || !inspector?.lng) return;
-        if (!data?.location) return;
-
-        // ⚠️ You need customer lat/lng
-        // For now hardcode OR store in booking
-
-        const customerLat = 18.5204; // replace later
-        const customerLng = 73.8567;
-
-        const url = `https://router.project-osrm.org/route/v1/driving/${inspector.lng},${inspector.lat};${customerLng},${customerLat}?overview=full&geometries=geojson`;
-
-        fetch(url)
-            .then(res => res.json())
-            .then(data => {
-                const coords = data.routes[0].geometry.coordinates.map(
-                    (c: any) => [c[1], c[0]]
-                );
-                setRoute(coords);
-            })
-            .catch(err => console.error("Route error", err));
-
-    }, [inspector]);
     // 🔥 FETCH INSPECTOR
     useEffect(() => {
         if (!data?.assignedTo) return;
@@ -434,46 +376,7 @@ export default function CustomerTracking({ params }: { params: Promise<{ mobile:
                         )}
                     </div>
                 )}
-                {/* LIVE MAP */}
-                {!isDone && inspector?.lat && inspector?.lng && mapReady && leaflet && (
-                    <div className="bg-white rounded-[2.5rem] p-4 shadow-xl border border-slate-100 overflow-hidden">
 
-                        <p className="text-[10px] font-black uppercase text-slate-400 mb-4 px-2">
-                            Live Location
-                        </p>
-
-                        <div className="h-[250px] rounded-2xl overflow-hidden">
-
-                            <MapContainer
-                                center={[Number(inspector.lat), Number(inspector.lng)]}
-                                zoom={13}
-                                className="h-full w-full"
-                            >
-                                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-
-                                {/* 🟢 Inspector */}
-                                <Marker position={[Number(inspector.lat), Number(inspector.lng)]} />
-
-                                {/* 🔵 Customer (TEMP STATIC) */}
-                                <Marker position={[18.5204, 73.8567]} />
-
-                                {/* 🚗 ROUTE */}
-                                {route.length > 0 && (
-                                    <Polyline
-                                        positions={route}
-                                        pathOptions={{
-                                            color: "#4F46E5",
-                                            weight: 5
-                                        }}
-                                    />
-                                )}
-
-                            </MapContainer>
-
-                        </div>
-
-                    </div>
-                )}
 
 
             </div>
