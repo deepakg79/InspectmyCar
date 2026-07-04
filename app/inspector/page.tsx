@@ -67,38 +67,69 @@ export default function InspectorDashboard() {
     useEffect(() => {
         if (!auth?.id) return;
 
+        if (!("geolocation" in navigator)) {
+            console.error("Geolocation is not supported by this browser.");
+            return;
+        }
+
+        const options: PositionOptions = {
+            enableHighAccuracy: true,
+            timeout: 15000,
+            maximumAge: 30000,
+        };
+
         const watchId = navigator.geolocation.watchPosition(
             async (pos) => {
                 try {
                     await updateDoc(doc(db, "inspectors", auth.id), {
                         lat: pos.coords.latitude,
                         lng: pos.coords.longitude,
-                        lastUpdated: new Date()
+                        lastUpdated: new Date(),
                     });
+
+                    console.log(
+                        `📍 Location updated: ${pos.coords.latitude}, ${pos.coords.longitude}`
+                    );
                 } catch (err) {
-                    console.error("Location update failed");
+                    console.error("Failed to update location:", err);
                 }
             },
+
             (err) => {
-                console.error("Geolocation error:", err);
+                console.error("Geolocation Error");
+                console.error("Code:", err.code);
+                console.error("Message:", err.message);
 
                 switch (err.code) {
-                    case 1:
-                        console.warn("Permission denied");
+                    case err.PERMISSION_DENIED:
+                        console.warn(
+                            "❌ Permission denied. Please allow location access."
+                        );
                         break;
-                    case 2:
-                        console.warn("Position unavailable");
+
+                    case err.POSITION_UNAVAILABLE:
+                        console.warn(
+                            "📡 Position unavailable. Ensure GPS/Location Services are enabled."
+                        );
                         break;
-                    case 3:
-                        console.warn("Timeout");
+
+                    case err.TIMEOUT:
+                        console.warn(
+                            "⏱ Location request timed out."
+                        );
                         break;
+
                     default:
-                        console.warn("Unknown error");
+                        console.warn("Unknown geolocation error.");
                 }
-            }
+            },
+
+            options
         );
 
-        return () => navigator.geolocation.clearWatch(watchId);
+        return () => {
+            navigator.geolocation.clearWatch(watchId);
+        };
     }, [auth]);
     const formatDate = (date: Date) => {
         return (
