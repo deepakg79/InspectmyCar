@@ -270,7 +270,7 @@ export default function Home() {
                                     </span>
 
                                     <div className="rounded-2xl bg-indigo-600 text-white px-5 py-3 font-black shadow-lg">
-                                        NEW
+                                        NEW CARS
                                     </div>
 
                                 </div>
@@ -357,7 +357,7 @@ export default function Home() {
                                     </span>
 
                                     <div className="rounded-2xl bg-white text-slate-900 px-5 py-3 font-black shadow-lg">
-                                        USED
+                                        USED CARS
                                     </div>
 
                                 </div>
