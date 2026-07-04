@@ -1,13 +1,20 @@
+
+// app/components/chatbots/NewCarChatBot.tsx
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { PlanType } from "../context/BookingContext";
+import { NewCarPlan } from "../../context/BookingContext";
 // import carData from "@/app/data/carData.json";
 import {
     getBookingsAndAvailability,
     createBooking
 } from "@/app/lib/services/bookingService";
-import { onSnapshot, collection } from "firebase/firestore";
+import {
+    collection,
+    query,
+    where,
+    getDocs,
+} from "firebase/firestore";
 import { db } from "@/app/lib/firebase";
 
 // const CAR_DATA = carData.brands;
@@ -27,10 +34,12 @@ const ALL_SLOTS = ["10:30 AM", "12:00 PM", "1:30 PM", "3:00 PM", "4:30 PM", "6:0
 interface ChatBotProps {
     forceOpen: boolean;
     setForceOpen: (val: boolean) => void;
-    initialPlan: PlanType | null;
+    initialPlan: NewCarPlan | null;
 }
 
-export default function ChatBot({ forceOpen, setForceOpen }: ChatBotProps) {
+
+
+export default function ChatBot({ forceOpen, setForceOpen, initialPlan }: ChatBotProps) {
     const [open, setOpen] = useState(false);
 
     const [isConfirmed, setIsConfirmed] = useState(false);
@@ -42,6 +51,7 @@ export default function ChatBot({ forceOpen, setForceOpen }: ChatBotProps) {
     const chatRef = useRef<HTMLDivElement>(null);
     const [blockedSlotsMap, setBlockedSlotsMap] = useState<Record<string, string[]>>({});
     const [fullDayBlockedMap, setFullDayBlockedMap] = useState<Record<string, boolean>>({});
+    const hasFetched = useRef(false);
     type CarModel = {
         name: string;
         type: string;
@@ -95,7 +105,9 @@ export default function ChatBot({ forceOpen, setForceOpen }: ChatBotProps) {
         const fetchCarData = async () => {
             try {
                 const res = await fetch("/api/car-models", {
-                    cache: "no-store"
+                    next: {
+                        revalidate: 86400
+                    }
                 });
 
                 const data = await res.json();
@@ -122,45 +134,79 @@ export default function ChatBot({ forceOpen, setForceOpen }: ChatBotProps) {
     }, [toast]);
 
     useEffect(() => {
-        if (open && !isConfirmed) fetchBookings();
-    }, [open, isConfirmed]);
+        if (!open || hasFetched.current) return;
+
+        hasFetched.current = true;
+
+        Promise.all([
+            fetchBookings(),
+            fetchBlockedSlots(),
+        ]);
+    }, [open]);
+
     useEffect(() => {
-        const unsub = onSnapshot(collection(db, "bookings"), () => {
-            fetchBookings()
-        })
+        if (!initialPlan) return;
 
-        return () => unsub()
-    }, [])
+        setForm(prev => ({
+            ...prev,
+            basic: false,
+            obd: false,
+        }));
 
-    useEffect(() => {
-        const unsub = onSnapshot(collection(db, "blockedSlots"), (snapshot) => {
-            const slotMap: Record<string, string[]> = {};
-            const fullMap: Record<string, boolean> = {};
+        switch (initialPlan) {
+            case "Basic":
+                handleBasicChange(true);
+                break;
 
-            snapshot.forEach(docSnap => {
-                const data = docSnap.data();
+            case "Standard":
+                handleBasicChange(false);
+                handleOBDChange(false);
+                break;
 
-                if (data.type === "date") {
-                    // 🔥 Full day block
-                    fullMap[data.date] = true;
-                }
+            case "Standard-OBD":
+                handleBasicChange(false);
+                handleOBDChange(true);
+                break;
 
-                if (data.type === "slot") {
-                    // 🔥 Slot block
-                    if (!slotMap[data.date]) {
-                        slotMap[data.date] = [];
-                    }
-                    slotMap[data.date].push(data.slot);
-                }
-            });
+            case "Luxury":
+                handleBasicChange(false);
+                handleOBDChange(false);
+                break;
+        }
+    }, [initialPlan]);
 
-            setBlockedSlotsMap(slotMap);
-            setFullDayBlockedMap(fullMap);
+    const fetchBlockedSlots = async () => {
+        const today = new Date().toISOString().split("T")[0];
+
+        const q = query(
+            collection(db, "blockedSlots"),
+            where("date", ">=", today)
+        );
+
+        const snapshot = await getDocs(q);
+
+        const slotMap: Record<string, string[]> = {};
+        const fullMap: Record<string, boolean> = {};
+
+        snapshot.forEach(doc => {
+            const data = doc.data();
+
+            if (data.type === "date")
+                fullMap[data.date] = true;
+
+            if (data.type === "slot") {
+                if (!slotMap[data.date])
+                    slotMap[data.date] = [];
+
+                slotMap[data.date].push(
+                    String(data.slot).trim().replace(/^0/, "")
+                );
+            }
         });
 
-        return () => unsub();
-    }, []);
-
+        setBlockedSlotsMap(slotMap);
+        setFullDayBlockedMap(fullMap);
+    };
     const fetchBookings = async () => {
         try {
             const data = await getBookingsAndAvailability();
@@ -337,10 +383,7 @@ export default function ChatBot({ forceOpen, setForceOpen }: ChatBotProps) {
 
             setToast({ msg: "Slot Reserved!", type: "success" });
             setIsConfirmed(true);
-
-            // 🔥 refresh slots after booking
-            fetchBookings();
-
+            hasFetched.current = false;
         } catch (error: any) {
             setToast({ msg: error.message || "Error", type: "error" });
         } finally {
@@ -351,14 +394,15 @@ export default function ChatBot({ forceOpen, setForceOpen }: ChatBotProps) {
     const handleToggle = () => {
         setOpen(!open);
         if (open) {
+            hasFetched.current = false;
+
+            setOpen(false);
             setIsConfirmed(false);
+
             if (setForceOpen) setForceOpen(false);
         }
     };
-    const totalBookings = Object.values(bookings).reduce(
-        (sum, slots) => sum + slots.length,
-        0
-    );
+
     return (
         <div
             ref={chatRef}

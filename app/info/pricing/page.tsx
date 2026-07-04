@@ -1,9 +1,11 @@
 "use client";
-import { useBooking } from "../../context/BookingContext"; // Use the hook instead of direct import
-import { PlanType } from "../../context/BookingContext";
+import { useBooking } from "@/app/context/BookingContext";
 export default function Pricing() {
     // 1. Hook into the global context
-    const { openBooking } = useBooking();
+    const {
+        openNewCarBooking,
+        openUsedCarBooking,
+    } = useBooking();
 
     const plans = [
         {
@@ -12,7 +14,7 @@ export default function Pricing() {
             subtitle: "Hatchbacks, Sedans & Compact SUVs",
             features: [
                 "Basic Inspection without OBD and Guage Checks",
-                "200+ Point Checklist",
+                "299+ Point Checklist",
                 "Visual Exterior Inspection",
                 "Interior Basic Check",
                 "Immediate Digital Report",
@@ -24,7 +26,7 @@ export default function Pricing() {
             price: "1,499",
             subtitle: "Hatchbacks, Sedans & Compact SUVs",
             features: [
-                "200+ Point Checklist",
+                "299+ Point Checklist",
                 "Inspection with Guage Checks without OBD",
                 "Paint Thickness Depth Test",
                 "Interior & Upholstery Check",
@@ -37,7 +39,7 @@ export default function Pricing() {
             price: "1,699",
             subtitle: "Hatchbacks, Sedans & Compact SUVs",
             features: [
-                "200+ Point Checklist",
+                "299+ Point Checklist",
                 "Paint Thickness Depth Test",
                 "OBD Engine Diagnostics",
                 "Interior & Upholstery Check",
@@ -50,16 +52,42 @@ export default function Pricing() {
             price: "2,499",
             subtitle: "BMW, Audi, Merc, Volvo, etc.",
             features: [
-                "Advanced 300+ Point Checklist",
+                "Advanced 299+ Point Checklist",
                 "Paint Thickness Depth Test",
                 "Suspension & Air-Ride Check",
                 "Priority Digital Report",
-                "Detailed Luxury Logbook",
             ],
             planType: "Luxury" as const,
         }
     ];
-
+    const usedCarPlans = [
+        {
+            name: "Standard Used Resell Cars Inspection",
+            price: "1,999",
+            subtitle: "Hatchbacks, Sedans & SUVs",
+            features: [
+                "299+ Point Inspection",
+                "Paint Thickness Test",
+                "OBD Diagnostics",
+                "Road Test",
+                "Digital Inspection Report",
+            ],
+            type: "Standard" as const,
+        },
+        {
+            name: "Luxury Used Resell Cars Inspection",
+            price: "3,299",
+            subtitle: "BMW, Audi, Mercedes, Volvo, etc.",
+            features: [
+                "299+ Point Inspection",
+                "Advanced OBD Scan",
+                "Paint Thickness Test",
+                "Road Test",
+                "Priority Digital Report",
+            ],
+            type: "Luxury" as const,
+        },
+    ];
     return (
         <main className="max-w-6xl mx-auto px-6 py-24 relative">
             <div className="text-center mb-16">
@@ -72,7 +100,16 @@ export default function Pricing() {
                     Choose the plan that fits your new vehicle category.
                 </p>
             </div>
+            <div className="text-center mb-12">
+                <h2 className="text-4xl font-black">
+                    New Cars Inspection
+                </h2>
 
+                <p className="text-slate-500 mt-3">
+                    Independent pre-purchase inspection before you buy.
+                </p>
+            </div>
+            <section id="new-car-pricing"></section>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto items-stretch">
                 {plans.map((plan, i) => (
                     <div
@@ -121,21 +158,70 @@ ${plan.planType === "Luxury"
                                 PREMIUM
                             </div>
                         )}
-
-                        {/* 2. TRIGGER GLOBAL BOOKING WITH TYPE */}
                         <button
-                            onClick={() => openBooking(plan.planType)}
-                            className={`w-full py-5 rounded-2xl font-black uppercase tracking-widest text-center transition-all ${plan.planType === "Luxury"
+                            onClick={() => openNewCarBooking(plan.planType)}
+                            className={`mt-auto w-full py-5 rounded-2xl font-black uppercase tracking-widest transition-all ${plan.planType === "Luxury"
                                 ? "bg-indigo-600 text-white hover:bg-white hover:text-slate-900"
                                 : "bg-slate-900 text-white hover:bg-indigo-600"
                                 }`}
                         >
-                            Book {plan.name.split(' ')[0]}
+                            Book Now
                         </button>
+                        {/* 2. TRIGGER GLOBAL BOOKING WITH TYPE */}
                     </div>
                 ))}
             </div>
 
+            <section className="mt-24">
+                <div className="text-center mb-12">
+                    <h2 className="text-4xl font-black">
+                        Used Resell Cars Inspection
+                    </h2>
+
+                    <p className="text-slate-500 mt-3">
+                        Independent pre-purchase inspection before you buy.
+                    </p>
+                </div>
+                <section id="used-car-pricing"></section>
+                <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                    {usedCarPlans.map((plan) => (
+                        <div
+                            key={plan.name}
+                            className="rounded-[3rem] border bg-white p-10 shadow-sm flex flex-col"
+                        >
+                            <h3 className="text-2xl font-black">
+                                {plan.name}
+                            </h3>
+
+                            <div className="my-6">
+                                <span className="text-5xl font-black">
+                                    ₹{plan.price}
+                                </span>
+                            </div>
+
+                            <p className="text-slate-500 mb-6">
+                                {plan.subtitle}
+                            </p>
+
+                            <ul className="space-y-3 flex-grow">
+                                {plan.features.map((feature) => (
+                                    <li key={feature} className="flex gap-3">
+                                        <span className="text-emerald-500">✓</span>
+                                        {feature}
+                                    </li>
+                                ))}
+                            </ul>
+
+                            <button
+                                onClick={() => openUsedCarBooking(plan.type)}
+                                className="mt-8 w-full bg-slate-900 text-white rounded-2xl py-4 font-black hover:bg-indigo-600 transition"
+                            >
+                                Book Now
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            </section>
             <p className="text-center mt-12 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                 *Prices are inclusive of travel within Pune & PCMC limits.
             </p>

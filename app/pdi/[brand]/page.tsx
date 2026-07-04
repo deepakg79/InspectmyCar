@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     return {
         title: `Expert ${cleanBrand} PDI Services in Pune | InspectMyCar`,
-        description: `Professional 200+ point Pre-Delivery Inspection for ${cleanBrand} cars in Pune. Don't take delivery without a certified expert check.`,
+        description: `Professional 299+ point Pre-Delivery Inspection for ${cleanBrand} cars in Pune. Don't take delivery without a certified expert check.`,
 
         // ✅ ADD THIS (safe, no impact on your logic)
         alternates: {

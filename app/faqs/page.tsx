@@ -1,10 +1,13 @@
+// app/faqs/page.tsx
+
 "use client";
 
 import Link from "next/link";
 import Script from "next/script";
-import { useState, useRef, useEffect } from "react";
-
+import { useState } from "react";
+import { useBooking } from "@/app/context/BookingContext";
 export default function FAQsPage() {
+    const { openBookingChooser } = useBooking();
     const faqs = [
         {
             q: "What is a Pre-Delivery Inspection (PDI)?",
@@ -16,7 +19,7 @@ export default function FAQsPage() {
         },
         {
             q: "How long does a PDI take?",
-            a: "A standard 200+ point inspection usually takes 1–2 hours, depending on the car and dealership access."
+            a: "A standard 300+ point inspection usually takes 1–2 hours, depending on the car and dealership access."
         },
         {
             q: "Can I do the PDI myself?",
@@ -33,46 +36,71 @@ export default function FAQsPage() {
         {
             q: "What do I get after the inspection?",
             a: "You receive a detailed checklist report with photos and identified issues before accepting delivery."
+        },
+        {
+            q: "What is a Used Car Inspection (PPI)?",
+            a: "A Pre-Purchase Inspection (PPI) is a comprehensive inspection of a used car before purchase. It helps identify hidden mechanical, electrical, structural, or accidental damage so you can make an informed buying decision."
+        },
+        {
+            q: "Why should I inspect a used car before buying?",
+            a: "Many used cars may have hidden accident repairs, odometer tampering, engine issues, suspension wear, or flood damage. A professional inspection can save you from costly repairs after purchase."
+        },
+        {
+            q: "How many checkpoints are covered in a used car inspection?",
+            a: "Our inspection includes over 300 checkpoints covering the engine, transmission, suspension, brakes, tyres, electrical systems, body panels, paint, chassis, interior, and a road test where applicable."
+        },
+        {
+            q: "Do you provide an OBD diagnostic scan?",
+            a: "Yes. We perform an OBD scan on compatible vehicles to detect hidden fault codes, engine warnings, ABS, airbag issues, and other electronic problems that may not be visible during a physical inspection."
+        },
+        {
+            q: "Can you inspect cars at dealerships and individual sellers?",
+            a: "Yes. We inspect used cars at authorised dealerships, multi-brand showrooms, and private seller locations across Pune, subject to seller approval."
+        },
+        {
+            q: "Will I receive a detailed inspection report?",
+            a: "Yes. After the inspection, you'll receive a detailed report with photographs, observations, defects found, and our recommendations to help you negotiate or avoid a problematic vehicle."
+        },
+        {
+            q: "Can your report help negotiate the car price?",
+            a: "Absolutely. Many buyers use our inspection findings to negotiate repairs or reduce the purchase price based on the vehicle's actual condition."
+        },
+        {
+            q: "Do you inspect luxury and premium cars?",
+            a: "Yes. We inspect luxury brands including BMW, Mercedes-Benz, Audi, Volvo, Jaguar, Land Rover, and other premium vehicles using specialised inspection procedures."
+        },
+        {
+            q: "Which areas of Pune do you cover?",
+            a: "We provide new car PDI and used car inspection services across Pune, including Baner, Hinjewadi, Wakad, Kharadi, Hadapsar, Kothrud, Aundh, Pimpri-Chinchwad, Magarpatta, and nearby areas."
+        },
+        {
+            q: "Can I book an inspection on short notice?",
+            a: "Yes. Subject to inspector availability, we can often arrange same-day or next-day inspections. Advance booking is recommended to secure your preferred slot."
         }
     ];
 
-    // JSON-LD structured data
     const jsonLd = {
         "@context": "https://schema.org",
         "@type": "FAQPage",
-        "mainEntity": faqs.map(faq => ({
+        mainEntity: faqs.map(faq => ({
             "@type": "Question",
-            "name": faq.q,
-            "acceptedAnswer": {
+            name: faq.q,
+            acceptedAnswer: {
                 "@type": "Answer",
-                "text": faq.a
+                text: faq.a
             }
         }))
     };
 
     const [openIndex, setOpenIndex] = useState<number | null>(null);
-    const contentRefs = useRef<(HTMLDivElement | null)[]>([]);
+
     const toggleFAQ = (index: number) => {
         setOpenIndex(openIndex === index ? null : index);
     };
 
-    useEffect(() => {
-        // Update max-heights for smooth animation
-        contentRefs.current.forEach((ref, i) => {
-            if (ref) {
-                if (openIndex === i) {
-                    ref.style.maxHeight = ref.scrollHeight + "px";
-                } else {
-                    ref.style.maxHeight = "0px";
-                }
-            }
-        });
-    }, [openIndex]);
-
     return (
         <main className="bg-main text-slate-900 min-h-screen">
 
-            {/* SEO JSON-LD */}
             <Script
                 id="faq-schema"
                 type="application/ld+json"
@@ -92,37 +120,45 @@ export default function FAQsPage() {
 
             {/* FAQ LIST */}
             <section className="px-6 pb-20 max-w-4xl mx-auto space-y-4">
-                {faqs.map((faq, index) => (
-                    <div
-                        key={index}
-                        className="card-glass p-6 rounded-2xl border border-slate-100 hover:shadow-md transition"
-                    >
-                        <button
-                            onClick={() => toggleFAQ(index)}
-                            aria-expanded={openIndex === index}
-                            className="w-full text-left flex justify-between items-start gap-3 focus:outline-none"
-                        >
-                            <h2 className="font-bold text-lg flex-1">
-                                <span className="text-indigo-600">Q.</span> {faq.q}
-                            </h2>
-                            <span className="text-indigo-600 font-bold text-xl transition-transform duration-300"
-                                style={{ transform: openIndex === index ? "rotate(45deg)" : "rotate(0deg)" }}>
-                                +
-                            </span>
-                        </button>
+                {faqs.map((faq, index) => {
+                    const isOpen = openIndex === index;
+
+                    return (
                         <div
-                            ref={el => { contentRefs.current[index] = el; }}
-                            className="mt-3 subtext leading-relaxed overflow-hidden transition-all duration-500 ease-in-out"
-                            style={{
-                                maxHeight: openIndex === index ? `${contentRefs.current[index]?.scrollHeight}px` : "0px",
-                                opacity: openIndex === index ? 1 : 0,
-                                transform: openIndex === index ? "translateY(0)" : "translateY(-10px)"
-                            }}
+                            key={index}
+                            className="card-glass p-6 rounded-2xl border border-slate-100 hover:shadow-md transition"
                         >
-                            {faq.a}
+                            <button
+                                onClick={() => toggleFAQ(index)}
+                                aria-expanded={isOpen}
+                                className="w-full text-left flex justify-between items-start gap-3 focus:outline-none"
+                            >
+                                <h2 className="font-bold text-lg flex-1">
+                                    <span className="text-indigo-600">Q.</span> {faq.q}
+                                </h2>
+
+                                <span
+                                    className="text-indigo-600 font-bold text-xl transition-transform duration-300"
+                                    style={{
+                                        transform: isOpen ? "rotate(45deg)" : "rotate(0deg)"
+                                    }}
+                                >
+                                    +
+                                </span>
+                            </button>
+
+                            {/* FIX: no scrollHeight usage */}
+                            <div
+                                className={`mt-3 subtext leading-relaxed overflow-hidden transition-all duration-500 ease-in-out ${isOpen ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
+                                    }`}
+                            >
+                                <div className="pt-2">
+                                    {faq.a}
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
             </section>
 
             {/* INTERNAL LINKS */}
@@ -149,19 +185,23 @@ export default function FAQsPage() {
             <section className="px-6 pb-24">
                 <div className="max-w-4xl mx-auto text-center card-glass p-14 rounded-3xl border border-indigo-100 relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-600 to-pink-500" />
+
                     <h2 className="heading text-3xl md:text-4xl mb-6">
                         Still Have Questions?
                     </h2>
+
                     <p className="subtext mb-8 max-w-xl mx-auto">
                         Talk to our experts or book a professional inspection before your car delivery in Pune.
                     </p>
+
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <Link
-                            href="/book"
+                        <button
+                            onClick={openBookingChooser}
                             className="btn-primary px-10 py-4 text-lg shadow-xl"
                         >
                             Book PDI Now
-                        </Link>
+                        </button>
+
                         <a
                             href="https://wa.me/919975934213"
                             className="card-glass px-10 py-4 font-bold text-lg border border-slate-200"

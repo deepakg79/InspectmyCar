@@ -15,16 +15,29 @@ import { getDocs } from "firebase/firestore"
 const ALL_SLOTS = ["10:30 AM", "12:00 PM", "1:30 PM", "3:00 PM", "4:30 PM", "6:00 PM"];
 
 interface Booking {
-    id: string // 👈 ADD THIS
+    id: string;
+
+    type?: "new-car-inspection" | "used-car-inspection";
+
     name: string;
     mobile: string;
+
     date: string;
     slot: string;
+
     location: string;
+    fullAddress?: string;
+
     status: string;
+
     brand: string;
     model: string;
+
+    year?: string;
+    fuelType?: string;
+
     price: number;
+
     assignedTo?: string;
 }
 interface Inspector {
@@ -47,6 +60,7 @@ export default function AdminBookings() {
     const [activeDate, setActiveDate] = useState<string | null>(null);
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
     const [statusFilter, setStatusFilter] = useState<string>("All");
+    const [typeFilter, setTypeFilter] = useState("All");
     const [blockedSlots, setBlockedSlots] = useState<any[]>([]);
     useEffect(() => {
         setMounted(true);
@@ -286,15 +300,31 @@ export default function AdminBookings() {
     const sendWhatsApp = (b: Booking, type: 'reminder' | 'invoice' | 'assignment') => {
         let msg = "";
         if (type === 'reminder') {
-            msg = `*Hi ${b.name}*! Confirming your PDI for ${b.date} at ${b.slot}.`;
+            const inspectionType =
+                b.type === "used-car-inspection"
+                    ? "Used Car Inspection"
+                    : "Pre-Delivery Inspection";
+
+            msg = `Hi ${b.name}! This is a reminder for your ${inspectionType} for ${b.brand} ${b.model} is scheduled at ${b.location} on ${b.date} at ${b.slot}. `;
         } else if (type === 'invoice') {
-            msg = `Hi ${b.name}, your PDI is complete! Total: ₹${b.price}.`;
+            const inspectionType =
+                b.type === "used-car-inspection"
+                    ? "Used Car Inspection"
+                    : "Pre-Delivery Inspection";
+
+            msg = `Hi ${b.name}, your ${inspectionType} for ${b.brand} ${b.model}  has been completed. Total amount: ₹${b.price}. Thank you for choosing InspectMyCar.`;
         } else if (type === 'assignment') {
             if (!b.assignedTo) {
                 setToast({ msg: "Please assign an executive first!", type: "error" });
                 return;
             }
-            msg = `Hi ${b.name}! Your PDI for ${b.brand} ${b.model} is assigned to ${b.assignedTo}. They will reach ${b.location} at ${b.slot}. Track here: https://www.inspectmycar.in/track/${b.mobile}`;
+            const inspectionType =
+                b.type === "used-car-inspection"
+                    ? "Used Car Inspection"
+                    : "Pre-Delivery Inspection";
+
+            msg = `Hi ${b.name}! Your ${inspectionType} for ${b.brand} ${b.model} is assigned to ${b.assignedTo}. They will reach your location: ${b.location} at ${b.slot}. Track here: https://www.inspectmycar.in/track/${b.mobile}`;
+
         }
         const cleanMobile = (b.mobile || "")
             .replace(/\s+/g, "")   // remove spaces
@@ -716,6 +746,7 @@ export default function AdminBookings() {
                                     return (
                                         <tr key={i} className={`hover:bg-indigo-50/30 transition-all ${isRowProcessing ? 'opacity-50 pointer-events-none' : ''}`}>
                                             <td className="p-8">
+
                                                 <p className="text-sm font-black text-slate-900">
                                                     {b.name}
                                                 </p>
@@ -731,7 +762,11 @@ export default function AdminBookings() {
                                                 <p className="text-xs text-slate-400 italic">
                                                     📍 {b.location}
                                                 </p>
-
+                                                {b.fullAddress && (
+                                                    <p className="text-[11px] text-slate-400">
+                                                        {b.fullAddress}
+                                                    </p>
+                                                )}
                                                 <p className="text-[10px] font-black text-indigo-400 mt-1">
                                                     ID: {b.id.slice(0, 8)}
                                                 </p>
@@ -754,9 +789,36 @@ export default function AdminBookings() {
                                                 </div>
                                             </td>
                                             <td className="p-8">
-                                                <p className="text-[10px] font-black text-indigo-500 uppercase">{b.brand}</p>
-                                                <p className="font-black text-slate-800">{b.model}</p>
-                                                <p className="text-sm font-black text-emerald-600">₹{b.price}</p>
+
+                                                <span
+                                                    className={`inline-block px-2 py-1 rounded-full text-[9px] font-black uppercase mb-2 ${b.type === "used-car-inspection"
+                                                            ? "bg-orange-100 text-orange-700"
+                                                            : "bg-indigo-100 text-indigo-700"
+                                                        }`}
+                                                >
+                                                    {b.type === "used-car-inspection"
+                                                        ? "USED CAR INSPECTION"
+                                                        : "NEW CAR INSPECTION"}
+                                                </span>
+
+                                                <p className="text-[10px] font-black text-indigo-500 uppercase mt-2">
+                                                    {b.brand}
+                                                </p>
+
+                                                <p className="font-black text-slate-800">
+                                                    {b.model}
+                                                </p>
+
+                                                {b.type === "used-car-inspection" && (
+                                                    <p className="text-xs text-slate-500">
+                                                        {b.year} • {b.fuelType}
+                                                    </p>
+                                                )}
+
+                                                <p className="text-sm font-black text-emerald-600 mt-2">
+                                                    ₹{b.price}
+                                                </p>
+
                                             </td>
                                             <td className="p-8">
                                                 <div className="flex justify-center gap-2">
@@ -774,8 +836,32 @@ export default function AdminBookings() {
                                             </td>
                                             <td className="p-8 text-center">
                                                 <div className="flex justify-center gap-2">
-                                                    <button onClick={() => sendWhatsApp(b, 'reminder')} className="p-3 bg-[#25D366]/10 text-[#25D366] rounded-xl hover:bg-[#25D366] hover:text-white transition-all">💬</button>
-                                                    <button onClick={() => sendWhatsApp(b, 'invoice')} className="p-3 bg-slate-100 rounded-xl hover:bg-slate-900 hover:text-white transition-all">📄</button>
+
+                                                    {/* Reminder */}
+                                                    <button
+                                                        onClick={() => sendWhatsApp(b, "reminder")}
+                                                        className="p-3 bg-[#25D366]/10 text-[#25D366] rounded-xl hover:bg-[#25D366] hover:text-white transition-all"
+                                                    >
+                                                        💬
+                                                    </button>
+
+                                                    {/* Invoice - Only after completion */}
+                                                    <button
+                                                        disabled={b.status !== "Completed"}
+                                                        onClick={() => sendWhatsApp(b, "invoice")}
+                                                        className={`p-3 rounded-xl transition-all ${b.status === "Completed"
+                                                            ? "bg-slate-100 hover:bg-slate-900 hover:text-white"
+                                                            : "bg-slate-100 text-slate-300 cursor-not-allowed"
+                                                            }`}
+                                                        title={
+                                                            b.status === "Completed"
+                                                                ? "Send Invoice"
+                                                                : "Complete inspection first"
+                                                        }
+                                                    >
+                                                        📄
+                                                    </button>
+
                                                 </div>
                                             </td>
                                             <td className="p-8">
@@ -859,6 +945,7 @@ export default function AdminBookings() {
                     </div>
                 </div>
             )}
+
         </div>
     );
 }

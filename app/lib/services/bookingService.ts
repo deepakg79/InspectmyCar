@@ -12,15 +12,22 @@ const BOOKINGS = "bookings"
 
 // 🔥 Get bookings + availability
 export const getBookingsAndAvailability = async () => {
-    const snapshot = await getDocs(collection(db, BOOKINGS))
+    const today = new Date().toISOString().split("T")[0];
 
-    const raw: any[] = []
+    const q = query(
+        collection(db, BOOKINGS),
+        where("date", ">=", today)
+    );
+
+    const snapshot = await getDocs(q);
+
+
     const availabilityMap: Record<string, string[]> = {}
 
     snapshot.forEach(doc => {
         const data = doc.data()
 
-        raw.push({ id: doc.id, ...data })
+
 
         if (!availabilityMap[data.date]) {
             availabilityMap[data.date] = []
@@ -32,7 +39,7 @@ export const getBookingsAndAvailability = async () => {
     })
 
     return {
-        raw,
+
         bookings: availabilityMap,
     }
 }

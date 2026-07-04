@@ -1,6 +1,5 @@
 "use client";
-import { useBooking } from "../../context/BookingContext";
-
+import { useBooking } from "@/app/context/BookingContext";
 export default function BrandPageClient({ brand }: { brand: string }) {
     // 1. Wrap in a try-catch or check if context exists to prevent white-screen crashes
     const booking = useBooking();
@@ -9,12 +8,12 @@ export default function BrandPageClient({ brand }: { brand: string }) {
         return null; // Prevent crash if Context provider is missing
     }
 
-    const { openBooking } = booking;
+    const { openNewCarBooking } = useBooking();
 
     return (
         <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
             <button
-                onClick={() => openBooking()}
+                onClick={() => openNewCarBooking()}
                 className="btn-primary px-10 py-5 text-xl shadow-2xl"
             >
                 Book {brand} PDI

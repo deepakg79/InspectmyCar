@@ -1,10 +1,10 @@
 import { Metadata } from "next";
 import CarPDIPuneClient from "./CarPDIPuneClient";
-
+import Script from "next/script";
 export const metadata: Metadata = {
     title: "Car PDI Inspection Pune | InspectMyCar - Pre Delivery Experts",
     description:
-        "Professional 200+ point car pre-delivery inspection in Pune. Detect transit damage, repaint issues & OBD errors before delivery. Book today!",
+        "Professional 299+ point car pre-delivery inspection in Pune. Detect transit damage, repaint issues & OBD errors before delivery. Book today!",
     keywords: [
         "car pdi pune",
         "car inspection near me",
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     openGraph: {
         title: "Car PDI Inspection Pune | InspectMyCar",
         description:
-            "Professional 200+ point inspection in Pune. Detect hidden damage before delivery.",
+            "Professional 299+ point inspection in Pune. Detect hidden damage before delivery.",
         url: "https://inspectmycar.in/car-pdi-pune",
         siteName: "InspectMyCar",
         images: [
@@ -46,8 +46,10 @@ export default function Page() {
             <CarPDIPuneClient />
 
             {/* 🔥 FULL SEO SCHEMA */}
-            <script
+            <Script
+                id="car-pdi-schema"
                 type="application/ld+json"
+                strategy="afterInteractive"
                 dangerouslySetInnerHTML={{
                     __html: JSON.stringify([
                         {
@@ -73,9 +75,7 @@ export default function Page() {
                                 "@type": "Place",
                                 name: "Pune & PCMC",
                             },
-                            sameAs: [
-                                "https://wa.me/919975934213"
-                            ],
+                            sameAs: ["https://wa.me/919975934213"],
                             aggregateRating: {
                                 "@type": "AggregateRating",
                                 ratingValue: "4.9",

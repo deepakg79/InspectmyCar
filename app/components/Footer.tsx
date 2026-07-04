@@ -83,7 +83,7 @@ export default function Footer() {
 
                         <p className="text-slate-500 text-sm leading-relaxed">
                             Pune’s trusted independent car inspection service. We perform a
-                            detailed <strong>200+ point PDI</strong> so you take delivery of a
+                            detailed <strong>299+ point PDI</strong> so you take delivery of a
                             perfect car.
                         </p>
 
@@ -111,13 +111,18 @@ export default function Footer() {
                                 </Link>
                             </li>
                             <li>
-                                <Link href="/info/how-it-works" className="hover:text-indigo-600">
+                                <Link href="/how-it-works" className="hover:text-indigo-600">
                                     How It Works
                                 </Link>
                             </li>
                             <li>
                                 <Link href="/info/pricing" className="hover:text-indigo-600">
                                     Pricing
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/cancellation" className="hover:text-indigo-600">
+                                    Cancellation Policy
                                 </Link>
                             </li>
                         </ul>
@@ -180,18 +185,23 @@ export default function Footer() {
                             © {new Date().getFullYear()} InspectMyCar • Independent PDI Experts in Pune
                         </p>
                         <p>
-                            Site developed & Maintained by :{" "}
-                            <span className="font-semibold text-slate-600">
+                            Site developed &amp; maintained by{" "}
+                            <a
+                                href="https://3dvishwa.com"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="font-semibold text-indigo-600 hover:text-indigo-700 hover:underline transition"
+                            >
                                 3dVishwa Software Solutions
-                            </span>
+                            </a>
                         </p>
                     </div>
 
                     <div className="flex gap-6 text-xs text-slate-400 font-medium">
-                        <Link href="/info/privacy" className="hover:text-slate-900">
+                        <Link href="/privacy" className="hover:text-slate-900">
                             Privacy
                         </Link>
-                        <Link href="/info/terms" className="hover:text-slate-900">
+                        <Link href="/terms" className="hover:text-slate-900">
                             Terms
                         </Link>
                     </div>

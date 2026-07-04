@@ -5,11 +5,32 @@ export function GET() {
     const now = new Date().toISOString();
 
     const staticRoutes = [
-        "", "/book", "/inspect", "/track", "/login",
-        "/car-pdi-pune", "/car-delivery-checklist-pune", "/pdi-checklist-for-new-car",
-        "/top-10-mistakes-while-buying-car-in-pune",
-        "/info/how-it-works", "/info/pricing", "/info/privacy", "/info/terms",
-        "/faqs","/vindecoder"
+        "",
+
+        // Main Landing Pages
+        "/new-cars",
+        "/used-cars",
+
+        // New Cars
+        "/new-cars/pdi-pune",
+        "/new-cars/checklist",
+        "/new-cars/buying-guide",
+        "/new-cars/pdi-checklist-for-new-car",
+
+        // Used Cars
+        "/used-cars/pdi-pune",
+        "/used-cars/checklist",
+        "/used-cars/buying-guide",
+        "/used-cars/car-delivery-checklist-pune",
+
+        // General
+        "/track",
+        "/login",
+        "/cancellation",
+        "/faqs",
+        "/privacy",
+        "/terms",
+        "/info/pricing",
     ];
 
     const brands = ["maruti", "hyundai", "tata", "mahindra", "kia", "toyota", "skoda", "volkswagen"];
@@ -22,10 +43,17 @@ export function GET() {
     const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls.map(url => `
-  <url>
+<url>
     <loc>${url}</loc>
     <lastmod>${now}</lastmod>
-  </url>`).join('')}
+    <changefreq>weekly</changefreq>
+    <priority>${url === baseUrl
+            ? "1.0"
+            : url.includes("/new-cars") || url.includes("/used-cars")
+                ? "0.9"
+                : "0.8"
+        }</priority>
+</url>`).join('')}
 </urlset>`.trim();
 
     return new NextResponse(sitemapXml, {

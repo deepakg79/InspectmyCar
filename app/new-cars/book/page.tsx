@@ -1,10 +1,11 @@
+// app/new-cars/book/page.tsx
+
 "use client";
-import { useBooking } from "../context/BookingContext"; // 1. Use the global context
+import { useBooking } from "@/app/context/BookingContext";
 
 export default function BookPage() {
     // 2. Grab the openBooking function
-    const { openBooking } = useBooking();
-
+    const { openNewCarBooking } = useBooking();
     return (
         <main className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 text-center relative overflow-hidden">
 
@@ -27,13 +28,13 @@ export default function BookPage() {
                 </h1>
                 <p className="text-lg text-slate-500 font-medium mb-10 leading-relaxed max-w-lg mx-auto">
                     Don't take delivery of a faulty car. Our experts will check your
-                    vehicle across 200+ points before you sign the papers.
+                    vehicle across 299+ points before you sign the papers.
                 </p>
 
                 {/* THE ACTUAL CLICKABLE BUTTON */}
                 <div className="flex flex-col items-center gap-6">
                     <button
-                        onClick={() => openBooking()} // 3. Updated to use global function
+                        onClick={() => openNewCarBooking()}// 3. Updated to use global function
                         className="group relative bg-slate-900 text-white px-10 py-5 rounded-2xl font-black text-xl shadow-2xl shadow-slate-300 hover:bg-blue-600 hover:-translate-y-1 transition-all active:scale-95"
                     >
                         <span className="relative z-10">Start Inspection Booking</span>
