@@ -1,7 +1,7 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import checklist from "@/app/lib/checklist";
-// import { PDF_DISCLAIMER } from "@/app/lib/pdfDisclaimer";
+import { PDF_DISCLAIMER } from "@/app/lib/pdfDisclaimer";
 
 // ------------------ HELPERS ------------------
 export const calculateRange = (results: any, start: number, end: number) => {
@@ -425,41 +425,41 @@ export const buildPDF = async ({
         }
 
     });
-    // doc.addPage();
-    // drawWatermark(doc);
+    doc.addPage();
+    drawWatermark(doc);
 
-    // doc.setFontSize(22);
-    // doc.setFont("helvetica", "bold");
+    doc.setFontSize(22);
+    doc.setFont("helvetica", "bold");
 
-    // autoTable(doc, {
-    //     startY: 15,
-    //     head: [["DISCLAIMER"]],
-    //     body: [[PDF_DISCLAIMER]],
+    autoTable(doc, {
+        startY: 15,
+        head: [["DISCLAIMER"]],
+        body: [[PDF_DISCLAIMER]],
 
-    //     theme: "grid",
+        theme: "grid",
 
-    //     headStyles: {
-    //         fillColor: [194, 24, 91],
-    //         textColor: 255,
-    //         halign: "center",
-    //         fontStyle: "bold",
-    //         fontSize: 16,
-    //     },
+        headStyles: {
+            fillColor: [194, 24, 91],
+            textColor: 255,
+            halign: "center",
+            fontStyle: "bold",
+            fontSize: 16,
+        },
 
-    //     styles: {
-    //         fontSize: 9,
-    //         cellPadding: 5,
-    //         valign: "top",
-    //         overflow: "linebreak",
-    //     },
+        styles: {
+            fontSize: 9,
+            cellPadding: 5,
+            valign: "top",
+            overflow: "linebreak",
+        },
 
-    //     columnStyles: {
-    //         0: {
-    //             cellWidth: 180,
-    //             halign: "justify",
-    //         },
-    //     },
+        columnStyles: {
+            0: {
+                cellWidth: 180,
+                halign: "justify",
+            },
+        },
 
-    //     didDrawPage: () => drawWatermark(doc),
-    // });
+        didDrawPage: () => drawWatermark(doc),
+    });
 };
