@@ -68,7 +68,7 @@ export default function InspectorDashboard() {
         if (!auth?.id) return;
 
         if (!("geolocation" in navigator)) {
-            console.error("Geolocation is not supported by this browser.");
+            console.warn("Geolocation is not supported by this browser.");
             return;
         }
 
@@ -78,6 +78,32 @@ export default function InspectorDashboard() {
             maximumAge: 30000,
         };
 
+        // Get initial location
+        navigator.geolocation.getCurrentPosition(
+            async (pos) => {
+                try {
+                    await updateDoc(doc(db, "inspectors", auth.id), {
+                        lat: pos.coords.latitude,
+                        lng: pos.coords.longitude,
+                        lastUpdated: new Date(),
+                    });
+
+                    console.log("📍 Initial location acquired");
+                } catch (err) {
+                    console.error("Failed to save initial location:", err);
+                }
+            },
+            (err) => {
+                if (process.env.NODE_ENV === "production") {
+                    console.error("Initial geolocation failed:", err.message);
+                } else {
+                    console.warn("⚠️ Local development: Location unavailable.");
+                }
+            },
+            options
+        );
+
+        // Start continuous tracking
         const watchId = navigator.geolocation.watchPosition(
             async (pos) => {
                 try {
@@ -88,42 +114,41 @@ export default function InspectorDashboard() {
                     });
 
                     console.log(
-                        `📍 Location updated: ${pos.coords.latitude}, ${pos.coords.longitude}`
+                        `📍 Updated: ${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`
                     );
                 } catch (err) {
-                    console.error("Failed to update location:", err);
+                    console.error("Location update failed:", err);
                 }
             },
-
             (err) => {
-                console.error("Geolocation Error");
-                console.error("Code:", err.code);
-                console.error("Message:", err.message);
+                // Ignore local Position Unavailable errors
+                if (
+                    process.env.NODE_ENV !== "production" &&
+                    err.code === err.POSITION_UNAVAILABLE
+                ) {
+                    console.warn(
+                        "⚠️ Position unavailable on localhost (expected on some Macs)."
+                    );
+                    return;
+                }
 
                 switch (err.code) {
                     case err.PERMISSION_DENIED:
-                        console.warn(
-                            "❌ Permission denied. Please allow location access."
-                        );
+                        console.error("Location permission denied.");
                         break;
 
                     case err.POSITION_UNAVAILABLE:
-                        console.warn(
-                            "📡 Position unavailable. Ensure GPS/Location Services are enabled."
-                        );
+                        console.error("Unable to determine current location.");
                         break;
 
                     case err.TIMEOUT:
-                        console.warn(
-                            "⏱ Location request timed out."
-                        );
+                        console.error("Location request timed out.");
                         break;
 
                     default:
-                        console.warn("Unknown geolocation error.");
+                        console.error("Unknown geolocation error:", err.message);
                 }
             },
-
             options
         );
 

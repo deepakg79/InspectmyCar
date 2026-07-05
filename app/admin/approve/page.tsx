@@ -70,6 +70,7 @@ export default function ApprovePDIsPage() {
         setEditingReport({
             ...report,
             results: normalizedResults,
+            inspectorComments: report.inspectorComments || [],
         });
     };
     // 🔥 FETCH REPORTS READY FOR APPROVAL
@@ -203,7 +204,10 @@ export default function ApprovePDIsPage() {
             checklistResults,
             comments,
             tyreData: editingReport.tyreData || {},
-            vehicleType: editingReport.vehicleType || ""
+            vehicleType: editingReport.vehicleType || "",
+            inspectorComments: (editingReport.inspectorComments || [])
+                .map((c: string) => c.trim())
+                .filter(Boolean),
         });
 
         setEditingReport(null);
@@ -407,7 +411,53 @@ export default function ApprovePDIsPage() {
                                     <option>EV</option>
                                 </select>
                             </div>
+                            {/* INSPECTOR COMMENTS */}
+                            <div className="space-y-3">
 
+                                <div className="flex items-center justify-between">
+                                    <label className="text-xs font-bold">
+                                        Inspector Comments
+                                    </label>
+
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            setEditingReport((prev: any) => ({
+                                                ...prev,
+                                                inspectorComments: [
+                                                    ...(prev.inspectorComments || []),
+                                                    ""
+                                                ]
+                                            }))
+                                        }
+                                        className="bg-indigo-600 text-white px-3 py-2 rounded-lg text-[10px] font-black"
+                                    >
+                                        + Add Comment
+                                    </button>
+                                </div>
+
+                                {(editingReport.inspectorComments || []).map(
+                                    (comment: string, index: number) => (
+                                        <textarea
+                                            key={index}
+                                            rows={2}
+                                            value={comment}
+                                            placeholder={`Comment ${index + 1}`}
+                                            onChange={(e) => {
+                                                const updated = [...editingReport.inspectorComments];
+                                                updated[index] = e.target.value;
+
+                                                setEditingReport((prev: any) => ({
+                                                    ...prev,
+                                                    inspectorComments: updated
+                                                }));
+                                            }}
+                                            className="w-full border rounded-xl bg-slate-50 p-3 text-sm resize-none"
+                                        />
+                                    )
+                                )}
+
+                            </div>
                             {/* SEARCH */}
                             <input
                                 type="text"

@@ -31,6 +31,7 @@ export default function InspectionForm() {
     const [searchQuery, setSearchQuery] = useState("");
     const searchInputRef = useRef<HTMLInputElement>(null);
     const [toast, setToast] = useState<string | null>(null);
+    const [inspectorComments, setInspectorComments] = useState<string[]>([""]);
     const [meta, setMeta] = useState({
         mobile: "",
         name: "",
@@ -178,7 +179,6 @@ export default function InspectionForm() {
 
         const checklistResults: any = {};
         const tyreData: any = {};
-        const comments: any = {}; // 🔥 NEW
 
         idSequence.forEach((id) => {
             const item = results[id];
@@ -228,7 +228,9 @@ export default function InspectionForm() {
             (v): v is number => typeof v === "number" && v !== -1
         );
         const healthScore = calculateScore(numericValues);
-
+        const finalComments = inspectorComments
+            .map(c => c.trim())
+            .filter(Boolean);
         try {
             // ✅ SAVE REPORT
             await addDoc(collection(db, "reports"), {
@@ -236,7 +238,7 @@ export default function InspectionForm() {
                 checklistResults, // only numeric
                 tyreData,         // 🔥 new field
                 healthScore,
-                comments,
+                inspectorComments: finalComments,
                 createdAt: new Date(),
                 status: "Completed",
                 approved: false
@@ -392,7 +394,40 @@ export default function InspectionForm() {
                         </div>
                     </div>
                 )}
+                <div className="bg-white p-6 rounded-[2.5rem] shadow-sm border space-y-4">
 
+                    <div className="flex items-center justify-between">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                            Inspector Comments
+                        </p>
+
+                        <button
+                            type="button"
+                            onClick={() =>
+                                setInspectorComments(prev => [...prev, ""])
+                            }
+                            className="px-4 py-2 rounded-xl bg-indigo-600 text-white text-[10px] font-black uppercase"
+                        >
+                            + Add Comment
+                        </button>
+                    </div>
+
+                    {inspectorComments.map((comment, index) => (
+                        <textarea
+                            key={index}
+                            rows={2}
+                            placeholder={`Comment ${index + 1}`}
+                            value={comment}
+                            onChange={(e) => {
+                                const updated = [...inspectorComments];
+                                updated[index] = e.target.value;
+                                setInspectorComments(updated);
+                            }}
+                            className="w-full rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm resize-none"
+                        />
+                    ))}
+
+                </div>
                 {/* CHECKLIST */}
                 {filteredChecklist.map((section, sIdx) => (
                     <div key={sIdx} className="space-y-3">

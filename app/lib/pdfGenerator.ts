@@ -1,6 +1,7 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import checklist from "@/app/lib/checklist";
+import { PDF_DISCLAIMER } from "@/app/lib/pdfDisclaimer";
 
 // ------------------ HELPERS ------------------
 export const calculateRange = (results: any, start: number, end: number) => {
@@ -289,7 +290,40 @@ export const buildPDF = async ({
             }
         });
     }
+    const inspectorComments =
+        report.inspectorComments ||
+        report.meta?.inspectorComments ||
+        [];
+    if (inspectorComments.length > 0) {
+        autoTable(doc, {
+            startY:
+                issues.length > 0
+                    ? (doc as any).lastAutoTable.finalY + 10
+                    : 200,
 
+            head: [["Inspector Observations"]],
+
+            body: inspectorComments.map((comment: string, index: number) => [
+                `${index + 1}. ${comment}`,
+            ]),
+
+            headStyles: {
+                fillColor: [194, 24, 91],
+                textColor: 255,
+                fontStyle: "bold",
+            },
+
+            styles: {
+                fontSize: 10,
+                cellPadding: 4,
+                valign: "middle",
+            },
+
+            didDrawPage: () => {
+                drawWatermark(doc);
+            },
+        });
+    }
     drawWatermark(doc);
     // ---------------- CHECKLIST ----------------
     // ------------------ PAGE 3 (CHECKLIST) ------------------
@@ -389,5 +423,43 @@ export const buildPDF = async ({
         didDrawPage: () => {
             drawWatermark(doc);
         }
+
+    });
+    doc.addPage();
+    drawWatermark(doc);
+
+    doc.setFontSize(22);
+    doc.setFont("helvetica", "bold");
+
+    autoTable(doc, {
+        startY: 15,
+        head: [["DISCLAIMER"]],
+        body: [[PDF_DISCLAIMER]],
+
+        theme: "grid",
+
+        headStyles: {
+            fillColor: [194, 24, 91],
+            textColor: 255,
+            halign: "center",
+            fontStyle: "bold",
+            fontSize: 16,
+        },
+
+        styles: {
+            fontSize: 9,
+            cellPadding: 5,
+            valign: "top",
+            overflow: "linebreak",
+        },
+
+        columnStyles: {
+            0: {
+                cellWidth: 180,
+                halign: "justify",
+            },
+        },
+
+        didDrawPage: () => drawWatermark(doc),
     });
 };
