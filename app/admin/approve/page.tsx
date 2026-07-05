@@ -120,7 +120,47 @@ export default function ApprovePDIsPage() {
             isCustomer: false,
         });
 
-        doc.save(`Report_${report.name}.pdf`);
+        const pdfBytes = doc.output("arraybuffer");
+
+        const mergedPdf = await PDFDocument.create();
+
+        // Report pages
+        const reportPdf = await PDFDocument.load(pdfBytes);
+        const reportPages = await mergedPdf.copyPages(
+            reportPdf,
+            reportPdf.getPageIndices()
+        );
+        reportPages.forEach(page => mergedPdf.addPage(page));
+
+        // Disclaimer page
+        const disclaimerBytes = await fetch("/disclaimer.pdf")
+            .then(r => r.arrayBuffer());
+
+        const disclaimerPdf = await PDFDocument.load(disclaimerBytes);
+
+        const disclaimerPages = await mergedPdf.copyPages(
+            disclaimerPdf,
+            disclaimerPdf.getPageIndices()
+        );
+
+        disclaimerPages.forEach(page => mergedPdf.addPage(page));
+
+        const finalBytes = await mergedPdf.save();
+
+        const safeBuffer = new Uint8Array(finalBytes).buffer;
+
+        const blob = new Blob([safeBuffer], {
+            type: "application/pdf",
+        });
+
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `Report_${report.name}.pdf`;
+        a.click();
+
+        URL.revokeObjectURL(url);
     };
 
 
@@ -142,7 +182,17 @@ export default function ApprovePDIsPage() {
             const photoPages = await mergedPdf.copyPages(photoPdf, photoPdf.getPageIndices());
             photoPages.forEach((p) => mergedPdf.addPage(p));
         }
+        // Append disclaimer as the LAST page
+        const disclaimerBytes = await fetch("/disclaimer.pdf").then(r => r.arrayBuffer());
 
+        const disclaimerPdf = await PDFDocument.load(disclaimerBytes);
+
+        const disclaimerPages = await mergedPdf.copyPages(
+            disclaimerPdf,
+            disclaimerPdf.getPageIndices()
+        );
+
+        disclaimerPages.forEach(page => mergedPdf.addPage(page));
         const finalPdfBytes = await mergedPdf.save();
         const safeBuffer = new Uint8Array(finalPdfBytes).buffer;
         const blob = new Blob([safeBuffer], { type: "application/pdf" });
