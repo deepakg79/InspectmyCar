@@ -297,9 +297,23 @@ export default function ApprovePDIsPage() {
                     )
                     .map((r) => (
                         <div key={r.id} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all">
-                            <p className="font-bold">{r.name}</p>
-                            <p>{r.model}</p>
-                            <p className="text-sm text-gray-500">{r.mobile}</p>
+                            <p className="text-[10px] font-black tracking-[0.25em] text-indigo-600">
+                                ID: {r.id.substring(0, 8)}
+                            </p>
+
+                            <p className="font-bold text-lg text-slate-900">
+                                {r.name}
+                            </p>
+
+                            <p className="text-slate-700 font-medium">
+                                {r.brand} {r.model}
+                            </p>
+                            <p className="text-sm text-slate-500">
+                                📅 {r.date} • {r.inspector}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                                {r.mobile}
+                            </p>
 
                             <div className="flex flex-wrap gap-2 mt-4 pt-3 border-t border-slate-100">
                                 <span className={`text-xs font-bold px-2 py-1 rounded-full ${r.status === "Approved"
