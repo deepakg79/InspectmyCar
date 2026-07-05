@@ -4,7 +4,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import checklist from "@/app/lib/checklist";
 import { buildPDF } from "@/app/lib/pdfGenerator";
-
+import { PDFDocument } from "pdf-lib";
 //Map Components
 
 // 🔥 Firebase
@@ -148,7 +148,48 @@ export default function CustomerTracking({ params }: { params: Promise<{ mobile:
             isCustomer: true,
         });
 
-        doc.save(`Report_${report.meta.name}.pdf`);
+        const pdfBytes = doc.output("arraybuffer");
+
+        const mergedPdf = await PDFDocument.create();
+
+        // Report pages
+        const reportPdf = await PDFDocument.load(pdfBytes);
+        const reportPages = await mergedPdf.copyPages(
+            reportPdf,
+            reportPdf.getPageIndices()
+        );
+
+        reportPages.forEach(page => mergedPdf.addPage(page));
+
+        // Disclaimer (always last)
+        const disclaimerBytes = await fetch("/disclaimer.pdf")
+            .then(r => r.arrayBuffer());
+
+        const disclaimerPdf = await PDFDocument.load(disclaimerBytes);
+
+        const disclaimerPages = await mergedPdf.copyPages(
+            disclaimerPdf,
+            disclaimerPdf.getPageIndices()
+        );
+
+        disclaimerPages.forEach(page => mergedPdf.addPage(page));
+
+        // Save
+        const finalPdfBytes = await mergedPdf.save();
+        const safeBuffer = new Uint8Array(finalPdfBytes).buffer;
+
+        const blob = new Blob([safeBuffer], {
+            type: "application/pdf",
+        });
+
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `Report_${report.meta.name}.pdf`;
+        a.click();
+
+        URL.revokeObjectURL(url);
     };
 
     if (loading) {
