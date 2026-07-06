@@ -3,7 +3,7 @@
 import "../app/globals.css";
 import { Inter } from "next/font/google";
 import type { Metadata } from "next";
-
+import { Toaster } from "sonner";
 import ConditionalNavbar from "@/app/components/ConditionalNavbar";
 import Footer from "@/app/components/Footer";
 import { BookingProvider } from "@/app/context/BookingContext";
@@ -94,6 +94,11 @@ export default function RootLayout({
 
                     <Footer />
                 </BookingProvider>
+                <Toaster
+                    position="top-right"
+                    richColors
+                    closeButton
+                />
             </body>
         </html>
     );

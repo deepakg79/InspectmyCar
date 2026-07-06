@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-
+import { toast } from "sonner";
 import BlogEditor from "@/app/components/blog-editor/BlogEditor";
 import BlogRenderer from "@/app/components/blog/BlogRenderer";
 
@@ -128,17 +128,17 @@ export default function BlogForm({
     async function handlePublish() {
 
         if (!draft.title.trim()) {
-            alert("Please enter a blog title.");
+            toast.warning("Please enter a blog title.");
             return;
         }
 
         if (!draft.excerpt.trim()) {
-            alert("Please enter a blog excerpt.");
+            toast.warning("Please enter a blog excerpt.");
             return;
         }
 
         if (!draft.category) {
-            alert("Please choose a category.");
+            toast.warning("Please choose a category.");
             return;
         }
 
@@ -148,7 +148,7 @@ export default function BlogForm({
                 .trim()
                 .length < 50
         ) {
-            alert("Please write your article.");
+            toast.warning("Please write your article.");
             return;
         }
 
@@ -262,6 +262,14 @@ export default function BlogForm({
                 );
 
             }
+            toast.success(
+                editMode
+                    ? "Blog updated successfully!"
+                    : "Blog published successfully!"
+            );
+            await new Promise(resolve =>
+                setTimeout(resolve, 1200)
+            );
 
             router.push(
                 `/blogs/${editMode
@@ -272,7 +280,7 @@ export default function BlogForm({
 
         } catch (err) {
 
-            alert(
+            toast.error(
                 err instanceof Error
                     ? err.message
                     : "Something went wrong."
