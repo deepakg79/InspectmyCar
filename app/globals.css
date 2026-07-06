@@ -118,6 +118,97 @@
     animation: float 3s ease-in-out infinite;
 }
 
+.blog-content p {
+    margin: 1rem 0;
+    line-height: 1.9;
+    color: #334155;
+}
+
+.blog-content h1 {
+    font-size: 2.75rem;
+    font-weight: 800;
+    margin: 2rem 0 1rem;
+}
+
+.blog-content h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 2rem 0 1rem;
+}
+
+.blog-content h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 1.5rem 0 0.75rem;
+}
+
+.blog-content ul {
+    list-style: disc;
+    padding-left: 1.75rem;
+    margin: 1rem 0;
+}
+
+.blog-content ol {
+    list-style: decimal;
+    padding-left: 1.75rem;
+    margin: 1rem 0;
+}
+
+.blog-content li {
+    margin: 0.5rem 0;
+}
+
+.blog-content a {
+    color: #4f46e5;
+    text-decoration: underline;
+}
+
+.blog-content blockquote {
+    border-left: 4px solid #6366f1;
+    padding-left: 1rem;
+    color: #475569;
+    font-style: italic;
+    margin: 2rem 0;
+}
+
+.blog-content pre {
+    background: #0f172a;
+    color: white;
+    padding: 1rem;
+    border-radius: 12px;
+    overflow-x: auto;
+}
+
+.blog-content img {
+    width: 100%;
+    border-radius: 16px;
+    margin: 2rem 0;
+}
+
+.blog-content hr {
+    margin: 2rem 0;
+    border-color: #e5e7eb;
+}
+
+.blog-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 2rem 0;
+}
+
+.blog-content th,
+.blog-content td {
+    border: 1px solid #e5e7eb;
+    padding: 12px;
+}
+
+.blog-content iframe {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: 16px;
+    margin: 2rem 0;
+}
+
 @keyframes float {
     0% {
         transform: translateY(0px);

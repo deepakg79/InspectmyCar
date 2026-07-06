@@ -155,6 +155,11 @@ export default function Footer() {
                                     FAQs
                                 </Link>
                             </li>
+                            <li>
+                                <Link href="/blogs" className="hover:text-indigo-600">
+                                    Blogs
+                                </Link>
+                            </li>
                         </ul>
                     </div>
 
