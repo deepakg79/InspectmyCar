@@ -80,23 +80,6 @@ export default function BlogRenderer({
                                     href={`/blogs/${blog.slug}`}
                                     className="group cursor-pointer rounded-3xl overflow-hidden border border-slate-200 bg-white hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
                                 >
-
-                                    {blog.heroImage && (
-
-                                        <div className="overflow-hidden">
-
-                                            <Image
-                                                src={blog.heroImage}
-                                                alt={blog.title}
-                                                width={800}
-                                                height={450}
-                                                className="h-52 w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                            />
-
-                                        </div>
-
-                                    )}
-
                                     <div className="p-6">
 
                                         <span className="inline-block px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-semibold mb-4">

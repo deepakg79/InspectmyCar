@@ -182,37 +182,101 @@ export default function Footer() {
                     </div>
                 </div>
 
-                {/* BOTTOM */}
-                <div className="mt-16 pt-8 border-t border-slate-100 flex flex-col items-center justify-center gap-4 text-center">
+                {/* FOOTER BOTTOM */}
 
-                    <div className="text-xs text-slate-400 font-medium space-y-1">
-                        <p>
-                            © {new Date().getFullYear()} InspectMyCar • Independent PDI Experts in Pune
+
+
+
+                {/* COPYRIGHT */}
+
+                <div className="mt-12 flex flex-col gap-8 border-t border-black/10 pt-8 lg:flex-row lg:items-center lg:justify-between">
+
+                    <div>
+
+                        <p className="text-sm text-black-400">
+
+                            © {new Date().getFullYear()}{" "}
+                            <span className="font-semibold text-black">
+
+                                InspectMyCar
+
+                            </span>
+
+                            {" "}• Independent Car Inspection Specialists,
+                            Pune.
+
                         </p>
-                        <p>
-                            Site developed &amp; maintained by{" "}
+
+                        <p className="mt-2 text-sm text-slate-500">
+
+                            Designed &amp; Developed by{" "}
+
                             <a
                                 href="https://3dvishwa.com"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="font-semibold text-indigo-600 hover:text-indigo-700 hover:underline transition"
+                                className="font-semibold text-indigo-400 transition hover:text-pink-400"
                             >
+
                                 3dVishwa Software Solutions
+
                             </a>
+
                         </p>
+
                     </div>
 
-                    <div className="flex gap-6 text-xs text-slate-400 font-medium">
-                        <Link href="/privacy" className="hover:text-slate-900">
+                    {/* QUICK LINKS */}
+
+                    <div className="flex flex-wrap items-center gap-6 text-sm">
+
+                        <Link
+                            href="/privacy"
+                            className="text-slate-400 transition hover:text-black"
+                        >
+
                             Privacy
+
                         </Link>
-                        <Link href="/terms" className="hover:text-slate-900">
+
+                        <Link
+                            href="/terms"
+                            className="text-slate-400 transition hover:text-black"
+                        >
+
                             Terms
+
                         </Link>
+
+                        <Link
+                            href="/blogs"
+                            className="text-slate-400 transition hover:text-black"
+                        >
+
+                            Blogs
+
+                        </Link>
+
+                        <Link
+                            href="/faqs"
+                            className="text-slate-400 transition hover:text-black"
+                        >
+
+                            FAQs
+
+                        </Link>
+
                     </div>
 
                 </div>
             </div>
+
+            {/* BOTTOM GLOW */}
+
+            <div className="pointer-events-none absolute bottom-0 left-0 h-56 w-full bg-gradient-to-t from-indigo-600/10 via-pink-500/5 to-transparent" />
+
         </footer>
+
     );
+
 }
