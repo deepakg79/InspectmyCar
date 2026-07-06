@@ -6,6 +6,10 @@ import ReadingProgress from "@/app/components/blog/ReadingProgress";
 export default function Navbar() {
     const [openMenu, setOpenMenu] = useState(false);
 
+    const [openNewCars, setOpenNewCars] = useState(false);
+
+    const [openUsedCars, setOpenUsedCars] = useState(false);
+
     return (
         <nav className="fixed top-0 w-full z-[100] bg-white/70 backdrop-blur-xl border-b border-white/40 shadow-sm">
             <div className="max-w-6xl mx-auto px-6 h-20 flex justify-between items-center">
@@ -111,39 +115,127 @@ export default function Navbar() {
 
                     <div className="mt-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-xl">
 
-                        <Link
-                            href="/new-cars"
-                            onClick={() => setOpenMenu(false)}
-                            className="flex items-center justify-between rounded-2xl p-5 hover:bg-indigo-50 transition"
-                        >
-                            <div>
-                                <p className="font-black text-xl text-slate-900">
-                                    🚗 New Cars
-                                </p>
-                                <p className="text-sm text-slate-500">
-                                    Pre-Delivery Inspection
-                                </p>
-                            </div>
+                        <div className="rounded-2xl border border-slate-200">
 
-                            <span>→</span>
-                        </Link>
+                            <button
+                                onClick={() => setOpenNewCars(!openNewCars)}
+                                className="w-full flex items-center justify-between p-5 hover:bg-indigo-50 transition"
+                            >
 
-                        <Link
-                            href="/used-cars"
-                            onClick={() => setOpenMenu(false)}
-                            className="mt-3 flex items-center justify-between rounded-2xl p-5 hover:bg-pink-50 transition"
-                        >
-                            <div>
-                                <p className="font-black text-xl text-slate-900">
-                                    🚙 Used Cars
-                                </p>
-                                <p className="text-sm text-slate-500">
-                                    Pre-Purchase Inspection
-                                </p>
-                            </div>
+                                <div>
 
-                            <span>→</span>
-                        </Link>
+                                    <p className="font-black text-xl text-slate-900">
+                                        🚗 New Cars
+                                    </p>
+
+                                    <p className="text-sm text-slate-500">
+                                        Pre-Delivery Inspection
+                                    </p>
+
+                                </div>
+
+                                <span>
+
+                                    {openNewCars ? "−" : "+"}
+
+                                </span>
+
+                            </button>
+
+                            {openNewCars && (
+
+                                <div className="pb-4 px-5 space-y-2">
+
+                                    <Link
+                                        href="/new-cars/pdi-pune"
+                                        onClick={() => setOpenMenu(false)}
+                                        className="block rounded-xl px-4 py-3 hover:bg-indigo-50"
+                                    >
+                                        🚗 PDI Pune
+                                    </Link>
+
+                                    <Link
+                                        href="/new-cars/checklist"
+                                        onClick={() => setOpenMenu(false)}
+                                        className="block rounded-xl px-4 py-3 hover:bg-indigo-50"
+                                    >
+                                        📋 PDI Checklist
+                                    </Link>
+
+                                    <Link
+                                        href="/new-cars/buying-guide"
+                                        onClick={() => setOpenMenu(false)}
+                                        className="block rounded-xl px-4 py-3 hover:bg-indigo-50"
+                                    >
+                                        ⚠️ Buying Guide
+                                    </Link>
+
+                                </div>
+
+                            )}
+
+                        </div>
+
+                        <div className="mt-3 rounded-2xl border border-slate-200">
+
+                            <button
+                                onClick={() => setOpenUsedCars(!openUsedCars)}
+                                className="w-full flex items-center justify-between p-5 hover:bg-pink-50 transition"
+                            >
+
+                                <div>
+
+                                    <p className="font-black text-xl text-slate-900">
+                                        🚙 Used Cars
+                                    </p>
+
+                                    <p className="text-sm text-slate-500">
+                                        Pre-Purchase Inspection
+                                    </p>
+
+                                </div>
+
+                                <span>
+
+                                    {openUsedCars ? "−" : "+"}
+
+                                </span>
+
+                            </button>
+
+                            {openUsedCars && (
+
+                                <div className="pb-4 px-5 space-y-2">
+
+                                    <Link
+                                        href="/used-cars/pdi-pune"
+                                        onClick={() => setOpenMenu(false)}
+                                        className="block rounded-xl px-4 py-3 hover:bg-pink-50"
+                                    >
+                                        🚙 PDI Pune
+                                    </Link>
+
+                                    <Link
+                                        href="/used-cars/checklist"
+                                        onClick={() => setOpenMenu(false)}
+                                        className="block rounded-xl px-4 py-3 hover:bg-pink-50"
+                                    >
+                                        📋 Checklist
+                                    </Link>
+
+                                    <Link
+                                        href="/used-cars/buying-guide"
+                                        onClick={() => setOpenMenu(false)}
+                                        className="block rounded-xl px-4 py-3 hover:bg-pink-50"
+                                    >
+                                        ⚠️ Buying Guide
+                                    </Link>
+
+                                </div>
+
+                            )}
+
+                        </div>
 
                         <div className="my-5 border-t" />
 
