@@ -32,6 +32,7 @@ export default function BlogRenderer({
 
         <main className="bg-main min-h-screen">
 
+
             <section className="px-6 pt-32 pb-20 max-w-5xl mx-auto">
                 <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight leading-tight mb-6 text-indigo-700">
                     {title}

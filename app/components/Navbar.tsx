@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-
+import ReadingProgress from "@/app/components/blog/ReadingProgress";
 export default function Navbar() {
     const [openMenu, setOpenMenu] = useState(false);
 
@@ -175,6 +175,7 @@ export default function Navbar() {
 
                 </div>
             )}
+            <ReadingProgress />
         </nav>
     );
 }
