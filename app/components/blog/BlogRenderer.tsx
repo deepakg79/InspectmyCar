@@ -78,18 +78,22 @@ export default function BlogRenderer({
                                 <Link
                                     key={blog.slug}
                                     href={`/blogs/${blog.slug}`}
-                                    className="group rounded-3xl overflow-hidden border border-slate-200 bg-white hover:shadow-xl hover:-translate-y-1 transition-all"
+                                    className="group cursor-pointer rounded-3xl overflow-hidden border border-slate-200 bg-white hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
                                 >
 
                                     {blog.heroImage && (
 
-                                        <Image
-                                            src={blog.heroImage}
-                                            alt={blog.title}
-                                            width={800}
-                                            height={450}
-                                            className="h-52 w-full object-cover"
-                                        />
+                                        <div className="overflow-hidden">
+
+                                            <Image
+                                                src={blog.heroImage}
+                                                alt={blog.title}
+                                                width={800}
+                                                height={450}
+                                                className="h-52 w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                            />
+
+                                        </div>
 
                                     )}
 
@@ -121,7 +125,7 @@ export default function BlogRenderer({
 
                                             </span>
 
-                                            <span className="font-semibold text-indigo-600 group-hover:translate-x-1 transition">
+                                            <span className="text-indigo-600 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all">
 
                                                 Read Article →
 

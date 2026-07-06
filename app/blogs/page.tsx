@@ -130,9 +130,10 @@ export default async function BlogsPage({
 
                         {filteredBlogs.map((blog) => (
 
-                            <article
+                            <Link
                                 key={blog.slug}
-                                className="group bg-white rounded-3xl border border-slate-200 overflow-hidden hover:-translate-y-1 hover:shadow-2xl transition-all duration-300"
+                                href={`/blogs/${blog.slug}`}
+                                className="group block cursor-pointer bg-white rounded-3xl border border-slate-200 overflow-hidden hover:-translate-y-1 hover:shadow-2xl hover:border-indigo-200 transition-all duration-300"
                             >
 
                                 {/* Accent */}
@@ -185,19 +186,17 @@ export default async function BlogsPage({
 
                                         </span>
 
-                                        <Link
-                                            href={`/blogs/${blog.slug}`}
-                                            className="inline-flex items-center gap-2 font-semibold text-indigo-600 group-hover:gap-3 transition-all"
-                                        >
-                                            Read Article
-                                            <span>→</span>
-                                        </Link>
+                                        <span className="text-indigo-600 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all">
+
+                                            Read Article →
+
+                                        </span>
 
                                     </div>
 
                                 </div>
 
-                            </article>
+                            </Link>
 
                         ))}
 
@@ -277,7 +276,7 @@ export default async function BlogsPage({
                     <div className="flex justify-center">
 
                         <Link
-                            href="/car-pdi-pune"
+                            href="/"
                             className="btn-primary px-10 py-4"
                         >
                             Book Inspection
