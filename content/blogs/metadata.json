@@ -1,47 +1,47 @@
 [
-  {
-    "slug": "understanding-obd-diagnostics-why-every-vehicle-inspection-should-include-it",
-    "title": "Understanding OBD Diagnostics: Why Every Vehicle Inspection Should Include It",
-    "excerpt": "OBD diagnostics provide valuable insights into a vehicle's electronic systems by identifying hidden faults that may not be visible during a physical inspection. Learn why OBD scanning is an essential part of modern vehicle diagnostics.",
-    "category": "Maintenance",
-    "heroImage": "",
-    "date": "7/6/2026",
-    "readTime": "3 min read"
-  },
-  {
-    "slug": "essential-car-ownership-tips-every-first-time-owner-should-know",
-    "title": "Essential Car Ownership Tips Every First-Time Owner Should Know",
-    "excerpt": "Owning your first car is exciting, but proper maintenance and responsible ownership are essential. Learn practical tips to keep your vehicle reliable, safe, and valuable for years to come.",
-    "category": "Car Ownership",
-    "heroImage": "",
-    "date": "7/6/2026",
-    "readTime": "3 min read"
-  },
-  {
-    "slug": "the-complete-buying-guide-for-used-cars-a-smart-buyers-checklist",
-    "title": "The Complete Buying Guide for Used Cars: A Smart Buyer's Checklist",
-    "excerpt": "Planning to buy a used car? Learn how to inspect the vehicle, verify documents, check ownership history, and avoid costly mistakes with this comprehensive used car buying guide.",
-    "category": "Buying Guide",
-    "heroImage": "",
-    "date": "7/6/2026",
-    "readTime": "3 min read"
-  },
-  {
-    "slug": "should-you-hire-an-independent-pre-delivery-inspection-expert",
-    "title": "Should You Hire an Independent Pre-Delivery Inspection Expert?",
-    "excerpt": "Discover the advantages of hiring an independent inspection expert before taking delivery of your new car and how it can save you time, money, and future headaches.",
-    "category": "Buying Guide",
-    "heroImage": "",
-    "date": "7/6/2026",
-    "readTime": "2 min read"
-  },
-  {
-    "slug": "10-things-to-check-before-taking-delivery-of-your-new-car",
-    "title": "10 Things to Check Before Taking Delivery of Your New Car",
-    "excerpt": "A practical checklist covering the most important things every new car buyer should inspect before accepting delivery from the dealership.",
-    "category": "Buying Guide",
-    "heroImage": "/blogs/10-things-to-check-before-taking-delivery-of-your-new-car/hero.avif",
-    "date": "7/6/2026",
-    "readTime": "2 min read"
-  }
+    {
+        "slug": "understanding-obd-diagnostics-why-every-vehicle-inspection-should-include-it",
+        "title": "Understanding OBD Diagnostics: Why Every Vehicle Inspection Should Include It",
+        "excerpt": "OBD diagnostics provide valuable insights into a vehicle's electronic systems by identifying hidden faults that may not be visible during a physical inspection. Learn why OBD scanning is an essential part of modern vehicle diagnostics.",
+        "category": "Maintenance",
+        "heroImage": "",
+        "date": "7/6/2026",
+        "readTime": "5 min read"
+    },
+    {
+        "slug": "essential-car-ownership-tips-every-first-time-owner-should-know",
+        "title": "Essential Car Ownership Tips Every First-Time Owner Should Know",
+        "excerpt": "Owning your first car is exciting, but proper maintenance and responsible ownership are essential. Learn practical tips to keep your vehicle reliable, safe, and valuable for years to come.",
+        "category": "Car Ownership",
+        "heroImage": "",
+        "date": "3/26/2026",
+        "readTime": "10 min read"
+    },
+    {
+        "slug": "the-complete-buying-guide-for-used-cars-a-smart-buyers-checklist",
+        "title": "The Complete Buying Guide for Used Cars: A Smart Buyer's Checklist",
+        "excerpt": "Planning to buy a used car? Learn how to inspect the vehicle, verify documents, check ownership history, and avoid costly mistakes with this comprehensive used car buying guide.",
+        "category": "Buying Guide",
+        "heroImage": "",
+        "date": "2/12/2026",
+        "readTime": "8 min read"
+    },
+    {
+        "slug": "should-you-hire-an-independent-pre-delivery-inspection-expert",
+        "title": "Should You Hire an Independent Pre-Delivery Inspection Expert?",
+        "excerpt": "Discover the advantages of hiring an independent inspection expert before taking delivery of your new car and how it can save you time, money, and future headaches.",
+        "category": "Buying Guide",
+        "heroImage": "",
+        "date": "1/9/2026",
+        "readTime": "7 min read"
+    },
+    {
+        "slug": "10-things-to-check-before-taking-delivery-of-your-new-car",
+        "title": "10 Things to Check Before Taking Delivery of Your New Car",
+        "excerpt": "A practical checklist covering the most important things every new car buyer should inspect before accepting delivery from the dealership.",
+        "category": "Buying Guide",
+        "heroImage": "/blogs/10-things-to-check-before-taking-delivery-of-your-new-car/hero.avif",
+        "date": "11/16/2025",
+        "readTime": "5 min read"
+    }
 ]
