@@ -1,6 +1,12 @@
 import Link from "next/link";
-import fs from "fs/promises";
-import path from "path";
+import { db } from "@/app/lib/firebase";
+import {
+    collection,
+    getDocs,
+    query,
+    where,
+    orderBy,
+} from "firebase/firestore";
 
 type BlogMeta = {
     slug: string;
@@ -8,15 +14,32 @@ type BlogMeta = {
     excerpt: string;
     category: string;
     heroImage?: string;
-    date: string;
+    publishedAt: string;
     readTime: string;
 };
-function formatDate(date: string) {
-    return new Date(date).toLocaleDateString("en-GB", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-    });
+function formatDate(date: any) {
+
+    if (!date) return "";
+
+    if (date.seconds) {
+        return new Date(date.seconds * 1000).toLocaleDateString(
+            "en-GB",
+            {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+            }
+        );
+    }
+
+    return new Date(date).toLocaleDateString(
+        "en-GB",
+        {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+        }
+    );
 }
 export default async function BlogsPage({
     searchParams,
@@ -26,28 +49,19 @@ export default async function BlogsPage({
     }>;
 }) {
 
-    let blogs: BlogMeta[] = [];
-
-    try {
-
-        const file = await fs.readFile(
-            path.join(
-                process.cwd(),
-                "content",
-                "blogs",
-                "metadata.json"
-            ),
-            "utf8"
-        );
-
-        blogs = JSON.parse(file);
-
-    } catch {
-
-        blogs = [];
-
-    }
     const { category } = await searchParams;
+
+    const snapshot = await getDocs(
+        query(
+            collection(db, "blogs"),
+            where("published", "==", true),
+            orderBy("publishedAt", "desc")
+        )
+    );
+
+    const blogs: BlogMeta[] = snapshot.docs.map((doc) => ({
+        ...(doc.data() as BlogMeta),
+    }));
 
     const categories = [
         "All",
@@ -167,7 +181,7 @@ export default async function BlogsPage({
 
                                         <span className="text-sm text-slate-500">
 
-                                            {formatDate(blog.date)}
+                                            {formatDate(blog.publishedAt)}
 
                                         </span>
 

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs/promises";
-import path from "path";
+import { adminDb } from "@/app/lib/firebaseAdmin";
 
 export async function POST(req: NextRequest) {
 
@@ -8,82 +7,50 @@ export async function POST(req: NextRequest) {
 
         const blog = await req.json();
 
-        const root = path.join(
-            process.cwd(),
-            "content",
-            "blogs"
-        );
-
-        await fs.mkdir(root, {
-            recursive: true,
-        });
-
-        const folder = path.join(
-            root,
-            blog.slug
-        );
-
-        await fs.mkdir(folder, {
-            recursive: true,
-        });
-
-        await fs.writeFile(
-            path.join(folder, "content.json"),
-            JSON.stringify(blog, null, 2)
-        );
-
-        const metadataFile = path.join(
-            root,
-            "metadata.json"
-        );
-
-        let metadata = [];
-
-        try {
-
-            metadata = JSON.parse(
-                await fs.readFile(
-                    metadataFile,
-                    "utf8"
+        const readTime =
+            Math.max(
+                1,
+                Math.ceil(
+                    blog.content
+                        .replace(/<[^>]+>/g, "")
+                        .split(/\s+/)
+                        .filter(Boolean)
+                        .length / 220
                 )
-            );
+            ) + " min read";
 
-        } catch { }
+        const now = new Date().toISOString();
 
-        metadata = metadata.filter(
-            (b: any) => b.slug !== blog.slug
-        );
+        await adminDb
+            .collection("blogs")
+            .doc(blog.slug)
+            .set({
 
-        metadata.unshift({
+                slug: blog.slug,
 
-            slug: blog.slug,
+                title: blog.title,
 
-            title: blog.title,
+                excerpt: blog.excerpt,
 
-            excerpt: blog.excerpt,
+                category: blog.category,
 
-            category: blog.category,
+                heroImage: blog.heroImage ?? "",
 
-            heroImage: blog.heroImage,
+                content: blog.content,
 
-            date: new Date().toLocaleDateString(),
+                seoTitle: blog.seoTitle,
 
-            readTime:
-                Math.max(
-                    1,
-                    Math.ceil(
-                        blog.content
-                            .replace(/<[^>]+>/g, "")
-                            .split(/\s+/).length / 220
-                    )
-                ) + " min read",
+                seoDescription: blog.seoDescription,
 
-        });
+                readTime,
 
-        await fs.writeFile(
-            metadataFile,
-            JSON.stringify(metadata, null, 2)
-        );
+                published: true,
+
+                publishedAt: now,
+
+                updatedAt: now,
+
+            });
 
         return NextResponse.json({
             success: true,
@@ -94,8 +61,12 @@ export async function POST(req: NextRequest) {
         console.error(err);
 
         return NextResponse.json(
-            { success: false },
-            { status: 500 }
+            {
+                success: false,
+            },
+            {
+                status: 500,
+            }
         );
 
     }

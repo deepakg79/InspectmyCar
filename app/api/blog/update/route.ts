@@ -1,57 +1,47 @@
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs/promises";
-import path from "path";
+import { adminDb } from "@/app/lib/firebaseAdmin";
 
 export async function PUT(req: NextRequest) {
+
     try {
 
         const blog = await req.json();
 
-        const root = path.join(
-            process.cwd(),
-            "content",
-            "blogs"
-        );
+        const ref = adminDb
+            .collection("blogs")
+            .doc(blog.slug);
 
-        const folder = path.join(
-            root,
-            blog.slug
-        );
+        const snapshot = await ref.get();
 
-        await fs.mkdir(folder, {
-            recursive: true,
-        });
+        if (!snapshot.exists) {
 
-        await fs.writeFile(
-            path.join(folder, "content.json"),
-            JSON.stringify(blog, null, 2)
-        );
-
-        const metadataFile = path.join(
-            root,
-            "metadata.json"
-        );
-
-        let metadata: any[] = [];
-
-        try {
-
-            metadata = JSON.parse(
-                await fs.readFile(
-                    metadataFile,
-                    "utf8"
-                )
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: "Blog not found.",
+                },
+                {
+                    status: 404,
+                }
             );
 
-        } catch { }
+        }
 
-        const index = metadata.findIndex(
-            b => b.slug === blog.slug
-        );
+        const existing = snapshot.data();
 
-        const card = {
+        const readTime =
+            Math.max(
+                1,
+                Math.ceil(
+                    blog.content
+                        .replace(/<[^>]+>/g, "")
+                        .split(/\s+/)
+                        .filter(Boolean)
+                        .length / 220
+                )
+            ) + " min read";
 
-            slug: blog.slug,
+        await ref.update({
 
             title: blog.title,
 
@@ -59,38 +49,31 @@ export async function PUT(req: NextRequest) {
 
             category: blog.category,
 
-            heroImage: blog.heroImage,
+            heroImage:
+                blog.heroImage ||
+                existing?.heroImage,
 
-            date:
-                metadata[index]?.date ??
-                new Date().toLocaleDateString(),
+            content: blog.content,
 
-            readTime:
-                Math.max(
-                    1,
-                    Math.ceil(
-                        blog.content
-                            .replace(/<[^>]+>/g, "")
-                            .split(/\s+/).length / 220
-                    )
-                ) + " min read",
+            seoTitle:
+                blog.seoTitle ??
+                existing?.seoTitle,
 
-        };
+            seoDescription:
+                blog.seoDescription ??
+                existing?.seoDescription,
 
-        if (index >= 0) {
+            readTime,
 
-            metadata[index] = card;
+            published: true,
 
-        } else {
+            publishedAt:
+                existing?.publishedAt,
 
-            metadata.unshift(card);
+            updatedAt:
+                new Date().toISOString(),
 
-        }
-
-        await fs.writeFile(
-            metadataFile,
-            JSON.stringify(metadata, null, 2)
-        );
+        });
 
         return NextResponse.json({
             success: true,
@@ -110,4 +93,5 @@ export async function PUT(req: NextRequest) {
         );
 
     }
+
 }

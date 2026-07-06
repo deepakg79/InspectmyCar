@@ -1,41 +1,40 @@
-import fs from "fs/promises";
-import path from "path";
-import BlogRenderer from "@/app/components/blog/BlogRenderer";
+import { db } from "@/app/lib/firebase";
+import { doc, getDoc } from "firebase/firestore";
 import { notFound } from "next/navigation";
+
+import BlogRenderer from "@/app/components/blog/BlogRenderer";
 
 export default async function BlogPage({
     params,
 }: {
-    params: Promise<{ slug: string }>;
+    params: Promise<{
+        slug: string;
+    }>;
 }) {
+
     const { slug } = await params;
 
-    try {
+    const snapshot = await getDoc(
+        doc(db, "blogs", slug)
+    );
 
-        const blog = JSON.parse(
-            await fs.readFile(
-                path.join(
-                    process.cwd(),
-                    "content/blogs",
-                    slug,
-                    "content.json"
-                ),
-                "utf8"
-            )
-        );
-
-        return (
-            <BlogRenderer
-                title={blog.title}
-                excerpt={blog.excerpt}
-                heroImage={blog.heroImage}
-                content={blog.content}
-            />
-        );
-
-    } catch {
+    if (!snapshot.exists()) {
 
         notFound();
 
     }
+
+    const blog = snapshot.data();
+
+    return (
+
+        <BlogRenderer
+            title={blog.title}
+            excerpt={blog.excerpt}
+            heroImage={blog.heroImage}
+            content={blog.content}
+        />
+
+    );
+
 }

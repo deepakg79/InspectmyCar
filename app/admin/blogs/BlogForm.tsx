@@ -1,18 +1,21 @@
-// app/admin/create-blog/page.tsx
-
 "use client";
 
 import Image from "next/image";
-import { useRef, useMemo, useState } from "react";
-import BlogEditor from "@/app/components/blog-editor/BlogEditor";
+import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+
+import BlogEditor from "@/app/components/blog-editor/BlogEditor";
 import BlogRenderer from "@/app/components/blog/BlogRenderer";
+
 function slugify(text: string) {
     return text
         .toLowerCase()
         .trim()
-        .replace(/[^\w\s-]/g, "")
-        .replace(/\s+/g, "-");
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9\s-]/g, "")
+        .replace(/\s+/g, "-")
+        .replace(/-+/g, "-");
 }
 
 type BlogDraft = {
@@ -38,46 +41,120 @@ export default function BlogForm({
     initialData,
     editMode = false,
 }: Props) {
+
     const router = useRouter();
-    const fileInputRef = useRef<HTMLInputElement>(null);
-    const [heroPreview, setHeroPreview] = useState<string | null>(
-        initialData?.heroImage ?? null
-    );
-    const [showPreview, setShowPreview] = useState(false);
-    const [draft, setDraft] = useState<BlogDraft>(
-        initialData ?? {
-            title: "",
-            slug: "",
-            excerpt: "",
-            content: "",
-            heroImage: null,
+
+    const fileInputRef =
+        useRef<HTMLInputElement>(null);
+
+    const [saving, setSaving] =
+        useState(false);
+
+    const [showPreview, setShowPreview] =
+        useState(false);
+
+    const [heroPreview, setHeroPreview] =
+        useState<string | null>(
+            initialData?.heroImage ?? null
+        );
+    const [draft, setDraft] =
+        useState<BlogDraft>({
+            title: initialData?.title ?? "",
+            slug: initialData?.slug ?? "",
+            excerpt: initialData?.excerpt ?? "",
+            content: initialData?.content ?? "",
+            category: initialData?.category ?? "Buying Guide",
+            heroImage: initialData?.heroImage ?? null,
+
             seo: {
-                title: "",
-                description: "",
+                title:
+                    initialData?.seo?.title ??
+                    initialData?.seoTitle ??
+                    initialData?.title ??
+                    "",
+
+                description:
+                    initialData?.seo?.description ??
+                    initialData?.seoDescription ??
+                    initialData?.excerpt ??
+                    "",
             },
-        }
-    );
+        });
 
     function update<K extends keyof BlogDraft>(
         key: K,
         value: BlogDraft[K]
     ) {
-        setDraft((prev) => ({
+
+        setDraft(prev => ({
             ...prev,
             [key]: value,
         }));
+
     }
 
-    const generatedSlug = useMemo(() => {
-        if (draft.slug.length > 0) return draft.slug;
-        return slugify(draft.title);
-    }, [draft.title, draft.slug]);
+    const generatedSlug =
+        useMemo(() => {
+
+            if (draft.slug.trim())
+                return draft.slug;
+
+            return slugify(draft.title);
+
+        }, [
+            draft.slug,
+            draft.title,
+        ]);
+
+    const heroImageName =
+        draft.heroImage instanceof File
+            ? draft.heroImage.name
+            : typeof draft.heroImage === "string"
+                ? draft.heroImage.split("/").pop() ?? ""
+                : "";
+
+    const readTime =
+        Math.max(
+            1,
+            Math.ceil(
+                draft.content
+                    .replace(/<[^>]+>/g, "")
+                    .split(/\s+/)
+                    .filter(Boolean)
+                    .length / 220
+            )
+        );
 
     async function handlePublish() {
 
+        if (!draft.title.trim()) {
+            alert("Please enter a blog title.");
+            return;
+        }
+
+        if (!draft.excerpt.trim()) {
+            alert("Please enter a blog excerpt.");
+            return;
+        }
+
+        if (!draft.category) {
+            alert("Please choose a category.");
+            return;
+        }
+
+        if (
+            draft.content
+                .replace(/<[^>]+>/g, "")
+                .trim()
+                .length < 50
+        ) {
+            alert("Please write your article.");
+            return;
+        }
+
+        setSaving(true);
+
         try {
-
-
 
             let heroImage =
                 typeof draft.heroImage === "string"
@@ -88,30 +165,53 @@ export default function BlogForm({
 
                 const form = new FormData();
 
-                form.append("file", draft.heroImage);
-
-                form.append("slug", generatedSlug);
-
-                const upload = await fetch(
-                    "/api/blog/upload-image",
-                    {
-                        method: "POST",
-                        body: form,
-                    }
+                form.append(
+                    "file",
+                    draft.heroImage
                 );
 
-                const image = await upload.json();
+                form.append(
+                    "slug",
+                    editMode
+                        ? draft.slug
+                        : generatedSlug
+                );
+
+                const upload =
+                    await fetch(
+                        "/api/blog/upload-image",
+                        {
+                            method: "POST",
+                            body: form,
+                        }
+                    );
+
+                if (!upload.ok) {
+                    throw new Error(
+                        "Image upload failed."
+                    );
+                }
+
+                const image =
+                    await upload.json();
 
                 heroImage = image.url;
+
             }
 
-            const publish =
+            const response =
                 await fetch(
+
                     editMode
                         ? "/api/blog/update"
                         : "/api/blog/publish",
+
                     {
-                        method: editMode ? "PUT" : "POST",
+
+                        method:
+                            editMode
+                                ? "PUT"
+                                : "POST",
 
                         headers: {
                             "Content-Type":
@@ -120,56 +220,90 @@ export default function BlogForm({
 
                         body: JSON.stringify({
 
-                            title: draft.title,
+                            slug:
+                                editMode
+                                    ? draft.slug
+                                    : generatedSlug,
 
-                            slug: generatedSlug,
+                            title: draft.title,
 
                             excerpt: draft.excerpt,
 
                             category: draft.category,
 
-                            content: draft.content,
-
                             heroImage,
 
-                            seo: draft.seo,
+                            content: draft.content,
+
+                            seoTitle:
+                                draft.seo.title ||
+                                draft.title,
+
+                            seoDescription:
+                                draft.seo.description ||
+                                draft.excerpt,
+
+                            readTime:
+                                `${readTime} min read`,
 
                         }),
 
                     }
+
                 );
-
             const result =
-                await publish.json();
+                await response.json();
 
-            if (result.success) {
+            if (!response.ok || !result.success) {
 
-                router.push(
-                    "/blogs/" +
-                    generatedSlug
+                throw new Error(
+                    result.message ??
+                    "Unable to save blog."
                 );
 
             }
 
+            router.push(
+                `/blogs/${editMode
+                    ? draft.slug
+                    : generatedSlug
+                }`
+            );
+
         } catch (err) {
 
-            console.error(err);
+            alert(
+                err instanceof Error
+                    ? err.message
+                    : "Something went wrong."
+            );
+
+        } finally {
+
+            setSaving(false);
 
         }
 
     }
 
     function handlePreview() {
-        setShowPreview((prev) => !prev);
+
+        setShowPreview(prev => !prev);
+
     }
 
     return (
+
         <main className="bg-main min-h-screen">
 
             <section className="max-w-5xl mx-auto px-6 py-16">
 
                 <h1 className="heading text-4xl mb-10">
-                    Create Blog
+
+                    {editMode
+                        ? "Edit Blog"
+                        : "Create Blog"}
+
                 </h1>
 
                 {/* TITLE */}
@@ -177,16 +311,39 @@ export default function BlogForm({
                 <div className="mb-6">
 
                     <label className="font-semibold">
+
                         Title
+
                     </label>
 
                     <input
                         className="mt-2 w-full rounded-xl border p-4"
                         placeholder="Blog title"
                         value={draft.title}
-                        onChange={(e) =>
-                            update("title", e.target.value)
-                        }
+                        onChange={(e) => {
+
+                            const title =
+                                e.target.value;
+
+                            setDraft(prev => ({
+
+                                ...prev,
+
+                                title,
+
+                                seo: {
+
+                                    ...prev.seo,
+
+                                    title:
+                                        prev.seo.title ||
+                                        title,
+
+                                },
+
+                            }));
+
+                        }}
                     />
 
                 </div>
@@ -196,14 +353,19 @@ export default function BlogForm({
                 <div className="mb-6">
 
                     <label className="font-semibold">
+
                         Slug
+
                     </label>
 
                     <input
                         className="mt-2 w-full rounded-xl border p-4"
                         value={generatedSlug}
                         onChange={(e) =>
-                            update("slug", e.target.value)
+                            update(
+                                "slug",
+                                e.target.value
+                            )
                         }
                     />
 
@@ -211,10 +373,12 @@ export default function BlogForm({
 
                 {/* EXCERPT */}
 
-                <div className="mb-6">
+                <div className="mb-8">
 
                     <label className="font-semibold">
+
                         Excerpt
+
                     </label>
 
                     <textarea
@@ -222,38 +386,107 @@ export default function BlogForm({
                         className="mt-2 w-full rounded-xl border p-4"
                         placeholder="Short summary shown on blog cards..."
                         value={draft.excerpt}
-                        onChange={(e) =>
-                            update("excerpt", e.target.value)
-                        }
+                        onChange={(e) => {
+
+                            const excerpt =
+                                e.target.value;
+
+                            setDraft(prev => ({
+
+                                ...prev,
+
+                                excerpt,
+
+                                seo: {
+
+                                    ...prev.seo,
+
+                                    description:
+                                        prev.seo.description ||
+                                        excerpt,
+
+                                },
+
+                            }));
+
+                        }}
                     />
 
                 </div>
-                <label className="font-semibold">
-                    Category
-                </label>
 
-                <select
-                    value={draft.category}
-                    onChange={(e) => update("category", e.target.value)}
-                    className="modern-input mt-2 mb-8"
-                >
-                    <option>Buying Guide</option>
-                    <option>Pre-Delivery Inspection</option>
-                    <option>New Cars</option>
-                    <option>Used Cars</option>
-                    <option>Car Delivery</option>
-                    <option>Car Ownership</option>
-                    <option>Maintenance</option>
-                    <option>Safety</option>
-                    <option>Industry News</option>
-                    <option>Electric Vehicles</option>
-                </select>
+                {/* CATEGORY */}
+
+                <div className="mb-8">
+
+                    <label className="font-semibold">
+
+                        Category
+
+                    </label>
+
+                    <select
+                        value={draft.category}
+                        onChange={(e) =>
+                            update(
+                                "category",
+                                e.target.value
+                            )
+                        }
+                        className="modern-input mt-2"
+                    >
+
+                        <option>
+                            Buying Guide
+                        </option>
+
+                        <option>
+                            Pre-Delivery Inspection
+                        </option>
+
+                        <option>
+                            New Cars
+                        </option>
+
+                        <option>
+                            Used Cars
+                        </option>
+
+                        <option>
+                            Car Delivery
+                        </option>
+
+                        <option>
+                            Car Ownership
+                        </option>
+
+                        <option>
+                            Maintenance
+                        </option>
+
+                        <option>
+                            Safety
+                        </option>
+
+                        <option>
+                            Industry News
+                        </option>
+
+                        <option>
+                            Electric Vehicles
+                        </option>
+
+                    </select>
+
+                </div>
+
                 {/* HERO IMAGE */}
 
                 <div className="mb-10">
 
                     <label className="block font-semibold mb-4">
+
                         Hero Image
+
                     </label>
 
                     <input
@@ -263,13 +496,21 @@ export default function BlogForm({
                         className="hidden"
                         onChange={(e) => {
 
-                            const file = e.target.files?.[0];
+                            const file =
+                                e.target.files?.[0];
 
                             if (!file) return;
 
-                            update("heroImage", file);
+                            update(
+                                "heroImage",
+                                file
+                            );
 
-                            setHeroPreview(URL.createObjectURL(file));
+                            setHeroPreview(
+                                URL.createObjectURL(
+                                    file
+                                )
+                            );
 
                         }}
                     />
@@ -278,22 +519,30 @@ export default function BlogForm({
 
                         <button
                             type="button"
-                            onClick={() => fileInputRef.current?.click()}
-                            className="w-full h-72 border-2 border-dashed border-slate-300 rounded-3xl card-glass hover:border-indigo-500 transition flex flex-col items-center justify-center gap-4"
+                            onClick={() =>
+                                fileInputRef.current?.click()
+                            }
+                            className="w-full h-72 rounded-3xl border-2 border-dashed border-slate-300 card-glass hover:border-indigo-500 transition flex flex-col items-center justify-center gap-4"
                         >
 
                             <div className="text-6xl">
+
                                 🖼️
+
                             </div>
 
                             <div>
 
                                 <h3 className="font-bold text-lg">
+
                                     Upload Hero Image
+
                                 </h3>
 
                                 <p className="text-slate-500 mt-1">
-                                    Click here or drag & drop an image
+
+                                    Click to choose an image
+
                                 </p>
 
                             </div>
@@ -311,18 +560,14 @@ export default function BlogForm({
                                 height={800}
                                 className="w-full h-[380px] object-cover"
                             />
-
-                            <div className="absolute inset-x-0 bottom-0 bg-black/50 backdrop-blur-sm p-5 flex justify-between items-center">
+                            <div className="absolute inset-x-0 bottom-0 bg-black/55 backdrop-blur-sm p-5 flex items-center justify-between">
 
                                 <div className="text-white">
 
                                     <p className="font-semibold">
-                                        const heroImageName =
-                                        draft.heroImage instanceof File
-                                        ? draft.heroImage.name
-                                        : draft.heroImage
-                                        ? draft.heroImage.split("/").pop() ?? ""
-                                        : "";
+
+                                        {heroImageName || "Hero Image"}
+
                                     </p>
 
                                 </div>
@@ -331,8 +576,10 @@ export default function BlogForm({
 
                                     <button
                                         type="button"
-                                        onClick={() => fileInputRef.current?.click()}
-                                        className="px-4 py-2 rounded-xl bg-white text-slate-900 font-semibold"
+                                        onClick={() =>
+                                            fileInputRef.current?.click()
+                                        }
+                                        className="px-4 py-2 rounded-xl bg-white text-slate-900 font-semibold hover:bg-slate-100 transition"
                                     >
                                         Replace
                                     </button>
@@ -341,12 +588,17 @@ export default function BlogForm({
                                         type="button"
                                         onClick={() => {
 
-                                            update("heroImage", null);
+                                            update(
+                                                "heroImage",
+                                                null
+                                            );
 
-                                            setHeroPreview(null);
+                                            setHeroPreview(
+                                                null
+                                            );
 
                                         }}
-                                        className="px-4 py-2 rounded-xl bg-red-500 text-white font-semibold"
+                                        className="px-4 py-2 rounded-xl bg-red-500 text-white font-semibold hover:bg-red-600 transition"
                                     >
                                         Remove
                                     </button>
@@ -363,92 +615,203 @@ export default function BlogForm({
 
                 {/* CONTENT */}
 
-                <div className="mb-8">
+                <div className="mb-10">
 
-                    <label className="font-semibold">
-                        Content
-                    </label>
+                    <div className="flex items-center justify-between mb-4">
 
-                    {/* Replace this with Tiptap next */}
+                        <label className="font-semibold">
+
+                            Blog Content
+
+                        </label>
+
+                        <span className="text-sm text-slate-500">
+
+                            Estimated read time
+
+                            <strong className="ml-1 text-slate-700">
+
+                                {readTime} min read
+
+                            </strong>
+
+                        </span>
+
+                    </div>
 
                     <BlogEditor
                         value={draft.content}
-                        onChange={(value) => update("content", value)}
+                        onChange={(value) =>
+                            update(
+                                "content",
+                                value
+                            )
+                        }
                     />
 
                 </div>
 
                 {/* SEO */}
 
-                <div className="card-glass rounded-3xl p-8 border">
+                <div className="card-glass rounded-3xl border p-8">
 
                     <h2 className="heading text-2xl mb-6">
-                        SEO
+
+                        SEO Settings
+
                     </h2>
 
-                    <input
-                        placeholder="SEO Title"
-                        className="w-full rounded-xl border p-4 mb-4"
-                        value={draft.seo.title}
-                        onChange={(e) =>
-                            setDraft((prev) => ({
-                                ...prev,
-                                seo: {
-                                    ...prev.seo,
-                                    title: e.target.value,
-                                },
-                            }))
-                        }
-                    />
+                    <div className="mb-6">
 
-                    <textarea
-                        rows={3}
-                        placeholder="SEO Description"
-                        className="w-full rounded-xl border p-4"
-                        value={draft.seo.description}
-                        onChange={(e) =>
-                            setDraft((prev) => ({
-                                ...prev,
-                                seo: {
-                                    ...prev.seo,
-                                    description: e.target.value,
-                                },
-                            }))
-                        }
-                    />
+                        <label className="font-semibold">
+
+                            SEO Title
+
+                        </label>
+
+                        <input
+                            className="mt-2 w-full rounded-xl border p-4"
+                            placeholder="SEO Title"
+                            value={draft.seo.title}
+                            onChange={(e) =>
+                                setDraft(prev => ({
+
+                                    ...prev,
+
+                                    seo: {
+
+                                        ...prev.seo,
+
+                                        title:
+                                            e.target.value,
+
+                                    },
+
+                                }))
+                            }
+                        />
+
+                        <div className="mt-2 flex justify-end">
+
+                            <span className="text-xs text-slate-500">
+
+                                {draft.seo.title.length}
+
+                                /60
+
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                    <div>
+
+                        <label className="font-semibold">
+
+                            SEO Description
+
+                        </label>
+
+                        <textarea
+                            rows={3}
+                            className="mt-2 w-full rounded-xl border p-4"
+                            placeholder="SEO Description"
+                            value={draft.seo.description}
+                            onChange={(e) =>
+                                setDraft(prev => ({
+
+                                    ...prev,
+
+                                    seo: {
+
+                                        ...prev.seo,
+
+                                        description:
+                                            e.target.value,
+
+                                    },
+
+                                }))
+                            }
+                        />
+
+                        <div className="mt-2 flex justify-end">
+
+                            <span className="text-xs text-slate-500">
+
+                                {draft.seo.description.length}
+
+                                /160
+
+                            </span>
+
+                        </div>
+
+                    </div>
 
                 </div>
-
                 {/* ACTIONS */}
 
-                <div className="flex justify-end gap-4 mt-10">
+                <div className="flex items-center justify-end gap-4 mt-10">
 
                     <button
+                        type="button"
                         onClick={handlePreview}
-                        className="card-glass px-8 py-3 rounded-xl"
+                        className="card-glass px-8 py-3 rounded-xl hover:scale-105 transition"
                     >
-                        Preview
+                        {showPreview
+                            ? "Hide Preview"
+                            : "Preview"}
                     </button>
 
                     <button
+                        type="button"
+                        disabled={saving}
                         onClick={handlePublish}
-                        className="btn-primary px-8 py-3"
+                        className="btn-primary px-8 py-3 disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                        {editMode ? "Update Blog" : "Publish Blog"}
+
+                        {saving
+                            ? (
+                                editMode
+                                    ? "Updating..."
+                                    : "Publishing..."
+                            )
+                            : (
+                                editMode
+                                    ? "Update Blog"
+                                    : "Publish Blog"
+                            )}
+
                     </button>
 
                 </div>
 
             </section>
+
             {showPreview && (
 
-                <section className="border-t mt-20 pt-20">
+                <section className="border-t mt-20 pt-20 bg-white">
 
                     <div className="max-w-6xl mx-auto px-6">
 
-                        <h2 className="heading text-3xl mb-10">
-                            Preview
-                        </h2>
+                        <div className="mb-10">
+
+                            <h2 className="heading text-3xl">
+
+                                Live Preview
+
+                            </h2>
+
+                            <p className="text-slate-500 mt-2">
+
+                                This is exactly how your article
+                                will appear after publishing.
+
+                            </p>
+
+                        </div>
 
                         <BlogRenderer
                             title={draft.title}
@@ -463,5 +826,7 @@ export default function BlogForm({
 
             )}
         </main>
+
     );
+
 }

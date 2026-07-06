@@ -10,7 +10,12 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: false, // strict TS checking
   },
   images: {
-    domains: [], // add external domains if needed
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+      },
+    ],
   },
   experimental: {
     // empty or remove appDir if already default

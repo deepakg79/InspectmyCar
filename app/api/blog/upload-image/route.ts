@@ -1,48 +1,62 @@
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs/promises";
-import path from "path";
+import cloudinary from "@/app/lib/cloudinary";
 
 export async function POST(req: NextRequest) {
-    try {
-        const data = await req.formData();
 
-        const file = data.get("file") as File;
-        const slug = data.get("slug") as string;
+    try {
+
+        const form = await req.formData();
+
+        const file = form.get("file") as File;
+
+        const slug = form.get("slug") as string;
 
         if (!file || !slug) {
+
             return NextResponse.json(
-                { success: false },
-                { status: 400 }
+                {
+                    success: false,
+                    message: "Missing file or slug.",
+                },
+                {
+                    status: 400,
+                }
             );
+
         }
 
         const bytes = await file.arrayBuffer();
+
         const buffer = Buffer.from(bytes);
 
-        const ext =
-            file.name.split(".").pop() || "webp";
+        const extension =
+            file.name.split(".").pop() ?? "webp";
 
-        const dir = path.join(
-            process.cwd(),
-            "public",
-            "blogs",
-            slug
-        );
+        const dataUri =
+            `data:${file.type};base64,${buffer.toString("base64")}`;
 
-        await fs.mkdir(dir, {
-            recursive: true,
-        });
+        const result =
+            await cloudinary.uploader.upload(
+                dataUri,
+                {
+                    folder: `blogs/${slug}`,
 
-        const filename = `hero.${ext}`;
+                    public_id: "hero",
 
-        await fs.writeFile(
-            path.join(dir, filename),
-            buffer
-        );
+                    overwrite: true,
+
+                    resource_type: "image",
+
+                    format: extension,
+                }
+            );
 
         return NextResponse.json({
+
             success: true,
-            url: `/blogs/${slug}/${filename}`,
+
+            url: result.secure_url,
+
         });
 
     } catch (err) {
@@ -50,9 +64,18 @@ export async function POST(req: NextRequest) {
         console.error(err);
 
         return NextResponse.json(
-            { success: false },
-            { status: 500 }
+            {
+                success: false,
+                message:
+                    err instanceof Error
+                        ? err.message
+                        : "Image upload failed.",
+            },
+            {
+                status: 500,
+            }
         );
 
     }
+
 }

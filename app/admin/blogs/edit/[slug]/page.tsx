@@ -1,41 +1,60 @@
-import fs from "fs/promises";
-import path from "path";
 import { notFound } from "next/navigation";
 
+import { adminDb } from "@/app/lib/firebaseAdmin";
 import BlogForm from "../../BlogForm";
 
 export default async function EditBlog({
     params,
 }: {
-    params: Promise<{ slug: string }>;
+    params: Promise<{
+        slug: string;
+    }>;
 }) {
+
     const { slug } = await params;
 
-    try {
+    const snapshot = await adminDb
+        .collection("blogs")
+        .doc(slug)
+        .get();
 
-        const blog = JSON.parse(
-            await fs.readFile(
-                path.join(
-                    process.cwd(),
-                    "content",
-                    "blogs",
-                    slug,
-                    "content.json"
-                ),
-                "utf8"
-            )
-        );
-
-        return (
-            <BlogForm
-                initialData={blog}
-                editMode
-            />
-        );
-
-    } catch {
+    if (!snapshot.exists) {
 
         notFound();
 
     }
+
+    const data = snapshot.data();
+
+    const blog = {
+
+        ...data,
+
+        seo: {
+
+            title:
+                data?.seo?.title ??
+                data?.seoTitle ??
+                data?.title ??
+                "",
+
+            description:
+                data?.seo?.description ??
+                data?.seoDescription ??
+                data?.excerpt ??
+                "",
+
+        },
+
+    };
+
+    return (
+
+        <BlogForm
+            initialData={blog}
+            editMode
+        />
+
+    );
+
 }

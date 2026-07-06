@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs/promises";
-import path from "path";
+import { adminDb } from "@/app/lib/firebaseAdmin";
+import cloudinary from "@/app/lib/cloudinary";
 
 export async function DELETE(req: NextRequest) {
 
@@ -8,64 +8,33 @@ export async function DELETE(req: NextRequest) {
 
         const { slug } = await req.json();
 
-        const contentFolder = path.join(
-            process.cwd(),
-            "content",
-            "blogs",
-            slug
-        );
+        const ref = adminDb
+            .collection("blogs")
+            .doc(slug);
 
-        const publicFolder = path.join(
-            process.cwd(),
-            "public",
-            "blogs",
-            slug
-        );
+        const snapshot = await ref.get();
 
-        await fs.rm(
-            contentFolder,
-            {
-                recursive: true,
-                force: true,
-            }
-        );
+        if (!snapshot.exists) {
 
-        await fs.rm(
-            publicFolder,
-            {
-                recursive: true,
-                force: true,
-            }
-        );
-
-        const metadataFile = path.join(
-            process.cwd(),
-            "content",
-            "blogs",
-            "metadata.json"
-        );
-
-        let metadata: any[] = [];
-
-        try {
-
-            metadata = JSON.parse(
-                await fs.readFile(
-                    metadataFile,
-                    "utf8"
-                )
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: "Blog not found.",
+                },
+                {
+                    status: 404,
+                }
             );
 
-        } catch { }
+        }
 
-        metadata = metadata.filter(
-            b => b.slug !== slug
+        // Delete hero image from Cloudinary
+        await cloudinary.uploader.destroy(
+            `blogs/${slug}/hero`
         );
 
-        await fs.writeFile(
-            metadataFile,
-            JSON.stringify(metadata, null, 2)
-        );
+        // Delete Firestore document
+        await ref.delete();
 
         return NextResponse.json({
             success: true,
@@ -78,6 +47,10 @@ export async function DELETE(req: NextRequest) {
         return NextResponse.json(
             {
                 success: false,
+                message:
+                    err instanceof Error
+                        ? err.message
+                        : "Failed to delete blog.",
             },
             {
                 status: 500,

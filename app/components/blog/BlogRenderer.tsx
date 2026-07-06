@@ -35,7 +35,8 @@ export default function BlogRenderer({
                         alt={title}
                         width={1400}
                         height={800}
-                        className="rounded-3xl mb-10"
+                        priority
+                        className="..."
                     />
 
                 )}

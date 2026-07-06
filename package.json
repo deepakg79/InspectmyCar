@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@opentelemetry/api": "^1.9.1",
     "@tailwindcss/postcss": "^4.3.1",
     "@tailwindcss/typography": "^0.5.20",
     "@tiptap/extension-color": "^3.27.1",
@@ -29,10 +30,12 @@
     "@tiptap/pm": "^3.27.1",
     "@tiptap/react": "^3.27.1",
     "@tiptap/starter-kit": "^3.27.1",
+    "cloudinary": "^2.10.0",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "dayjs": "^1.11.20",
-    "firebase": "^12.11.0",
+    "firebase": "^12.15.0",
+    "firebase-admin": "^13.10.0",
     "google-map-react": "^2.2.5",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.7",

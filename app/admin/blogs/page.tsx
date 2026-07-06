@@ -1,37 +1,43 @@
 import Link from "next/link";
-import fs from "fs/promises";
-import path from "path";
 import DeleteButton from "./DeleteButton";
+import { adminDb } from "@/app/lib/firebaseAdmin";
+import Image from "next/image";
 type BlogMeta = {
     slug: string;
     title: string;
     excerpt: string;
     category: string;
     heroImage?: string;
-    date: string;
+    publishedAt: string;
     readTime: string;
 };
 
+function formatDate(date: string) {
+
+    return new Date(date).toLocaleDateString(
+        "en-GB",
+        {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+        }
+    );
+
+}
+
 export default async function AdminBlogsPage() {
-    let blogs: BlogMeta[] = [];
 
-    try {
-        const file = await fs.readFile(
-            path.join(
-                process.cwd(),
-                "content",
-                "blogs",
-                "metadata.json"
-            ),
-            "utf8"
-        );
+    const snapshot = await adminDb
+        .collection("blogs")
+        .orderBy("publishedAt", "desc")
+        .get();
 
-        blogs = JSON.parse(file);
-    } catch {
-        blogs = [];
-    }
+    const blogs: BlogMeta[] = snapshot.docs.map(doc => ({
+        ...(doc.data() as BlogMeta),
+    }));
 
     return (
+
         <main className="bg-main min-h-screen">
 
             <section className="max-w-6xl mx-auto px-6 py-16">
@@ -84,15 +90,47 @@ export default async function AdminBlogsPage() {
                             className="card-glass rounded-2xl p-6 flex justify-between items-center"
                         >
 
-                            <div>
+                            <div className="flex items-start gap-5">
 
-                                <h2 className="text-2xl font-bold">
-                                    {blog.title}
-                                </h2>
+                                {blog.heroImage && (
 
-                                <p className="text-slate-500 mt-2">
-                                    {blog.date} • {blog.readTime}
-                                </p>
+                                    <Image
+                                        src={blog.heroImage}
+                                        alt={blog.title}
+                                        width={120}
+                                        height={72}
+                                        className="rounded-xl object-cover border"
+                                    />
+
+                                )}
+
+                                <div>
+
+                                    <div className="flex items-center gap-3 mb-2">
+
+                                        <span className="px-3 py-1 rounded-full bg-indigo-50 text-indigo-600 text-xs font-semibold">
+
+                                            {blog.category}
+
+                                        </span>
+
+                                    </div>
+
+                                    <h2 className="text-2xl font-bold">
+
+                                        {blog.title}
+
+                                    </h2>
+
+                                    <p className="text-slate-500 mt-2">
+
+                                        {formatDate(blog.publishedAt)}
+                                        {" • "}
+                                        {blog.readTime}
+
+                                    </p>
+
+                                </div>
 
                             </div>
 
@@ -115,6 +153,7 @@ export default async function AdminBlogsPage() {
                                 <DeleteButton slug={blog.slug} />
 
                             </div>
+
                         </div>
 
                     ))}
@@ -124,5 +163,7 @@ export default async function AdminBlogsPage() {
             </section>
 
         </main>
+
     );
+
 }
