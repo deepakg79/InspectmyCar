@@ -11,6 +11,13 @@ type BlogMeta = {
     date: string;
     readTime: string;
 };
+function formatDate(date: string) {
+    return new Date(date).toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+    });
+}
 export default async function BlogsPage({
     searchParams,
 }: {
@@ -160,7 +167,7 @@ export default async function BlogsPage({
 
                                         <span className="text-sm text-slate-500">
 
-                                            {blog.date}
+                                            {formatDate(blog.date)}
 
                                         </span>
 
