@@ -108,7 +108,7 @@ export default function UsedCarsPage() {
 
                             {[
                                 ["299+", "Checks"],
-                                ["3500+", "Cars"],
+                                ["3500+", "Inspected Cars"],
                                 ["4.9★", "Rating"],
                             ].map(([value, label]) => (
 

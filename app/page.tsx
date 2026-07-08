@@ -96,7 +96,7 @@ export default function Home() {
                         <div className="flex flex-wrap gap-8 mt-12">
 
                             {[
-                                ["3500+", "Vehicles"],
+                                ["3500+", "Cars Inspected"],
                                 ["299+", "Checkpoints"],
                                 ["4.9★", "Rating"],
                             ].map(([v, l]) => (
