@@ -257,7 +257,9 @@ export default function InspectionForm() {
                     status: "Completed" // 🔥 WAITING FOR ADMIN
                 });
             });
-
+            if ((window as any).Android?.onSubmitClicked) {
+                (window as any).Android.onSubmitClicked();
+            }
             setToast(`Inspection Completed ✅ | Score: ${healthScore}%`);
 
             setTimeout(() => {
