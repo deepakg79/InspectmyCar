@@ -33,6 +33,7 @@ export default function InspectionForm() {
     const [toast, setToast] = useState<string | null>(null);
     const [inspectorComments, setInspectorComments] = useState<string[]>([""]);
     const [meta, setMeta] = useState({
+        bookingId: "",
         mobile: "",
         name: "",
         date: new Date().toLocaleDateString('en-GB'),
@@ -68,6 +69,7 @@ export default function InspectionForm() {
 
             setMeta(prev => ({
                 ...prev,
+                bookingId: job.id || "",
                 name: job.name || "",
                 mobile: job.mobile || "",
                 brand: job.brand || "",
@@ -235,6 +237,7 @@ export default function InspectionForm() {
             // ✅ SAVE REPORT
             await addDoc(collection(db, "reports"), {
                 ...meta,
+                bookingId: meta.bookingId,
                 checklistResults, // only numeric
                 tyreData,         // 🔥 new field
                 healthScore,
@@ -245,18 +248,12 @@ export default function InspectionForm() {
             });
 
             // ✅ UPDATE BOOKING
-            const q = query(
-                collection(db, "bookings"),
-                where("mobile", "==", meta.mobile)
+            await updateDoc(
+                doc(db, "bookings", meta.bookingId),
+                {
+                    status: "Completed"
+                }
             );
-
-            const snap = await getDocs(q);
-
-            snap.forEach(async (d) => {
-                await updateDoc(doc(db, "bookings", d.id), {
-                    status: "Completed" // 🔥 WAITING FOR ADMIN
-                });
-            });
             if ((window as any).Android?.onSubmitClicked) {
                 (window as any).Android.onSubmitClicked();
             }
