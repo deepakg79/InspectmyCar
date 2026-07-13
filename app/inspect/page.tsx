@@ -256,16 +256,14 @@ export default function InspectionForm() {
             );
             if ((window as any).Android?.onSubmitClicked) {
                 (window as any).Android.onSubmitClicked();
+                return;
             }
             setToast(`Inspection Completed ✅ | Score: ${healthScore}%`);
 
-            setTimeout(() => {
-                setToast(null);
-                router.push("/inspector");
-            }, 2000);
+
 
             localStorage.removeItem("active_pdi");
-            router.push("/inspector");
+
 
         } catch (err) {
             console.error(err);
