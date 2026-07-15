@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { MessageCircle } from "lucide-react";
-
+import { FaWhatsapp } from "react-icons/fa";
 export default function WhatsAppButton() {
     const phone = "919975934213";
     const message = encodeURIComponent(
@@ -26,7 +26,7 @@ export default function WhatsAppButton() {
                 <div className="whatsapp-ring" />
 
                 <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-xl transition-transform duration-300 hover:scale-110">
-                    <MessageCircle size={28} />
+                    <FaWhatsapp size={30} />
                 </div>
             </div>
         </Link>
