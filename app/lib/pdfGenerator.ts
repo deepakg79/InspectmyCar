@@ -1,7 +1,7 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import checklist from "@/app/lib/checklist";
-// import { PDF_DISCLAIMER } from "@/app/lib/pdfDisclaimer";
+//import { PDF_DISCLAIMER } from "@/app/lib/pdfDisclaimer";
 
 // ------------------ HELPERS ------------------
 export const calculateRange = (results: any, start: number, end: number) => {
@@ -34,7 +34,15 @@ export const drawWatermark = (doc: jsPDF) => {
 
     doc.restoreGraphicsState();
 };
-
+const COLORS = {
+    primary: [2, 27, 58] as const,      // Sky Blue
+    secondary: [2, 27, 58] as const,   // Light Sky Blue
+    light: [0, 0, 0] as const,       // Very Light Background
+    accent: [59, 130, 246] as const,       // Accent Blue
+    text: [2, 27, 58] as const,           // Slate
+    danger: [220, 38, 38] as const,
+    white: [255, 255, 255] as const,
+};
 // ------------------ MAIN BUILDER ------------------
 export const buildPDF = async ({
     doc,
@@ -61,43 +69,25 @@ export const buildPDF = async ({
     // ------------------ PAGE 2 ------------------
     doc.addPage();
     drawWatermark(doc);
-    // 🔥 HEADER
-    doc.setFillColor(106, 0, 60);
-    doc.rect(0, 0, 210, 35, "F");
 
-    doc.setFillColor(194, 24, 91);
-    doc.rect(0, 15, 210, 20, "F");
-
-    // LOGO
-    const logoRes = await fetch("/logo.png");
-    const logoBlob = await logoRes.blob();
-
-    const logoBase64 = await new Promise<string>((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.readAsDataURL(logoBlob);
-    });
-
-    doc.addImage(logoBase64, "PNG", 14, 6, 22, 22);
-
-    // TEXT
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(16);
-    doc.text("InspectMyCar", 42, 14);
-
-    doc.setFontSize(10);
-    doc.text("Premium Inspection Service", 42, 20);
-    doc.text("Mobile: +91 9975934213", 42, 25);
-    doc.text("Email: support@inspectmycar.in", 42, 30);
-
-    doc.setTextColor(0);
-    doc.setFontSize(18);
-    doc.setFont("helvetica", "bold");
-    doc.text("Vehicle Inspection Report", 105, 45, { align: "center" });
 
     // ------------------ VEHICLE INFO ------------------
     autoTable(doc, {
-        startY: 55,
+        startY: 15,
+        head: [["Vehicle Inspection Report"]],
+
+        headStyles: {
+            fillColor: [2, 27, 58],
+            textColor: 255,
+            fontStyle: "bold"
+        },
+
+        styles: {
+            textColor: [220, 38, 38]
+        },
+    });
+    autoTable(doc, {
+        startY: 30,
         theme: "grid",
         styles: { fontSize: 10, cellPadding: 4 },
         columnStyles: {
@@ -134,7 +124,7 @@ export const buildPDF = async ({
         head: [["Overall Vehicle Health"]],
 
         headStyles: {
-            fillColor: [194, 24, 91],
+            fillColor: [2, 27, 58],
             textColor: 255,
             fontStyle: "bold"
         },
@@ -153,7 +143,7 @@ export const buildPDF = async ({
     const containerWidth = 140;
     const containerHeight = 70;
 
-    doc.setFillColor(252, 231, 243);
+    doc.setFillColor(...COLORS.light);
     doc.roundedRect(containerX, containerY, containerWidth, containerHeight, 5, 5, "F");
 
 
@@ -164,7 +154,7 @@ export const buildPDF = async ({
     const cardHeight = 20;
 
     // 🔥 Smaller container (fits new cards properly)
-    doc.setFillColor(194, 24, 91);
+    doc.setFillColor(255, 255, 255);
     doc.roundedRect(containerX, containerY, containerWidth, containerHeight, 6, 6, "F");
 
     // 🔥 Updated card renderer
@@ -173,7 +163,7 @@ export const buildPDF = async ({
         doc.roundedRect(x, y, cardWidth, cardHeight, 3, 3, "F");
 
         doc.setFontSize(9);
-        doc.setTextColor(120, 0, 60);
+        doc.setTextColor(219, 153, 10);
 
         // ✅ Wrap text within card width
         const maxWidth = cardWidth - 4;
@@ -222,7 +212,7 @@ export const buildPDF = async ({
     const badgeX = centerX - badgeWidth / 2;
     const badgeY = centerY - badgeHeight / 2;
 
-    doc.setFillColor(194, 24, 91);
+    doc.setFillColor(...COLORS.primary);
     doc.roundedRect(badgeX, badgeY, badgeWidth, badgeHeight, 5, 5, "F");
 
     doc.setFontSize(8);
@@ -259,7 +249,7 @@ export const buildPDF = async ({
 
                 issues.push([
                     comment
-                        ? `${text} — ${comment}`
+                        ? comment
                         : text
                 ]);
             }
@@ -276,13 +266,13 @@ export const buildPDF = async ({
             body: issues,
 
             headStyles: {
-                fillColor: [194, 24, 91],
+                fillColor: [2, 27, 58],   // Blue
                 textColor: 255,
                 fontStyle: "bold"
             },
 
             styles: {
-                textColor: [220, 38, 38]
+                textColor: [31, 41, 55],      // Dark Gray
             },
 
             didDrawPage: () => {
@@ -308,7 +298,7 @@ export const buildPDF = async ({
             ]),
 
             headStyles: {
-                fillColor: [194, 24, 91],
+                fillColor: [2, 27, 58],
                 textColor: 255,
                 fontStyle: "bold",
             },
@@ -325,8 +315,20 @@ export const buildPDF = async ({
         });
     }
     drawWatermark(doc);
+
+
+    // ---------------- PAGE 3 (FULL IMAGE) ----------------
+    doc.addPage();
+
+    const secondPage = new Image();
+    secondPage.src = "/car_photo_points.jpg"; // <-- your second full-page image
+
+    await new Promise((res) => (secondPage.onload = res));
+
+    doc.addImage(secondPage, "JPEG", 0, 0, 210, 297);
+    drawWatermark(doc);
     // ---------------- CHECKLIST ----------------
-    // ------------------ PAGE 3 (CHECKLIST) ------------------
+    // ------------------ PAGE 4 (CHECKLIST) ------------------
     doc.addPage();
     drawWatermark(doc);
 
@@ -336,10 +338,10 @@ export const buildPDF = async ({
         tableData.push([
             {
                 content: section.section,
-                colSpan: 3,
+                colSpan: 5,
                 styles: {
-                    fillColor: [194, 24, 91], // same as header
-                    textColor: [255, 255, 255]
+                    fillColor: [2, 27, 58], // same as header
+                    textColor: [219, 153, 10]
                 }
             }
         ]);
@@ -391,20 +393,22 @@ export const buildPDF = async ({
 
     autoTable(doc, {
         startY: 25,
+
         didParseCell: function (data: any) {
             if (data.section === "body" && data.column.index === 2) {
+
                 const value = data.cell.raw;
                 if (value === "NA" && data.row?.cells) {
                     Object.values(data.row.cells).forEach((cell: any) => {
                         cell.styles.textColor = [150, 150, 150];
-
                     });
                 }
                 if (value === "ISSUE") {
                     data.cell.styles.textColor = [220, 38, 38]; // 🔴 red
                     data.cell.styles.fontStyle = "bold";
                 } else if (value === "OK") {
-                    data.cell.styles.textColor = [0, 0, 0]; // ⚫ black
+                    data.cell.styles.textColor = [45, 157, 16]; //
+                    data.cell.styles.fontStyle = "bold";
                 } else if (value === "NA") {
                     data.cell.styles.textColor = [120, 120, 120]; // ⚪ grey
                     data.cell.styles.fontStyle = "italic";
@@ -413,12 +417,13 @@ export const buildPDF = async ({
         },
         head: [["ID", "Inspection Item", "Status"]],
         headStyles: {
-            fillColor: [106, 0, 60],
+            fillColor: [2, 27, 58],
             textColor: 255,
-            fontStyle: "bold"
+            fontStyle: "bold",
+            fontSize: 12
         },
         body: tableData,
-        styles: { fontSize: 7 },
+        styles: { fontSize: 12, fontStyle: "bold" },
 
         didDrawPage: () => {
             drawWatermark(doc);
@@ -439,7 +444,7 @@ export const buildPDF = async ({
     //     theme: "grid",
 
     //     headStyles: {
-    //         fillColor: [194, 24, 91],
+    //         fillColor: [2, 27, 58],
     //         textColor: 255,
     //         halign: "center",
     //         fontStyle: "bold",
