@@ -13,6 +13,7 @@ export default function WhatsAppButton() {
         <Link
             href={`https://wa.me/${phone}?text=${message}`}
             target="_blank"
+
             rel="noopener noreferrer"
             aria-label="Chat on WhatsApp"
             style={{
