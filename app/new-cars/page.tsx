@@ -99,21 +99,21 @@ export default function Home() {
 
             {/* QUICK STATS */}
 
-            <div className="mt-12 grid grid-cols-4 gap-5">
+            <div className="mt-8 grid grid-cols-4 gap-2">
 
               {[
                 ["299+", "Checks"],
-                ["3500+", "Inspected Cars"],
+                ["3500+", "Cars"],
                 ["4.9★", "Rating"],
                 ["100%", "Independent"],
               ].map(([v, l]) => (
 
                 <div
                   key={l}
-                  className="rounded-3xl border border-white/60 bg-white/70 p-5 backdrop-blur-xl shadow-lg transition hover:-translate-y-2 hover:shadow-2xl"
+                  className="rounded-2xl border border-white/60 bg-white/70 p-5 backdrop-blur-xl shadow-lg transition hover:-translate-y-2 hover:shadow-2xl"
                 >
 
-                  <div className="text-3xl font-black text-indigo-600">
+                  <div className="text-2xl font-black text-indigo-600">
                     {v}
                   </div>
 

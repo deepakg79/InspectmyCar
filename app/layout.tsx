@@ -3,7 +3,8 @@
 import "../app/globals.css";
 import { Inter } from "next/font/google";
 import type { Metadata } from "next";
-import { Toaster } from "sonner";
+
+import WhatsAppButton from "@/app/components/WhatsAppButton";
 import ConditionalNavbar from "@/app/components/ConditionalNavbar";
 import Footer from "@/app/components/Footer";
 import { BookingProvider } from "@/app/context/BookingContext";
@@ -93,12 +94,9 @@ export default function RootLayout({
                     {children}
 
                     <Footer />
+
+                    <WhatsAppButton />
                 </BookingProvider>
-                <Toaster
-                    position="top-right"
-                    richColors
-                    closeButton
-                />
             </body>
         </html>
     );
