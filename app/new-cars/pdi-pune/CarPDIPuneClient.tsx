@@ -76,7 +76,7 @@ export default function CarPDIPuneClient() {
             <section className="py-16 px-6">
                 <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-3 gap-6">
                     {[
-                        { title: "1000+", desc: "Pune Deliveries Inspected" },
+                        { title: "2000+", desc: "New Cars Inspected" },
                         { title: "Same Day", desc: "Inspection & Report" },
                         { title: "4.9⭐", desc: "Customer Rating" },
                     ].map((item, i) => (
