@@ -212,7 +212,7 @@ export default function Footer() {
                             Designed &amp; Developed by{" "}
 
                             <a
-                                href="https://3dvishwa.com"
+                                href="https://3dvishwa.in"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="font-semibold text-indigo-400 transition hover:text-pink-400"

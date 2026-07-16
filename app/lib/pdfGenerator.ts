@@ -430,6 +430,76 @@ export const buildPDF = async ({
         }
 
     });
+
+
+    // const tyreRows = 5;
+
+    // const filteredTableData = tableData
+    //     .filter((row) => {
+    //         if (!row || row.length < 3) return false;
+
+    //         const item = String(row[1] ?? "").trim();
+    //         const status = String(row[2] ?? "").trim();
+
+    //         return item !== "" && status !== "" && status !== "NA";
+    //     })
+    //     .map((row, index, arr) => {
+    //         const normalRows = arr.length - tyreRows;
+
+    //         if (index < normalRows) {
+    //             // 1 ... 291
+    //             return [
+    //                 index + 1,
+    //                 row[1],
+    //                 row[2],
+    //             ];
+    //         }
+
+    //         // Last 5 rows -> A ... E
+    //         const letter = String.fromCharCode(65 + (index - normalRows));
+
+    //         return [
+    //             letter,
+    //             row[1],
+    //             row[2],
+    //         ];
+    //     });
+    // autoTable(doc, {
+    //     startY: 25,
+
+    //     didParseCell: function (data: any) {
+    //         if (data.section === "body" && data.column.index === 2) {
+
+    //             const value = data.cell.raw;
+
+    //             if (value === "ISSUE") {
+    //                 data.cell.styles.textColor = [220, 38, 38]; // 🔴 red
+    //                 data.cell.styles.fontStyle = "bold";
+    //             } else if (value === "OK") {
+    //                 data.cell.styles.textColor = [45, 157, 16]; //
+    //                 data.cell.styles.fontStyle = "bold";
+    //             }
+    //         }
+    //     },
+    //     head: [["ID", "Inspection Item", "Status"]],
+    //     headStyles: {
+    //         fillColor: [2, 27, 58],
+    //         textColor: 255,
+    //         fontStyle: "bold",
+    //         fontSize: 12
+    //     },
+    //     body: filteredTableData,
+    //     styles: { fontSize: 12, fontStyle: "bold" },
+
+    //     didDrawPage: () => {
+    //         drawWatermark(doc);
+    //     }
+
+    // });
+
+
+
+
     // doc.addPage();
     // drawWatermark(doc);
 
