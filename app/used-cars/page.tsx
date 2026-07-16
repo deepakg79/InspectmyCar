@@ -104,12 +104,13 @@ export default function UsedCarsPage() {
 
                         {/* QUICK STATS */}
 
-                        <div className="mt-12 grid grid-cols-3 gap-5">
+                        <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-3">
 
                             {[
                                 ["299+", "Checks"],
                                 ["3500+", "Inspected Cars"],
                                 ["4.9★", "Rating"],
+                                ["100%", "Independent"],
                             ].map(([value, label]) => (
 
                                 <div

@@ -67,7 +67,7 @@ export default function CarPDIUsedClient() {
 
                         <div className="absolute -bottom-6 -right-6 card-glass p-6 shadow-xl floating border-white">
 
-                            <p className="text-pink-600 font-black text-2xl">✔ 300+</p>
+                            <p className="text-pink-600 font-black text-2xl">✔ 299+</p>
 
                             <p className="text-[10px] font-bold uppercase tracking-widest subtext">
                                 Checks for Used Cars

@@ -99,7 +99,7 @@ export default function Home() {
 
             {/* QUICK STATS */}
 
-            <div className="mt-8 grid grid-cols-4 gap-2">
+            <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-3">
 
               {[
                 ["299+", "Checks"],
