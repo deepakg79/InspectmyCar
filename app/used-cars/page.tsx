@@ -659,13 +659,13 @@ export default function UsedCarsPage() {
             {/* FINAL CTA */}
             <section className="px-6 pb-32">
 
-                <div className="max-w-7xl mx-auto overflow-hidden rounded-[3rem] bg-gradient-to-br from-pink-500 via-violet-600 to-indigo-700 shadow-[0_40px_120px_rgba(219,39,119,0.35)]">
+                <div className="mx-auto max-w-7xl overflow-hidden rounded-[2rem] lg:rounded-[3rem] bg-gradient-to-br from-pink-500 via-violet-600 to-indigo-700 shadow-[0_40px_120px_rgba(219,39,119,0.35)]">
 
                     <div className="grid lg:grid-cols-2 items-center">
 
                         {/* LEFT */}
 
-                        <div className="p-12 lg:p-16 text-white">
+                        <div className="min-w-0 p-5 sm:p-8 lg:p-16 text-white">
 
                             <span className="inline-flex rounded-full bg-white/15 px-5 py-2 text-xs font-black uppercase tracking-[0.3em] backdrop-blur-xl">
                                 Ready to Buy?
@@ -686,7 +686,7 @@ export default function UsedCarsPage() {
                                 buy with confidence.
                             </p>
 
-                            <div className="mt-10 grid gap-4 sm:grid-cols-2">
+                            <div className="mt-10 flex flex-col gap-3">
 
                                 {[
                                     "299+ Inspection Points",
@@ -699,10 +699,12 @@ export default function UsedCarsPage() {
 
                                     <div
                                         key={item}
-                                        className="rounded-2xl border border-white/10 bg-white/10 px-5 py-4 backdrop-blur-xl"
+                                        className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur-xl"
                                     >
-                                        <span className="font-semibold">
-                                            ✓ {item}
+                                        <span className="text-green-400 text-lg">✓</span>
+
+                                        <span className="text-sm font-medium">
+                                            {item}
                                         </span>
                                     </div>
 
@@ -714,9 +716,9 @@ export default function UsedCarsPage() {
 
                         {/* RIGHT */}
 
-                        <div className="bg-white p-12 lg:p-16">
+                        <div className="min-w-0 bg-white p-5 sm:p-8 lg:p-16">
 
-                            <div className="rounded-[2.5rem] border border-slate-200 bg-slate-50 p-10">
+                            <div className="w-full rounded-[2rem] border border-slate-200 bg-slate-50 p-5 sm:p-8 lg:p-10">
 
                                 <p className="text-sm font-black uppercase tracking-[0.3em] text-pink-600">
                                     Inspection Starts From

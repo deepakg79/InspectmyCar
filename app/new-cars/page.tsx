@@ -664,7 +664,7 @@ export default function Home() {
       {/* FINAL CTA */}
       <section className="px-6 pb-32">
 
-        <div className="max-w-7xl mx-auto overflow-hidden rounded-[3rem] bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-600 shadow-[0_40px_120px_rgba(99,102,241,0.35)]">
+        <div className="mx-auto max-w-7xl overflow-hidden rounded-[2rem] lg:rounded-[3rem] bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-600 shadow-[0_40px_120px_rgba(99,102,241,0.35)]">
 
           <div className="grid lg:grid-cols-2 items-center">
 
@@ -689,24 +689,25 @@ export default function Home() {
                 ensure your vehicle is free from hidden defects, repaint
                 work and manufacturing issues before delivery.
               </p>
-
-              <div className="mt-10 grid sm:grid-cols-2 gap-4">
+              <div className="mt-10 flex flex-col gap-3">
 
                 {[
                   "299+ Inspection Points",
-                  "Professional Paint Check",
+                  "Accident Detection",
+                  "Engine & Gearbox Check",
                   "OBD Diagnostics",
-                  "Digital Inspection Report",
-                  "Dealership Visit",
+                  "Negotiation Report",
                   "Independent Experts",
                 ].map((item) => (
 
                   <div
                     key={item}
-                    className="rounded-2xl bg-white/10 border border-white/10 px-5 py-4 backdrop-blur-xl"
+                    className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur-xl"
                   >
-                    <span className="font-semibold">
-                      ✓ {item}
+                    <span className="text-green-400 text-lg">✓</span>
+
+                    <span className="text-sm font-medium">
+                      {item}
                     </span>
                   </div>
 
@@ -718,9 +719,9 @@ export default function Home() {
 
             {/* RIGHT */}
 
-            <div className="bg-white p-12 lg:p-16">
+            <div className="bg-white p-5 sm:p-8 lg:p-16">
 
-              <div className="rounded-[2.5rem] border border-slate-200 bg-slate-50 p-10">
+              <div className="w-full rounded-[2rem] border border-slate-200 bg-slate-50 p-5 sm:p-8 lg:p-10">
 
                 <p className="text-sm font-black uppercase tracking-[0.3em] text-indigo-600">
                   Starting From
