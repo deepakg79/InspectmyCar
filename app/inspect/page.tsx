@@ -159,11 +159,6 @@ export default function InspectionForm() {
         String(i + 1).padStart(2, "0")
     );
 
-    const currentYear = new Date().getFullYear();
-
-    const years = Array.from({ length: 10 }, (_, i) =>
-        String(currentYear - i)
-    );
 
     // 🔥 FIREBASE SUBMIT (ONLY CHANGE)
     const handleSubmit = async (e: React.FormEvent) => {
@@ -511,29 +506,34 @@ export default function InspectionForm() {
                                                 </select>
 
                                                 {/* YEAR */}
-                                                <select
+                                                <input
+                                                    type="text"
+                                                    inputMode="numeric"
+                                                    maxLength={4}
+                                                    placeholder="YY"
                                                     className="w-24 p-2 bg-slate-100 rounded-xl text-xs text-center font-bold"
                                                     value={
-                                                        typeof results[label] === "object" && results[label] && "year" in results[label]
+                                                        typeof results[label] === "object" &&
+                                                            results[label] &&
+                                                            "year" in results[label]
                                                             ? results[label].year || ""
                                                             : ""
                                                     }
-                                                    onChange={(e) =>
-                                                        setResults(prev => ({
-                                                            ...prev,
-                                                            [label]: {
-                                                                ...(typeof prev[label] === "object" ? prev[label] : {}),
-                                                                year: e.target.value
-                                                            }
-                                                        }))
-                                                    }
-                                                >
-                                                    <option value="">Year</option>
-                                                    {years.map(y => (
-                                                        <option key={y} value={y}>{y}</option>
-                                                    ))}
-                                                </select>
+                                                    onChange={(e) => {
+                                                        const value = e.target.value.replace(/\D/g, "");
 
+                                                        // Allow only 2 or 4 digits while typing
+                                                        if (value.length <= 4) {
+                                                            setResults(prev => ({
+                                                                ...prev,
+                                                                [label]: {
+                                                                    ...(typeof prev[label] === "object" ? prev[label] : {}),
+                                                                    year: value,
+                                                                },
+                                                            }));
+                                                        }
+                                                    }}
+                                                />
                                             </div>
                                         ) : (
                                             // 🔥 NORMAL OK / ISSUE
