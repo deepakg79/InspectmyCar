@@ -126,34 +126,37 @@ export default function Home() {
                         style={{ animationDelay: ".2s" }}
                     >
 
-                        <div className="relative rounded-[3rem] overflow-hidden border-8 border-white shadow-2xl">
-
+                        <div className="relative overflow-hidden rounded-[2rem] lg:rounded-[3rem] border-4 lg:border-8 border-white shadow-2xl">
                             <img
                                 src="/hero-car.jpg"
                                 alt="Professional Car Inspection"
-                                className="w-full h-[560px] object-cover hover:scale-105 transition duration-700"
+                                className="h-[320px] sm:h-[450px] lg:h-[560px] w-full rounded-[2rem] lg:rounded-[2.3rem] object-contain lg:object-cover bg-slate-100 transition duration-700 lg:hover:scale-105"
                             />
 
-                            <div className="absolute bottom-6 left-6 card-glass rounded-3xl p-6 shadow-xl">
+                            <div className="relative mt-4 lg:absolute lg:bottom-6 lg:left-6 rounded-2xl lg:rounded-3xl border border-white bg-white/90 p-4 sm:p-5 lg:p-6 backdrop-blur-xl shadow-xl">
 
-                                <p className="text-3xl font-black text-indigo-600">
-                                    ✔ 299+
+                                <p className="text-xs font-black uppercase tracking-[0.25em] text-indigo-600">
+                                    Complete Inspection
                                 </p>
 
-                                <p className="text-xs uppercase tracking-widest font-bold text-slate-500">
-                                    Inspection Points
+                                <h3 className="mt-2 text-lg sm:text-xl lg:text-2xl font-black text-slate-900">
+                                    299+ Inspection Points
+                                </h3>
+
+                                <p className="mt-2 text-xs sm:text-sm leading-relaxed text-slate-600">
+                                    Comprehensive inspection covering body, paint, electronics, mechanical systems and documentation.
                                 </p>
 
                             </div>
 
-                            <div className="absolute top-6 right-6 rounded-2xl bg-white/90 backdrop-blur-xl px-5 py-4 shadow-xl">
+                            <div className="relative mt-4 lg:absolute lg:top-6 lg:right-6 rounded-2xl border border-white bg-white/90 px-4 py-3 backdrop-blur-xl shadow-xl">
 
                                 <p className="font-black text-emerald-600">
                                     Same Day
                                 </p>
 
                                 <p className="text-xs uppercase tracking-widest text-slate-500">
-                                    Digital Report
+                                    Receive your digital inspection report within hours.
                                 </p>
 
                             </div>
