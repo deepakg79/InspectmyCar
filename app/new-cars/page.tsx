@@ -140,25 +140,25 @@ export default function Home() {
               <img
                 src="/hero-car.jpg"
                 alt="Car Inspection"
-                className="h-[650px] w-full rounded-[2.3rem] object-cover transition duration-700 hover:scale-105"
+                className="h-[320px] sm:h-[450px] lg:h-[650px] w-full rounded-[2rem] lg:rounded-[2.3rem] object-contain lg:object-cover bg-slate-100 transition duration-700 lg:hover:scale-105"
               />
 
-              <div className="absolute bottom-10 left-10 right-10 rounded-[2rem] border border-white/50 bg-white/75 p-6 backdrop-blur-xl shadow-xl">
+              <div className="relative mt-4 lg:absolute lg:bottom-10 lg:left-10 lg:right-10 rounded-2xl lg:rounded-[2rem] border border-white/50 bg-white/90 p-4 sm:p-5 lg:p-6 backdrop-blur-xl shadow-xl">
 
                 <div className="flex items-center justify-between">
 
                   <div>
 
                     <p className="text-xs font-black uppercase tracking-[0.25em] text-indigo-600">
-                      Next Available
+                      Before Delivery
                     </p>
 
                     <h3 className="mt-2 text-2xl font-black text-slate-900">
-                      Monday • 4 Slots Left
+                      Independent Vehicle Health Report
                     </h3>
 
                     <p className="mt-2 text-sm text-slate-600">
-                      Book today to secure your preferred dealership visit.
+                      Identify transport damage, paint defects, and hidden issues before signing the delivery documents with a comprehensive 299+ point inspection.
                     </p>
 
                   </div>

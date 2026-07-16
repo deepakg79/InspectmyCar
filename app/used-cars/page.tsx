@@ -141,14 +141,24 @@ export default function UsedCarsPage() {
                         <div className="absolute -inset-8 rounded-[3rem] bg-gradient-to-r from-pink-500/20 to-indigo-500/20 blur-3xl" />
 
                         <div className="relative overflow-hidden rounded-[3rem] border border-white bg-white p-4 shadow-[0_30px_80px_rgba(0,0,0,0.15)]">
+                            {/* <img
+    src="/used-car-mobile.jpg"
+    alt="Used Car Inspection"
+    className="block lg:hidden h-[320px] w-full rounded-[2rem] object-cover"
+/>
 
+<img
+    src="/used-car1.jpg"
+    alt="Used Car Inspection"
+    className="hidden lg:block h-[650px] w-full rounded-[2.3rem] object-cover transition duration-700 hover:scale-105"
+/> */}
                             <img
                                 src="/used-car1.jpg"
                                 alt="Used Car Inspection"
-                                className="h-[650px] w-full rounded-[2.3rem] object-cover transition duration-700 hover:scale-105"
+                                className="h-[320px] sm:h-[450px] lg:h-[650px] w-full rounded-[2rem] lg:rounded-[2.3rem] object-contain lg:object-cover bg-slate-100 transition duration-700 lg:hover:scale-105"
                             />
 
-                            <div className="absolute bottom-10 left-10 right-10 rounded-[2rem] border border-white bg-white/80 p-6 backdrop-blur-xl shadow-xl">
+                            <div className="relative mt-4 lg:absolute lg:bottom-10 lg:left-10 lg:right-10 rounded-[1.5rem] lg:rounded-[2rem] border border-white bg-white/90 p-4 lg:p-6 backdrop-blur-xl shadow-xl">
 
                                 <div className="flex items-center justify-between">
 
@@ -159,11 +169,11 @@ export default function UsedCarsPage() {
                                         </p>
 
                                         <h3 className="mt-2 text-2xl font-black text-slate-900">
-                                            Complete Vehicle Health Report
+                                            Know Exactly What You're Buying
                                         </h3>
 
                                         <p className="mt-2 text-sm text-slate-600">
-                                            Know the true condition before making the payment.
+                                            Identify hidden defects, accident repairs, and mechanical issues before closing the deal.
                                         </p>
 
                                     </div>
