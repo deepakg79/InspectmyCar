@@ -27,12 +27,25 @@ export default function Navbar() {
 
                     {/* NEW CARS */}
                     <div className="relative group">
-                        <button className="hover:text-indigo-600 transition">
+                        <button
+                            onClick={() => {
+                                setOpenNewCars(!openNewCars);
+                                setOpenUsedCars(false);
+                            }}
+                            className="hover:text-indigo-600 transition"
+                        >
                             New Cars PDI ▾
                         </button>
-
-                        <div className="absolute left-0 top-10 w-64 opacity-0 invisible group-hover:opacity-100 group-hover:visible
-                            translate-y-2 group-hover:translate-y-0 transition-all duration-200">
+                        <div
+                            className={`
+        absolute left-0 top-full pt-3 w-64
+        transition-all duration-200
+        ${openNewCars
+                                    ? "opacity-100 visible"
+                                    : "opacity-0 invisible"
+                                }
+    `}
+                        >
 
                             <div className="bg-white/90 backdrop-blur-xl border border-white/40 shadow-xl rounded-2xl p-2">
 
@@ -63,12 +76,26 @@ export default function Navbar() {
 
                     {/* USED CARS */}
                     <div className="relative group">
-                        <button className="hover:text-pink-500 transition">
+                        <button
+                            onClick={() => {
+                                setOpenUsedCars(!openUsedCars);
+                                setOpenNewCars(false);
+                            }}
+                            className="hover:text-pink-500 transition"
+                        >
                             Used Cars PDI ▾
                         </button>
 
-                        <div className="absolute left-0 top-10 w-64 opacity-0 invisible group-hover:opacity-100 group-hover:visible
-                            translate-y-2 group-hover:translate-y-0 transition-all duration-200">
+                        <div
+                            className={`
+        absolute left-0 top-full pt-3 w-64
+        transition-all duration-200
+        ${openUsedCars
+                                    ? "opacity-100 visible"
+                                    : "opacity-0 invisible"
+                                }
+    `}
+                        >
 
                             <div className="bg-white/90 backdrop-blur-xl border border-white/40 shadow-xl rounded-2xl p-2">
 
@@ -118,7 +145,10 @@ export default function Navbar() {
                         <div className="rounded-2xl border border-slate-200">
 
                             <button
-                                onClick={() => setOpenNewCars(!openNewCars)}
+                                onClick={() => {
+                                    setOpenNewCars(!openNewCars);
+                                    setOpenUsedCars(false);
+                                }}
                                 className="w-full flex items-center justify-between p-5 hover:bg-indigo-50 transition"
                             >
 
@@ -179,7 +209,10 @@ export default function Navbar() {
                         <div className="mt-3 rounded-2xl border border-slate-200">
 
                             <button
-                                onClick={() => setOpenUsedCars(!openUsedCars)}
+                                onClick={() => {
+                                    setOpenUsedCars(!openUsedCars);
+                                    setOpenNewCars(false);
+                                }}
                                 className="w-full flex items-center justify-between p-5 hover:bg-pink-50 transition"
                             >
 
