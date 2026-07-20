@@ -54,7 +54,9 @@ export const CAR_DATA: Brand[] = [
             { name: "Seltos", type: "Standard" },
             { name: "Sonet", type: "Standard" },
             { name: "Carens", type: "Standard" },
+            { name: "Syros", type: "Standard" },
             { name: "Carnival", type: "Luxury" },
+
         ],
     },
     {
@@ -71,6 +73,7 @@ export const CAR_DATA: Brand[] = [
             { name: "Elantra", type: "Standard" },
             { name: "Ioniq 5", type: "Luxury" },
             { name: "Tucson", type: "Luxury" },
+
         ],
     },
     {
@@ -121,6 +124,7 @@ export const CAR_DATA: Brand[] = [
             { name: "XUV700", type: "Standard" },
             { name: "XUV7XO", type: "Standard" },
             { name: "Scorpio", type: "Standard" },
+            { name: "Scorpio N", type: "Standard" },
             { name: "Bolero", type: "Standard" },
         ],
     },
