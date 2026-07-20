@@ -128,6 +128,10 @@
         {
           "name": "Clavis",
           "type": "Standard"
+        },
+        {
+          "name": "Syros",
+          "type": "Standard"
         }
       ]
     },
@@ -316,6 +320,10 @@
         },
         {
           "name": "Scorpio",
+          "type": "Standard"
+        },
+        {
+          "name": "Scorpio N",
           "type": "Standard"
         },
         {
