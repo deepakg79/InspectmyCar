@@ -119,7 +119,7 @@ export default function Navbar() {
 
                         <div
                             className={`
-        absolute left-0 top-full pt-3 w-64
+       absolute right-0 top-full pt-3 w-64 md:w-64 max-w-[90vw]
         transition-all duration-200
         ${openUsedCars
                                     ? "opacity-100 visible translate-y-0"
