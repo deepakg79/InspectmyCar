@@ -15,7 +15,16 @@ export default function Navbar() {
         function handlePointerDown(event: PointerEvent) {
             const target = event.target as Node;
 
-            // Close only the mobile menu
+            // Close desktop dropdowns
+            if (
+                dropdownRef.current &&
+                !dropdownRef.current.contains(target)
+            ) {
+                setOpenNewCars(false);
+                setOpenUsedCars(false);
+            }
+
+            // Close mobile menu
             if (
                 mobileMenuRef.current &&
                 !mobileMenuRef.current.contains(target)
@@ -23,6 +32,7 @@ export default function Navbar() {
                 setOpenMenu(false);
             }
         }
+
         document.addEventListener("pointerdown", handlePointerDown);
 
         return () => {
