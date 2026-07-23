@@ -26,10 +26,14 @@ export default function Navbar() {
                 <div className="hidden md:flex items-center gap-10 text-sm font-bold text-slate-700">
 
                     {/* NEW CARS */}
-                    <div className="relative group">
+                    <div
+                        className="relative group"
+                        onMouseEnter={() => setOpenNewCars(true)}
+                        onMouseLeave={() => setOpenNewCars(false)}
+                    >
                         <button
                             onClick={() => {
-                                setOpenNewCars(!openNewCars);
+                                setOpenNewCars((v) => !v);
                                 setOpenUsedCars(false);
                             }}
                             className="hover:text-indigo-600 transition"
@@ -37,14 +41,10 @@ export default function Navbar() {
                             New Cars PDI ▾
                         </button>
                         <div
-                            className={`
-        absolute left-0 top-full pt-3 w-64
-        transition-all duration-200
-        ${openNewCars
-                                    ? "opacity-100 visible"
-                                    : "opacity-0 invisible"
-                                }
-    `}
+                            className={`absolute left-0 top-full pt-3 w-64 transition-all duration-200 ${openNewCars
+                                ? "opacity-100 visible translate-y-0"
+                                : "opacity-0 invisible translate-y-2"
+                                }`}
                         >
 
                             <div className="bg-white/90 backdrop-blur-xl border border-white/40 shadow-xl rounded-2xl p-2">
@@ -75,7 +75,11 @@ export default function Navbar() {
                     </div>
 
                     {/* USED CARS */}
-                    <div className="relative group">
+                    <div
+                        className="relative group"
+                        onMouseEnter={() => setOpenUsedCars(true)}
+                        onMouseLeave={() => setOpenUsedCars(false)}
+                    >
                         <button
                             onClick={() => {
                                 setOpenUsedCars(!openUsedCars);
@@ -88,11 +92,11 @@ export default function Navbar() {
 
                         <div
                             className={`
-        absolute left-0 top-full pt-3 w-64
+        absolute right-0 top-full pt-3 w-64
         transition-all duration-200
         ${openUsedCars
-                                    ? "opacity-100 visible"
-                                    : "opacity-0 invisible"
+                                    ? "opacity-100 visible translate-y-0"
+                                    : "opacity-0 invisible translate-y-2"
                                 }
     `}
                         >
@@ -281,7 +285,7 @@ export default function Navbar() {
                         </Link>
 
                         <Link
-                            href="/info/how-it-works"
+                            href="/how-it-works"
                             onClick={() => setOpenMenu(false)}
                             className="block py-3 font-semibold"
                         >
