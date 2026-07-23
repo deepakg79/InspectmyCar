@@ -312,7 +312,7 @@ export default function Navbar() {
                         </Link>
 
                         <Link
-                            href="/info/how-it-works"
+                            href="/how-it-works"
                             onClick={() => setOpenMenu(false)}
                             className="block py-3 font-semibold"
                         >
@@ -320,7 +320,7 @@ export default function Navbar() {
                         </Link>
 
                         <Link
-                            href="/info/pricing"
+                            href="/pricing"
                             onClick={() => setOpenMenu(false)}
                             className="block py-3 font-semibold"
                         >
