@@ -49,7 +49,11 @@ export default function Navbar() {
                 >
 
                     {/* NEW CARS */}
-                    <div className="relative group">
+                    <div
+                        className="relative group"
+                        onMouseEnter={() => setOpenNewCars(true)}
+                        onMouseLeave={() => setOpenNewCars(false)}
+                    >
                         <button
                             onClick={() => {
                                 setOpenNewCars(!openNewCars);
@@ -64,8 +68,8 @@ export default function Navbar() {
         absolute left-0 top-full pt-3 w-64
         transition-all duration-200
         ${openNewCars
-                                    ? "opacity-100 visible"
-                                    : "opacity-0 invisible"
+                                    ? "opacity-100 visible translate-y-0"
+                                    : "opacity-0 invisible translate-y-2"
                                 }
     `}
                         >
@@ -98,7 +102,11 @@ export default function Navbar() {
                     </div>
 
                     {/* USED CARS */}
-                    <div className="relative group">
+                    <div
+                        className="relative group"
+                        onMouseEnter={() => setOpenUsedCars(true)}
+                        onMouseLeave={() => setOpenUsedCars(false)}
+                    >
                         <button
                             onClick={() => {
                                 setOpenUsedCars(!openUsedCars);
@@ -114,8 +122,8 @@ export default function Navbar() {
         absolute left-0 top-full pt-3 w-64
         transition-all duration-200
         ${openUsedCars
-                                    ? "opacity-100 visible"
-                                    : "opacity-0 invisible"
+                                    ? "opacity-100 visible translate-y-0"
+                                    : "opacity-0 invisible translate-y-2"
                                 }
     `}
                         >
