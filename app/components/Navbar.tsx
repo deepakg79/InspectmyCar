@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import ReadingProgress from "@/app/components/blog/ReadingProgress";
 export default function Navbar() {
@@ -9,26 +9,6 @@ export default function Navbar() {
     const [openNewCars, setOpenNewCars] = useState(false);
 
     const [openUsedCars, setOpenUsedCars] = useState(false);
-    const dropdownRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        function handlePointerDown(event: PointerEvent) {
-            if (
-                dropdownRef.current &&
-                !dropdownRef.current.contains(event.target as Node)
-            ) {
-                setOpenNewCars(false);
-                setOpenUsedCars(false);
-            }
-        }
-
-        document.addEventListener("pointerdown", handlePointerDown);
-
-        return () => {
-            document.removeEventListener("pointerdown", handlePointerDown);
-        };
-    }, []);
-
 
     return (
         <nav className="fixed top-0 w-full z-[100] bg-white/70 backdrop-blur-xl border-b border-white/40 shadow-sm">
@@ -43,17 +23,10 @@ export default function Navbar() {
                 </Link>
 
                 {/* DESKTOP NAV */}
-                <div
-                    ref={dropdownRef}
-                    className="hidden md:flex items-center gap-10 text-sm font-bold text-slate-700"
-                >
+                <div className="hidden md:flex items-center gap-10 text-sm font-bold text-slate-700">
 
                     {/* NEW CARS */}
-                    <div
-                        className="relative group"
-                        onMouseEnter={() => setOpenNewCars(true)}
-                        onMouseLeave={() => setOpenNewCars(false)}
-                    >
+                    <div className="relative group">
                         <button
                             onClick={() => {
                                 setOpenNewCars(!openNewCars);
@@ -65,11 +38,11 @@ export default function Navbar() {
                         </button>
                         <div
                             className={`
-        absolute right-0 top-full pt-3 w-64 max-w-[90vw]
+        absolute left-0 top-full pt-3 w-64
         transition-all duration-200
         ${openNewCars
-                                    ? "opacity-100 visible translate-y-0"
-                                    : "opacity-0 invisible translate-y-2"
+                                    ? "opacity-100 visible"
+                                    : "opacity-0 invisible"
                                 }
     `}
                         >
@@ -102,11 +75,7 @@ export default function Navbar() {
                     </div>
 
                     {/* USED CARS */}
-                    <div
-                        className="relative group"
-                        onMouseEnter={() => setOpenUsedCars(true)}
-                        onMouseLeave={() => setOpenUsedCars(false)}
-                    >
+                    <div className="relative group">
                         <button
                             onClick={() => {
                                 setOpenUsedCars(!openUsedCars);
@@ -119,11 +88,11 @@ export default function Navbar() {
 
                         <div
                             className={`
-       absolute right-0 top-full pt-3 w-64 md:w-64 max-w-[90vw]
+        absolute left-0 top-full pt-3 w-64
         transition-all duration-200
         ${openUsedCars
-                                    ? "opacity-100 visible translate-y-0"
-                                    : "opacity-0 invisible translate-y-2"
+                                    ? "opacity-100 visible"
+                                    : "opacity-0 invisible"
                                 }
     `}
                         >
