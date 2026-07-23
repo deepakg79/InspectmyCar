@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import ReadingProgress from "@/app/components/blog/ReadingProgress";
 export default function Navbar() {
@@ -9,6 +9,33 @@ export default function Navbar() {
     const [openNewCars, setOpenNewCars] = useState(false);
 
     const [openUsedCars, setOpenUsedCars] = useState(false);
+    const menuRef = useRef<HTMLDivElement>(null);
+
+    const buttonRef = useRef<HTMLButtonElement>(null);
+
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent | TouchEvent) {
+            const target = event.target as Node;
+
+            if (
+                openMenu &&
+                menuRef.current &&
+                !menuRef.current.contains(target) &&
+                buttonRef.current &&
+                !buttonRef.current.contains(target)
+            ) {
+                setOpenMenu(false);
+            }
+        }
+
+        document.addEventListener("mousedown", handleClickOutside);
+        document.addEventListener("touchstart", handleClickOutside);
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+            document.removeEventListener("touchstart", handleClickOutside);
+        };
+    }, [openMenu]);
 
     return (
         <nav className="fixed top-0 w-full z-[100] bg-white/70 backdrop-blur-xl border-b border-white/40 shadow-sm">
@@ -133,6 +160,7 @@ export default function Navbar() {
 
                 {/* MOBILE MENU BUTTON */}
                 <button
+                    ref={buttonRef}
                     className="md:hidden text-2xl"
                     onClick={() => setOpenMenu(!openMenu)}
                 >
@@ -142,7 +170,10 @@ export default function Navbar() {
 
             {/* MOBILE MENU */}
             {openMenu && (
-                <div className="md:hidden px-6 pb-6">
+                <div
+                    ref={menuRef}
+                    className="md:hidden px-6 pb-6"
+                >
 
                     <div className="mt-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-xl">
 
