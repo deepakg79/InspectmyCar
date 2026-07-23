@@ -15,16 +15,7 @@ export default function Navbar() {
         function handlePointerDown(event: PointerEvent) {
             const target = event.target as Node;
 
-            // Close desktop dropdowns
-            if (
-                dropdownRef.current &&
-                !dropdownRef.current.contains(target)
-            ) {
-                setOpenNewCars(false);
-                setOpenUsedCars(false);
-            }
-
-            // Close mobile menu
+            // Close only the mobile menu
             if (
                 mobileMenuRef.current &&
                 !mobileMenuRef.current.contains(target)
@@ -32,7 +23,6 @@ export default function Navbar() {
                 setOpenMenu(false);
             }
         }
-
         document.addEventListener("pointerdown", handlePointerDown);
 
         return () => {
@@ -171,185 +161,185 @@ export default function Navbar() {
             </div>
 
             {/* MOBILE MENU */}
-            <div ref={mobileMenuRef} className="md:hidden">
-                <div ref={mobileMenuRef} className="md:hidden relative">
-                    <button
-                        className="text-2xl"
-                        onClick={() => setOpenMenu(!openMenu)}
-                    >
-                        {openMenu ? "✕" : "☰"}
-                    </button>
 
-                    {openMenu && (
-                        <div className="absolute top-14 right-0 w-[calc(100vw-3rem)] max-w-sm">
-                            {/* move your existing mobile menu content here */}
-                        </div>
-                    )}
-                </div>
+            <div ref={mobileMenuRef} className="md:hidden relative">
+                <button
+                    className="text-2xl"
+                    onClick={() => setOpenMenu(!openMenu)}
+                >
+                    {openMenu ? "✕" : "☰"}
+                </button>
+
                 {openMenu && (
-                    <div className="md:hidden px-6 pb-6">
-
-                        <div className="mt-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-xl">
-
-                            <div className="rounded-2xl border border-slate-200">
-
-                                <button
-                                    onClick={() => {
-                                        setOpenNewCars(!openNewCars);
-                                        setOpenUsedCars(false);
-                                    }}
-                                    className="w-full flex items-center justify-between p-5 hover:bg-indigo-50 transition"
-                                >
-
-                                    <div>
-
-                                        <p className="font-black text-xl text-slate-900">
-                                            🚗 New Cars
-                                        </p>
-
-                                        <p className="text-sm text-slate-500">
-                                            Pre-Delivery Inspection
-                                        </p>
-
-                                    </div>
-
-                                    <span>
-
-                                        {openNewCars ? "−" : "+"}
-
-                                    </span>
-
-                                </button>
-
-                                {openNewCars && (
-
-                                    <div className="pb-4 px-5 space-y-2">
-
-                                        <Link
-                                            href="/new-cars/pdi-pune"
-                                            onClick={() => setOpenMenu(false)}
-                                            className="block rounded-xl px-4 py-3 hover:bg-indigo-50"
-                                        >
-                                            🚗 PDI Pune
-                                        </Link>
-
-                                        <Link
-                                            href="/new-cars/checklist"
-                                            onClick={() => setOpenMenu(false)}
-                                            className="block rounded-xl px-4 py-3 hover:bg-indigo-50"
-                                        >
-                                            📋 PDI Checklist
-                                        </Link>
-
-                                        <Link
-                                            href="/new-cars/buying-guide"
-                                            onClick={() => setOpenMenu(false)}
-                                            className="block rounded-xl px-4 py-3 hover:bg-indigo-50"
-                                        >
-                                            ⚠️ Buying Guide
-                                        </Link>
-
-                                    </div>
-
-                                )}
-
-                            </div>
-
-                            <div className="mt-3 rounded-2xl border border-slate-200">
-
-                                <button
-                                    onClick={() => {
-                                        setOpenUsedCars(!openUsedCars);
-                                        setOpenNewCars(false);
-                                    }}
-                                    className="w-full flex items-center justify-between p-5 hover:bg-pink-50 transition"
-                                >
-
-                                    <div>
-
-                                        <p className="font-black text-xl text-slate-900">
-                                            🚙 Used Cars
-                                        </p>
-
-                                        <p className="text-sm text-slate-500">
-                                            Pre-Purchase Inspection
-                                        </p>
-
-                                    </div>
-
-                                    <span>
-
-                                        {openUsedCars ? "−" : "+"}
-
-                                    </span>
-
-                                </button>
-
-                                {openUsedCars && (
-
-                                    <div className="pb-4 px-5 space-y-2">
-
-                                        <Link
-                                            href="/used-cars/pdi-pune"
-                                            onClick={() => setOpenMenu(false)}
-                                            className="block rounded-xl px-4 py-3 hover:bg-pink-50"
-                                        >
-                                            🚙 PDI Pune
-                                        </Link>
-
-                                        <Link
-                                            href="/used-cars/checklist"
-                                            onClick={() => setOpenMenu(false)}
-                                            className="block rounded-xl px-4 py-3 hover:bg-pink-50"
-                                        >
-                                            📋 Checklist
-                                        </Link>
-
-                                        <Link
-                                            href="/used-cars/buying-guide"
-                                            onClick={() => setOpenMenu(false)}
-                                            className="block rounded-xl px-4 py-3 hover:bg-pink-50"
-                                        >
-                                            ⚠️ Buying Guide
-                                        </Link>
-
-                                    </div>
-
-                                )}
-
-                            </div>
-
-                            <div className="my-5 border-t" />
-
-                            <Link
-                                href="/faqs"
-                                onClick={() => setOpenMenu(false)}
-                                className="block py-3 font-semibold"
-                            >
-                                FAQs
-                            </Link>
-
-                            <Link
-                                href="/info/how-it-works"
-                                onClick={() => setOpenMenu(false)}
-                                className="block py-3 font-semibold"
-                            >
-                                How It Works
-                            </Link>
-
-                            <Link
-                                href="/info/pricing"
-                                onClick={() => setOpenMenu(false)}
-                                className="block py-3 font-semibold"
-                            >
-                                Pricing
-                            </Link>
-
-                        </div>
-
+                    <div className="absolute top-14 right-0 w-[calc(100vw-3rem)] max-w-sm">
+                        {/* move your existing mobile menu content here */}
                     </div>
                 )}
             </div>
+            {openMenu && (
+                <div className="md:hidden px-6 pb-6">
+
+                    <div className="mt-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-xl">
+
+                        <div className="rounded-2xl border border-slate-200">
+
+                            <button
+                                onClick={() => {
+                                    setOpenNewCars(!openNewCars);
+                                    setOpenUsedCars(false);
+                                }}
+                                className="w-full flex items-center justify-between p-5 hover:bg-indigo-50 transition"
+                            >
+
+                                <div>
+
+                                    <p className="font-black text-xl text-slate-900">
+                                        🚗 New Cars
+                                    </p>
+
+                                    <p className="text-sm text-slate-500">
+                                        Pre-Delivery Inspection
+                                    </p>
+
+                                </div>
+
+                                <span>
+
+                                    {openNewCars ? "−" : "+"}
+
+                                </span>
+
+                            </button>
+
+                            {openNewCars && (
+
+                                <div className="pb-4 px-5 space-y-2">
+
+                                    <Link
+                                        href="/new-cars/pdi-pune"
+                                        onClick={() => setOpenMenu(false)}
+                                        className="block rounded-xl px-4 py-3 hover:bg-indigo-50"
+                                    >
+                                        🚗 PDI Pune
+                                    </Link>
+
+                                    <Link
+                                        href="/new-cars/checklist"
+                                        onClick={() => setOpenMenu(false)}
+                                        className="block rounded-xl px-4 py-3 hover:bg-indigo-50"
+                                    >
+                                        📋 PDI Checklist
+                                    </Link>
+
+                                    <Link
+                                        href="/new-cars/buying-guide"
+                                        onClick={() => setOpenMenu(false)}
+                                        className="block rounded-xl px-4 py-3 hover:bg-indigo-50"
+                                    >
+                                        ⚠️ Buying Guide
+                                    </Link>
+
+                                </div>
+
+                            )}
+
+                        </div>
+
+                        <div className="mt-3 rounded-2xl border border-slate-200">
+
+                            <button
+                                onClick={() => {
+                                    setOpenUsedCars(!openUsedCars);
+                                    setOpenNewCars(false);
+                                }}
+                                className="w-full flex items-center justify-between p-5 hover:bg-pink-50 transition"
+                            >
+
+                                <div>
+
+                                    <p className="font-black text-xl text-slate-900">
+                                        🚙 Used Cars
+                                    </p>
+
+                                    <p className="text-sm text-slate-500">
+                                        Pre-Purchase Inspection
+                                    </p>
+
+                                </div>
+
+                                <span>
+
+                                    {openUsedCars ? "−" : "+"}
+
+                                </span>
+
+                            </button>
+
+                            {openUsedCars && (
+
+                                <div className="pb-4 px-5 space-y-2">
+
+                                    <Link
+                                        href="/used-cars/pdi-pune"
+                                        onClick={() => setOpenMenu(false)}
+                                        className="block rounded-xl px-4 py-3 hover:bg-pink-50"
+                                    >
+                                        🚙 PDI Pune
+                                    </Link>
+
+                                    <Link
+                                        href="/used-cars/checklist"
+                                        onClick={() => setOpenMenu(false)}
+                                        className="block rounded-xl px-4 py-3 hover:bg-pink-50"
+                                    >
+                                        📋 Checklist
+                                    </Link>
+
+                                    <Link
+                                        href="/used-cars/buying-guide"
+                                        onClick={() => setOpenMenu(false)}
+                                        className="block rounded-xl px-4 py-3 hover:bg-pink-50"
+                                    >
+                                        ⚠️ Buying Guide
+                                    </Link>
+
+                                </div>
+
+                            )}
+
+                        </div>
+
+                        <div className="my-5 border-t" />
+
+                        <Link
+                            href="/faqs"
+                            onClick={() => setOpenMenu(false)}
+                            className="block py-3 font-semibold"
+                        >
+                            FAQs
+                        </Link>
+
+                        <Link
+                            href="/info/how-it-works"
+                            onClick={() => setOpenMenu(false)}
+                            className="block py-3 font-semibold"
+                        >
+                            How It Works
+                        </Link>
+
+                        <Link
+                            href="/info/pricing"
+                            onClick={() => setOpenMenu(false)}
+                            className="block py-3 font-semibold"
+                        >
+                            Pricing
+                        </Link>
+
+                    </div>
+
+                </div>
+            )}
+
             <ReadingProgress />
         </nav>
     );
