@@ -320,7 +320,7 @@ export default function Navbar() {
                         </Link>
 
                         <Link
-                            href="/pricing"
+                            href="/info/pricing"
                             onClick={() => setOpenMenu(false)}
                             className="block py-3 font-semibold"
                         >
