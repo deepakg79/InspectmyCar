@@ -155,11 +155,11 @@ export default function Footer() {
                                     FAQs
                                 </Link>
                             </li>
-                            <li>
+                            {/* <li>
                                 <Link href="/blogs" className="hover:text-indigo-600">
                                     Blogs
                                 </Link>
-                            </li>
+                            </li> */}
                         </ul>
                     </div>
 
@@ -248,14 +248,14 @@ export default function Footer() {
 
                         </Link>
 
-                        <Link
+                        {/* <Link
                             href="/blogs"
                             className="text-slate-400 transition hover:text-black"
                         >
 
                             Blogs
 
-                        </Link>
+                        </Link> */}
 
                         <Link
                             href="/faqs"
