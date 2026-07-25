@@ -168,7 +168,7 @@ export default function Navbar() {
                 </button>
             </div>
 
-            {/* MOBILE MENU */}
+            {/* MOBILE MENU UI */}
             {openMenu && (
                 <div
                     ref={menuRef}
