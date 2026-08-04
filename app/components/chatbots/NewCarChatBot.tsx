@@ -616,16 +616,39 @@ export default function ChatBot({ forceOpen, setForceOpen, initialPlan }: ChatBo
 
                             {/* Estimated Fee */}
                             {form.price > 0 && (
-                                <div className="bg-slate-900 p-6 rounded-[2rem] text-white flex justify-between items-center mb-8 relative overflow-hidden group">
-                                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                                    <div className="relative z-10">
-                                        <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Estimated Fee</p>
-                                        <p className="text-xs font-bold text-indigo-400">Pay on-site</p>
+                                <div className="mb-8">
+                                    <div className="bg-slate-900 p-6 rounded-[2rem] text-white flex justify-between items-center relative overflow-hidden group">
+                                        <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                        <div className="relative z-10">
+                                            <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Estimated Fee</p>
+                                            <p className="text-xs font-bold text-indigo-400">Pay on-site</p>
+                                        </div>
+                                        <span className="text-3xl font-black relative z-10">₹{form.price}</span>
                                     </div>
-                                    <span className="text-3xl font-black relative z-10">₹{form.price}</span>
+
+                                    {/* Clean Card Layout for Other Cities */}
+                                    <p className="mt-2.5 text-[10px] text-slate-400 text-center">
+                                        * Above standard charges apply for Pune City only.
+                                    </p>
+                                    <div className="mt-4 p-4 rounded-2xl bg-slate-50 border border-slate-100">
+
+                                        <div className="text-[11px] font-bold text-slate-700 mb-2">
+                                            Other Cities Pricing:
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-2 text-center">
+                                            <div className="bg-white p-2.5 rounded-xl border border-slate-200">
+                                                <span className="block text-[9px] font-black uppercase tracking-wider text-slate-400">Petrol / Diesel / CNG</span>
+                                                <span className="font-black text-slate-800 text-sm">₹1999</span>
+                                            </div>
+                                            <div className="bg-white p-2.5 rounded-xl border border-slate-200">
+                                                <span className="block text-[9px] font-black uppercase tracking-wider text-slate-400">Electric Car</span>
+                                                <span className="font-black text-slate-800 text-sm">₹2199</span>
+                                            </div>
+                                        </div>
+
+                                    </div>
                                 </div>
                             )}
-
                             {/* Date & Slot Selection */}
                             <div className="mb-8">
                                 <div className="text-[10px] font-black uppercase text-slate-400 mb-4 tracking-[0.2em] px-1 flex justify-between items-center">

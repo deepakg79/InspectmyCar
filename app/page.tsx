@@ -7,7 +7,6 @@ import { useBooking } from "@/app/context/BookingContext";
 const CITIES = [
     { name: "Pune", badge: "🚗 Independent Vehicle Inspection Experts in Pune" },
     { name: "Kolhapur", badge: "🚗 Independent Vehicle Inspection Experts in Kolhapur" },
-    { name: "Satara", badge: "🚗 Independent Vehicle Inspection Experts in Satara" },
     { name: "Mumbai", badge: "🚗 Independent Vehicle Inspection Experts in Mumbai" },
     { name: "Nashik", badge: "🚗 Independent Vehicle Inspection Experts in Nashik" },
 ];

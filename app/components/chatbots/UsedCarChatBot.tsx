@@ -364,7 +364,7 @@ export default function UsedCarChatBot({
                 <div className="absolute bottom-20 right-0 bg-white/95 backdrop-blur-xl p-6 rounded-[2.5rem] shadow-[0_30px_100px_-20px_rgba(0,0,0,0.4)] w-[350px] md:w-[420px] border border-white/50 max-h-[85vh] overflow-y-auto no-scrollbar animate-in slide-in-from-bottom-12 zoom-in-95 duration-500">
 
                     {formError && (
-                        <div className="bg-red-50 border border-red-200 text-red-600 p-3 rounded-xl text-sm">
+                        <div className="bg-red-50 border border-red-200 text-red-600 p-3 rounded-xl text-sm mb-4">
                             {formError}
                         </div>
                     )}
@@ -379,7 +379,7 @@ export default function UsedCarChatBot({
                         </div>
                     </div>
                     {/* PERSONAL */}
-                    <div className="space-y-1 mb-2">
+                    <div className="space-y-1 mb-6">
                         <div className="grid grid-cols-1 gap-2">
 
                             <div className="relative group">
@@ -443,7 +443,6 @@ export default function UsedCarChatBot({
                         </div>
                     </div>
 
-                    {/* VEHICLE */}
                     {/* VEHICLE */}
                     <Section title="Vehicle Details">
                         <div className="grid grid-cols-2 gap-3">
@@ -510,6 +509,23 @@ export default function UsedCarChatBot({
 
                         </div>
                     </Section>
+                    {/* PRICE */}
+                    <div className="my-6 p-5 rounded-2xl bg-slate-50 border border-slate-100">
+                        <div className="flex justify-between items-center">
+                            <div>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Estimated Inspection Fee</p>
+                                <p className="text-xs font-medium text-slate-500">Pune City</p>
+                            </div>
+                            <div className="text-3xl font-black text-indigo-600">
+                                ₹{estimatedPrice}
+                            </div>
+                        </div>
+
+                        <div className="mt-4 pt-4 border-t border-slate-200/60 flex justify-between items-center text-xs">
+                            <span className="font-bold text-slate-700">Other Cities:</span>
+                            <span className="font-bold text-slate-800 bg-white px-3 py-1.5 rounded-xl border border-slate-200">₹2299</span>
+                        </div>
+                    </div>
 
                     {/* SCHEDULE */}
                     <Section title="Schedule">
@@ -593,33 +609,21 @@ export default function UsedCarChatBot({
 
                     </Section>
 
-                    {/* PRICE */}
-                    <div className="rounded-2xl bg-gradient-to-r from-indigo-600 to-violet-600 p-4 text-white">
-
-                        <div className="text-xs opacity-80">
-                            Estimated Inspection Fee
-                        </div>
-
-                        <div className="text-3xl font-bold">
-                            ₹{estimatedPrice}
-                        </div>
-
-                    </div>
-
                     {/* NOTES */}
                     <textarea
                         name="message"
                         value={form.message}
                         onChange={handleChange}
                         placeholder="Notes"
-                        className="w-full border p-2 rounded-xl"
+                        className="w-full border-2 border-slate-50 p-4 rounded-2xl bg-slate-50/50 outline-none focus:border-indigo-500 focus:bg-white font-bold transition-all text-sm resize-none mb-6"
+                        rows={3}
                     />
 
                     {/* SUBMIT */}
                     <button
                         onClick={handleSubmit}
                         disabled={loading}
-                        className="w-full bg-indigo-600 text-white py-4 rounded-xl font-black"
+                        className="w-full bg-gradient-to-r from-indigo-600 to-violet-600 text-white py-4 rounded-2xl font-black shadow-xl shadow-indigo-300/30 transition-all hover:scale-[1.02]"
                     >
                         {loading ? "Booking..." : "Confirm Booking"}
                     </button>
@@ -630,7 +634,6 @@ export default function UsedCarChatBot({
         </div >
     );
 }
-
 /* HELPERS */
 function Input(props: any) {
     return <input {...props} className="border p-2 rounded-xl w-full" />;
