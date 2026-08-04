@@ -1,10 +1,20 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useBooking } from "@/app/context/BookingContext";
 
 export default function Home() {
   const { openNewCarBooking } = useBooking();
+  const [selectedCity, setSelectedCity] = useState("Pune");
+
+  // Load saved city from localStorage on mount
+  useEffect(() => {
+    const savedCity = localStorage.getItem("selectedCity");
+    if (savedCity) {
+      setSelectedCity(savedCity);
+    }
+  }, []);
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-gradient-to-b from-slate-50 via-white to-indigo-50/40 text-slate-900">
@@ -47,7 +57,7 @@ export default function Home() {
               </span>
 
               <span className="text-xs font-black uppercase tracking-[0.25em] text-indigo-700">
-                Pune • Live Booking Open
+                {selectedCity} • Live Booking Open
               </span>
 
             </div>
@@ -72,7 +82,7 @@ export default function Home() {
               Independent 299+ point Pre-Delivery Inspection that
               uncovers transport damage, repaint jobs,
               manufacturing defects and hidden electronic issues
-              before you accept delivery.
+              before you accept delivery in {selectedCity}.
 
             </p>
 
@@ -82,7 +92,7 @@ export default function Home() {
                 onClick={() => openNewCarBooking()}
                 className="group rounded-2xl bg-gradient-to-r from-indigo-600 to-violet-600 px-8 py-5 font-bold text-white shadow-2xl shadow-indigo-300/40 transition-all duration-300 hover:-translate-y-1 hover:scale-[1.03]"
               >
-                Book PDI
+                Book PDI in {selectedCity}
                 <span className="ml-2 inline-block transition group-hover:translate-x-1">
                   →
                 </span>
@@ -158,7 +168,7 @@ export default function Home() {
                     </h3>
 
                     <p className="mt-2 text-sm text-slate-600">
-                      Identify transport damage, paint defects, and hidden issues before signing the delivery documents with a comprehensive 299+ point inspection.
+                      Identify transport damage, paint defects, and hidden issues before signing the delivery documents with a comprehensive 299+ point inspection in {selectedCity}.
                     </p>
 
                   </div>
@@ -258,7 +268,7 @@ export default function Home() {
               Every inspection combines professional expertise,
               specialized diagnostic equipment and a meticulous
               299+ point checklist to ensure your new car is
-              delivered exactly as it should be.
+              delivered exactly as it should be in {selectedCity}.
             </p>
 
           </div>
@@ -354,7 +364,7 @@ export default function Home() {
               Even a brand-new car can have transport damage, repaint work,
               electrical faults or missing accessories. A professional
               Pre-Delivery Inspection ensures these issues are identified before
-              you take delivery.
+              you take delivery in {selectedCity}.
             </p>
 
           </div>
@@ -449,7 +459,7 @@ export default function Home() {
                   {
                     step: "01",
                     title: "Book Your Slot",
-                    desc: "Choose your preferred date, dealership and inspection slot online.",
+                    desc: `Choose your preferred date, dealership in ${selectedCity} and inspection slot online.`,
                   },
                   {
                     step: "02",
@@ -673,7 +683,7 @@ export default function Home() {
             <div className="p-12 lg:p-16 text-white">
 
               <span className="inline-flex rounded-full bg-white/15 px-5 py-2 text-xs font-black uppercase tracking-[0.3em] backdrop-blur-xl">
-                Book Your Inspection
+                Book Your Inspection in {selectedCity}
               </span>
 
               <h2 className="mt-8 text-5xl lg:text-6xl font-black leading-tight">
@@ -687,7 +697,7 @@ export default function Home() {
               <p className="mt-8 text-lg leading-8 text-white/85 max-w-xl">
                 For less than the cost of a single dealership accessory,
                 ensure your vehicle is free from hidden defects, repaint
-                work and manufacturing issues before delivery.
+                work and manufacturing issues before delivery in {selectedCity}.
               </p>
               <div className="mt-10 flex flex-col gap-3">
 
@@ -773,7 +783,7 @@ export default function Home() {
                     onClick={() => openNewCarBooking("Standard")}
                     className="rounded-2xl bg-gradient-to-r from-indigo-600 to-violet-600 px-8 py-5 text-lg font-bold text-white shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
                   >
-                    Book PDI Now →
+                    Book PDI in {selectedCity} →
                   </button>
 
                   <Link

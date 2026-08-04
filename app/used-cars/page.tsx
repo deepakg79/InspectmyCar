@@ -1,10 +1,20 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useBooking } from "@/app/context/BookingContext";
 
 export default function UsedCarsPage() {
     const { openUsedCarBooking } = useBooking();
+    const [selectedCity, setSelectedCity] = useState("Pune");
+
+    // Load saved city from localStorage on mount
+    useEffect(() => {
+        const savedCity = localStorage.getItem("selectedCity");
+        if (savedCity) {
+            setSelectedCity(savedCity);
+        }
+    }, []);
 
     return (
         <main className="relative min-h-screen overflow-hidden bg-gradient-to-b from-slate-50 via-white to-pink-50/40 text-slate-900">
@@ -49,7 +59,7 @@ export default function UsedCarsPage() {
                             </span>
 
                             <span className="text-xs font-black uppercase tracking-[0.25em] text-pink-600">
-                                Pune • Used Car Inspection
+                                {selectedCity} • Used Car Inspection
                             </span>
 
                         </div>
@@ -75,7 +85,7 @@ export default function UsedCarsPage() {
                             Our independent Pre-Purchase Inspection uncovers
                             hidden accident repairs, flood damage, engine
                             issues, odometer tampering and expensive
-                            mechanical faults before you pay.
+                            mechanical faults before you pay in {selectedCity}.
 
                         </p>
 
@@ -85,7 +95,7 @@ export default function UsedCarsPage() {
                                 onClick={() => openUsedCarBooking("Standard")}
                                 className="group rounded-2xl bg-gradient-to-r from-pink-500 via-violet-600 to-indigo-600 px-8 py-5 font-bold text-white shadow-2xl shadow-pink-300/40 transition-all duration-300 hover:-translate-y-1 hover:scale-[1.03]"
                             >
-                                Book Inspection
+                                Book Inspection in {selectedCity}
 
                                 <span className="ml-2 inline-block transition group-hover:translate-x-1">
                                     →
@@ -141,17 +151,6 @@ export default function UsedCarsPage() {
                         <div className="absolute -inset-8 rounded-[3rem] bg-gradient-to-r from-pink-500/20 to-indigo-500/20 blur-3xl" />
 
                         <div className="relative overflow-hidden rounded-[3rem] border border-white bg-white p-4 shadow-[0_30px_80px_rgba(0,0,0,0.15)]">
-                            {/* <img
-    src="/used-car-mobile.jpg"
-    alt="Used Car Inspection"
-    className="block lg:hidden h-[320px] w-full rounded-[2rem] object-cover"
-/>
-
-<img
-    src="/used-car1.jpg"
-    alt="Used Car Inspection"
-    className="hidden lg:block h-[650px] w-full rounded-[2.3rem] object-cover transition duration-700 hover:scale-105"
-/> */}
                             <img
                                 src="/used-car1.jpg"
                                 alt="Used Car Inspection"
@@ -173,7 +172,7 @@ export default function UsedCarsPage() {
                                         </h3>
 
                                         <p className="mt-2 text-sm text-slate-600">
-                                            Identify hidden defects, accident repairs, and mechanical issues before closing the deal.
+                                            Identify hidden defects, accident repairs, and mechanical issues before closing the deal in {selectedCity}.
                                         </p>
 
                                     </div>
@@ -266,7 +265,7 @@ export default function UsedCarsPage() {
                         </span>
 
                         <h2 className="mt-8 text-5xl font-black tracking-tight text-slate-900">
-                            Buy With Confidence,
+                            Buy With Confidence in {selectedCity},
                             <br />
                             Not Guesswork.
                         </h2>
@@ -459,7 +458,7 @@ export default function UsedCarsPage() {
                                     {
                                         step: "02",
                                         title: "Inspector Visits",
-                                        desc: "Our expert reaches the seller or dealership with professional inspection equipment.",
+                                        desc: `Our expert reaches the seller or dealership in ${selectedCity} with professional inspection equipment.`,
                                     },
                                     {
                                         step: "03",
@@ -628,7 +627,7 @@ export default function UsedCarsPage() {
                         {[
                             {
                                 q: "Can you inspect a car at the seller's location?",
-                                a: "Yes. We inspect vehicles at dealerships, private sellers' locations, offices or residences across Pune.",
+                                a: `Yes. We inspect vehicles at dealerships, private sellers' locations, offices or residences across ${selectedCity}.`,
                             },
                             {
                                 q: "How long does the inspection take?",
@@ -678,7 +677,7 @@ export default function UsedCarsPage() {
                         <div className="min-w-0 p-5 sm:p-8 lg:p-16 text-white">
 
                             <span className="inline-flex rounded-full bg-white/15 px-5 py-2 text-xs font-black uppercase tracking-[0.3em] backdrop-blur-xl">
-                                Ready to Buy?
+                                Ready to Buy in {selectedCity}?
                             </span>
 
                             <h2 className="mt-8 text-5xl lg:text-6xl font-black leading-tight">
@@ -692,7 +691,7 @@ export default function UsedCarsPage() {
                             <p className="mt-8 max-w-xl text-lg leading-8 text-white/85">
                                 Hidden accident repairs, engine issues,
                                 odometer fraud and flood damage can cost you
-                                thousands after purchase. Inspect first,
+                                thousands after purchase in {selectedCity}. Inspect first,
                                 buy with confidence.
                             </p>
 
@@ -709,98 +708,55 @@ export default function UsedCarsPage() {
 
                                     <div
                                         key={item}
-                                        className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur-xl"
+                                        className="flex items-center gap-3 text-white/90 font-semibold"
                                     >
-                                        <span className="text-green-400 text-lg">✓</span>
-
-                                        <span className="text-sm font-medium">
-                                            {item}
-                                        </span>
+                                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-white/20 text-xs text-white">
+                                            ✓
+                                        </div>
+                                        <span>{item}</span>
                                     </div>
 
                                 ))}
 
                             </div>
 
+                            <div className="mt-12 flex flex-wrap gap-5">
+                                <button
+                                    onClick={() => openUsedCarBooking("Standard")}
+                                    className="rounded-2xl bg-white px-10 py-5 font-black text-slate-900 shadow-2xl transition hover:bg-slate-100 hover:scale-105"
+                                >
+                                    Book Inspection in {selectedCity}
+                                </button>
+                                <a
+                                    href="tel:+919975934213"
+                                    className="rounded-2xl border border-white/30 bg-white/10 px-10 py-5 font-black text-white backdrop-blur-xl transition hover:bg-white/20"
+                                >
+                                    📞 Call Expert
+                                </a>
+                            </div>
+
                         </div>
 
                         {/* RIGHT */}
 
-                        <div className="min-w-0 bg-white p-5 sm:p-8 lg:p-16">
-
-                            <div className="w-full rounded-[2rem] border border-slate-200 bg-slate-50 p-5 sm:p-8 lg:p-10">
-
-                                <p className="text-sm font-black uppercase tracking-[0.3em] text-pink-600">
-                                    Inspection Starts From
+                        <div className="relative p-6 lg:p-16 flex items-center justify-center">
+                            <div className="relative w-full max-w-md rounded-[2.5rem] border border-white/20 bg-white/10 p-8 backdrop-blur-2xl shadow-2xl">
+                                <div className="text-4xl">🚙</div>
+                                <h3 className="mt-6 text-3xl font-black text-white">
+                                    Used Car Inspection in {selectedCity}
+                                </h3>
+                                <p className="mt-4 text-white/80 leading-relaxed">
+                                    Get professional on-site inspection for any used car across {selectedCity} and surrounding areas.
                                 </p>
-
-                                <div className="mt-4 flex items-end gap-2">
-
-                                    <span className="text-6xl font-black text-slate-900">
+                                <div className="mt-8 pt-6 border-t border-white/15 flex items-center justify-between">
+                                    <span className="text-xs uppercase tracking-widest text-white/70 font-bold">
+                                        Starts from
+                                    </span>
+                                    <span className="text-2xl font-black text-white">
                                         ₹1,999
                                     </span>
-
-                                    <span className="pb-3 text-slate-500">
-                                        onwards
-                                    </span>
-
                                 </div>
-
-                                <div className="mt-10 space-y-4">
-
-                                    {[
-                                        "Certified Inspection Engineer",
-                                        "At Seller / Dealership",
-                                        "Digital Inspection Report",
-                                        "Price Negotiation Support",
-                                    ].map((item) => (
-
-                                        <div
-                                            key={item}
-                                            className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4"
-                                        >
-
-                                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600 font-bold">
-                                                ✓
-                                            </div>
-
-                                            <span className="font-semibold text-slate-700">
-                                                {item}
-                                            </span>
-
-                                        </div>
-
-                                    ))}
-
-                                </div>
-
-                                <div className="mt-10 flex flex-col gap-4">
-
-                                    <button
-                                        onClick={() => openUsedCarBooking("Standard")}
-                                        className="rounded-2xl bg-gradient-to-r from-pink-500 via-violet-600 to-indigo-600 px-8 py-5 text-lg font-bold text-white shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
-                                    >
-                                        Book Used Car Inspection →
-                                    </button>
-
-                                    <Link
-                                        href="/info/pricing#used-car-pricing"
-                                        className="rounded-2xl border border-slate-300 px-8 py-5 text-center font-bold text-slate-700 transition hover:bg-slate-100"
-                                    >
-                                        View Pricing
-                                    </Link>
-
-                                    <a
-                                        href="tel:+919975934213"
-                                        className="rounded-2xl border border-pink-200 bg-pink-50 px-8 py-5 text-center font-bold text-pink-700 transition hover:bg-pink-100"
-                                    >
-                                        📞 Talk to Inspector
-                                    </a>
-
-                                </div>
-
                             </div>
-
                         </div>
 
                     </div>
