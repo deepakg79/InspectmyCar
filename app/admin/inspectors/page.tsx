@@ -98,15 +98,20 @@ export default function ManageInspectors() {
     const handleAdd = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!formData.name || !formData.mobile || !formData.password) {
+        // Trim values to check accurately and prevent leading/trailing spaces
+        const trimmedName = formData.name.trim();
+        const trimmedMobile = formData.mobile.trim();
+        const trimmedPassword = formData.password.trim();
+
+        if (!trimmedName || !trimmedMobile || !trimmedPassword) {
             return showNotice("Missing fields", "error");
         }
 
-        if (formData.password.length < 6) {
+        if (trimmedPassword.length < 6) {
             return showNotice("Password too short", "error");
         }
 
-        const exists = inspectors.find(i => i.mobile === formData.mobile);
+        const exists = inspectors.find(i => i.mobile.trim() === trimmedMobile);
         if (exists) {
             return showNotice("Inspector already exists", "error");
         }
@@ -115,9 +120,9 @@ export default function ManageInspectors() {
 
         try {
             await addDoc(collection(db, "inspectors"), {
-                name: formData.name,
-                mobile: formData.mobile,
-                password: formData.password,
+                name: trimmedName,
+                mobile: trimmedMobile,
+                password: trimmedPassword,
                 status: "Active",
                 role: "inspector"
             });
@@ -131,6 +136,7 @@ export default function ManageInspectors() {
             setLoading(false);
         }
     };
+
 
     const handleDelete = async (inspector: Inspector) => {
         if (!confirm("Terminate this inspector access?")) return;
