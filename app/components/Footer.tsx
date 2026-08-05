@@ -25,6 +25,11 @@ const AREAS = [
     "Aundh",
     "Chinchwad",
 ];
+const CITIES = [
+    "Kolhapur",
+    "Mumbai",
+    "Nashik",
+];
 
 export default function Footer() {
     return (
@@ -179,7 +184,27 @@ export default function Footer() {
                                 </span>
                             ))}
                         </div>
+
+                        {/* OTHER CITIES */}
+                        <div className="mt-8">
+                            <h4 className="font-bold text-slate-900 mb-6 text-sm uppercase tracking-widest">
+                                Other Cities
+                            </h4>
+
+                            <div className="flex flex-wrap gap-2">
+                                {CITIES.map((city) => (
+                                    <span
+                                        key={city}
+                                        className="text-xs bg-white px-2 py-1 rounded-md border border-slate-200 text-slate-500"
+                                    >
+                                        {city}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
                     </div>
+
+
                 </div>
 
                 {/* FOOTER BOTTOM */}
