@@ -362,8 +362,19 @@ export default function ChatBot({ forceOpen, setForceOpen, initialPlan }: ChatBo
     const handleSubmit = async () => {
         const isValidPhone = /^[6-9]\d{9}$/.test(form.phone);
 
-        if (!form.name || !isValidPhone || !form.date || !form.slot || !form.location) {
-            setToast({ msg: "Enter all fields with valid details first", type: "error" });
+        if (
+            !form.name ||
+            !isValidPhone ||
+            !form.brand ||
+            !form.model ||
+            !form.date ||
+            !form.slot ||
+            !form.location
+        ) {
+            setToast({
+                msg: "Please select your car brand and model and enter all required details",
+                type: "error"
+            });
             return;
         }
         setLoading(true);
@@ -722,7 +733,13 @@ export default function ChatBot({ forceOpen, setForceOpen, initialPlan }: ChatBo
 
                             <button
                                 onClick={handleSubmit}
-                                disabled={loading || !form.slot || isFetchingLocation}
+                                disabled={
+                                    loading ||
+                                    !form.brand ||
+                                    !form.model ||
+                                    !form.slot ||
+                                    isFetchingLocation
+                                }
                                 className="w-full bg-indigo-600 text-white py-5 rounded-[1.5rem] font-black text-xl shadow-[0_15px_30px_rgba(79,70,229,0.3)] hover:bg-slate-900 hover:shadow-none transition-all active:scale-95 disabled:bg-slate-200 disabled:shadow-none"
                             >
                                 {loading ? "Reserving..." : "Confirm Booking"}
