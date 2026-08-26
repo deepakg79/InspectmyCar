@@ -12,8 +12,7 @@ import {
     deleteDoc
 } from "firebase/firestore"
 import { getDocs } from "firebase/firestore"
-const ALL_SLOTS = ["10:30 AM", "12:00 PM", "1:30 PM", "3:00 PM", "4:30 PM", "6:00 PM"];
-
+import { ALL_SLOTS } from "../../lib/slotConfig";
 interface Booking {
     id: string;
 
@@ -792,8 +791,8 @@ export default function AdminBookings() {
 
                                                 <span
                                                     className={`inline-block px-2 py-1 rounded-full text-[9px] font-black uppercase mb-2 ${b.type === "used-car-inspection"
-                                                            ? "bg-orange-100 text-orange-700"
-                                                            : "bg-indigo-100 text-indigo-700"
+                                                        ? "bg-orange-100 text-orange-700"
+                                                        : "bg-indigo-100 text-indigo-700"
                                                         }`}
                                                 >
                                                     {b.type === "used-car-inspection"

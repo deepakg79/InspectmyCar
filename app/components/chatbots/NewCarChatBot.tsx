@@ -28,7 +28,8 @@ const OBD_PRICES = {
     Standard: 200,
     Luxury: 799,
 };
-const ALL_SLOTS = ["10:30 AM", "12:00 PM", "1:30 PM", "3:00 PM", "4:30 PM", "6:00 PM"];
+
+import { ALL_SLOTS } from "../../lib/slotConfig";
 
 // ChatBot.tsx (or wherever the props are defined)
 interface ChatBotProps {
