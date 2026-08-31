@@ -16,8 +16,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { name: "Live Dispatch", path: "/admin/dispatch", icon: "📡" },
         { name: "Market Analytics", path: "/admin/stats", icon: "📈" },
         { name: "Manage Car Models", path: "/admin/car-models", icon: "🚗" },
-        { name: "Blogs", path: "/admin/blogs", icon: "📰" }
-
     ];
 
     return (
