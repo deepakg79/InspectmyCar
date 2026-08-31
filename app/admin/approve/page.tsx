@@ -345,7 +345,14 @@ export default function ApprovePDIsPage() {
                             ? r.status === "Completed"
                             : r.status === "Approved"
                     )
+                    .sort((a, b) => {
+                        const timeA = a.createdAt?.toMillis?.() ?? 0;
+                        const timeB = b.createdAt?.toMillis?.() ?? 0;
+
+                        return timeB - timeA; // newest first
+                    })
                     .map((r) => (
+
                         <div key={r.id} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all">
                             <p className="text-[10px] font-black tracking-[0.25em] text-indigo-600">
                                 ID: {r.id.substring(0, 8)}
