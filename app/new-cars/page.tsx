@@ -113,7 +113,7 @@ export default function Home() {
 
               {[
                 ["299+", "Checks"],
-                ["3500+", "Cars"],
+                ["5000+", "Cars"],
                 ["4.9★", "Rating"],
                 ["100%", "Independent"],
               ].map(([v, l]) => (

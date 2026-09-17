@@ -124,7 +124,7 @@ export default function Home() {
                             {/* TRUST */}
                             <div className="flex flex-wrap gap-8 mt-12">
                                 {[
-                                    ["3500+", "Cars Inspected"],
+                                    ["5000+", "Cars Inspected"],
                                     ["299+", "Checkpoints"],
                                     ["4.9★", "Rating"],
                                 ].map(([v, l]) => (
@@ -508,7 +508,7 @@ export default function Home() {
             <section className="px-6 pb-24 z-10 relative">
                 <div className="max-w-6xl mx-auto grid md:grid-cols-4 gap-6">
                     {[
-                        ["3500+", "Cars Inspected"],
+                        ["5000+", "Cars Inspected"],
                         ["299+", "Inspection Points"],
                         ["4.9★", "Average Rating"],
                         ["100%", "Independent"],
