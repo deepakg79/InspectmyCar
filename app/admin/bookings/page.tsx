@@ -620,7 +620,25 @@ export default function AdminBookings() {
                         {calendarDays.map((item, i) => {
                             const isToday = item?.dateStr === formatLocalDate(new Date());
                             const dayBookings = item
-                                ? bookings.filter(b => normalizeDate(b.date) === item.dateStr)
+                                ? bookings
+                                    .filter(b => normalizeDate(b.date) === item.dateStr)
+                                    .sort((a, b) => {
+                                        const timeToMinutes = (slot: string) => {
+                                            const match = slot.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+                                            if (!match) return 0;
+
+                                            let hours = Number(match[1]);
+                                            const minutes = Number(match[2]);
+                                            const period = match[3].toUpperCase();
+
+                                            if (period === "PM" && hours !== 12) hours += 12;
+                                            if (period === "AM" && hours === 12) hours = 0;
+
+                                            return hours * 60 + minutes;
+                                        };
+
+                                        return timeToMinutes(a.slot) - timeToMinutes(b.slot);
+                                    })
                                 : [];
                             const isBlockedFullDay = blockedSlots.some(
                                 b => b.date === item.dateStr && b.type === "date"
