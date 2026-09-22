@@ -342,6 +342,7 @@ export default function AdminBookings() {
         console.log("WA URL:", `https://wa.me/91${cleanMobile}?text=${encodeURIComponent(msg)}`);
     };
 
+
     const filteredBookings = useMemo(() => {
         let data = bookings.filter(b =>
             b.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -349,26 +350,59 @@ export default function AdminBookings() {
             b.location?.toLowerCase().includes(searchTerm.toLowerCase())
         );
 
-        // ✅ Status Filter
+        // Status Filter
         if (statusFilter !== "All") {
             data = data.filter(b => {
                 if (statusFilter === "Confirmed") {
                     return b.status === "Confirmed" || b.status === "Assigned";
                 }
+
                 return b.status === statusFilter;
             });
         }
 
-        // ✅ Date Sort
-        data.sort((a, b) => {
-            const d1 = new Date(a.date).getTime();
-            const d2 = new Date(b.date).getTime();
+        // Convert booking slot to minutes from midnight
+        const getSlotMinutes = (slot: string) => {
+            if (!slot) return 0;
 
-            return sortOrder === "asc" ? d1 - d2 : d2 - d1;
+            const match = slot.match(
+                /(\d{1,2})(?::(\d{2}))?\s*(AM|PM)/i
+            );
+
+            if (!match) return 0;
+
+            let hours = Number(match[1]);
+            const minutes = Number(match[2] || 0);
+            const period = match[3].toUpperCase();
+
+            if (period === "AM" && hours === 12) {
+                hours = 0;
+            }
+
+            if (period === "PM" && hours !== 12) {
+                hours += 12;
+            }
+
+            return hours * 60 + minutes;
+        };
+
+        // Sort:
+        // 1. Latest date first
+        // 2. Latest time first within that date
+        data.sort((a, b) => {
+            const dateCompare = b.date.localeCompare(a.date);
+
+            if (dateCompare !== 0) {
+                return dateCompare;
+            }
+
+            return getSlotMinutes(b.slot) - getSlotMinutes(a.slot);
         });
 
         return data;
-    }, [bookings, searchTerm, statusFilter, sortOrder]);
+    }, [bookings, searchTerm, statusFilter]);
+
+
     const updateBooking = async (updated: Booking) => {
         setSubmitting(true)
 
