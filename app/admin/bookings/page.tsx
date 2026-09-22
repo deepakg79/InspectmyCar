@@ -619,6 +619,7 @@ export default function AdminBookings() {
                         ))}
                         {calendarDays.map((item, i) => {
                             const isToday = item?.dateStr === formatLocalDate(new Date());
+
                             const dayBookings = item
                                 ? bookings
                                     .filter(b => normalizeDate(b.date) === item.dateStr)
