@@ -7,16 +7,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const [isOpen, setIsOpen] = useState(false);
     const pathname = usePathname();
 
-    const menuItems = [
-        { name: "Live Bookings", path: "/admin/bookings", icon: "📅" },
-        { name: "Approve PDIs", path: "/admin/approve", icon: "✅" }, // 🔥 NEW
-        { name: "Manage Slots", path: "/admin/slots", icon: "⛔" }, // 👈 NEW
-        { name: "Manage Inspectors", path: "/admin/inspectors", icon: "🛡️" }, // Added this
-        { name: "Assign Executives", path: "/admin/assign", icon: "👥" },
-        { name: "Live Dispatch", path: "/admin/dispatch", icon: "📡" },
-        { name: "Market Analytics", path: "/admin/stats", icon: "📈" },
-        { name: "Manage Car Models", path: "/admin/car-models", icon: "🚗" },
-    ];
+const menuItems = [
+    { name: "Live Bookings", path: "/admin/bookings", icon: "📅" },
+    { name: "Today's Schedules", path: "/admin/schedules", icon: "🗓️" }, // NEW
+    { name: "Approve PDIs", path: "/admin/approve", icon: "✅" },
+    { name: "Manage Slots", path: "/admin/slots", icon: "⛔" },
+    { name: "Manage Inspectors", path: "/admin/inspectors", icon: "🛡️" },
+    { name: "Assign Executives", path: "/admin/assign", icon: "👥" },
+    { name: "Live Dispatch", path: "/admin/dispatch", icon: "📡" },
+    { name: "Market Analytics", path: "/admin/stats", icon: "📈" },
+    { name: "Manage Car Models", path: "/admin/car-models", icon: "🚗" },
+];
 
     return (
         <div className="min-h-screen bg-[#f8fafc] font-sans selection:bg-indigo-100">
