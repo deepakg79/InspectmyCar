@@ -791,7 +791,7 @@ export default function AdminBookings() {
 
                                 <p className="text-[9px] font-black uppercase opacity-60 mb-1">Total Revenue</p>
 
-                                <p className="text-3xl font-black italic">
+                                <p className="text-2xl font-black italic">
 
   ₹{stats.revenue.toLocaleString("en-IN")}
 
