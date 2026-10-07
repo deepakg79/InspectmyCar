@@ -479,12 +479,16 @@ export default function AdminBookings() {
                         <div className="flex gap-3 w-full lg:w-auto overflow-x-auto pb-2 lg:pb-0">
                             <div className="bg-indigo-600 p-6 rounded-[2.5rem] shadow-xl shadow-indigo-200 text-white min-w-[160px]">
                                 <p className="text-[9px] font-black uppercase opacity-60 mb-1">Total Revenue</p>
-                                <p className="text-3xl font-black italic">₹{stats.revenue.toLocaleString()}</p>
+                                <p className="text-3xl font-black italic">
+  ₹{stats.revenue.toLocaleString("en-IN")}
+</p>
                             </div>
                             <div className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm min-w-[160px]">
                                 <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Avg. Ticket</p>
                                 <p className="text-2xl font-black text-slate-800">
-                                    ₹{stats.completedCount > 0 ? Math.round(stats.revenue / stats.completedCount).toLocaleString() : 0}
+                                    ₹{stats.completedCount > 0
+  ? Math.round(stats.revenue / stats.completedCount).toLocaleString("en-IN")
+  : 0}
                                 </p>
                             </div>
                         </div>
