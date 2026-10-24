@@ -54,7 +54,8 @@
     "react-leaflet": "^5.0.0",
     "sonner": "^2.0.7",
     "typescript": "^5.9.3",
-    "zustand": "^5.0.12"
+    "zustand": "^5.0.12",
+    "@react-leaflet/core": "^3.0.0"
   },
   "devDependencies": {
     "@types/leaflet": "^1.9.21",
