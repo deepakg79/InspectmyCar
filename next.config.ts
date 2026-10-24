@@ -17,12 +17,15 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  experimental: {
-    // empty or remove appDir if already default
-  },
+experimental: {
+},
+
   async redirects() {
     // no redirects by default
     return [];
+  },
+    outputFileTracingIncludes: {
+    "/api/protect-pdf": ["./vendor/qpdf/**/*"],
   },
 };
 export default nextConfig;
