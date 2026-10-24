@@ -133,7 +133,7 @@ export default function PageClient() {
                 <h1 className="heading text-4xl md:text-6xl leading-tight mb-6">
                     PDI Checklist for New Car
                     <span className="block text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-pink-500">
-                        (2026 Guide)
+                        (Avoid Hidden Defects Before Delivery)
                     </span>
                 </h1>
 
@@ -145,7 +145,7 @@ export default function PageClient() {
                 </p>
 
                 <p className="subtext mt-4 text-sm max-w-2xl mx-auto">
-                    Buying a car in Pune? Also read our{" "}
+                    Buying a New car or a Used car? Also read our{" "}
                     <Link
                         href="/car-delivery-checklist-pune"
                         className="text-indigo-600 underline font-semibold"
@@ -219,7 +219,7 @@ export default function PageClient() {
                         href="/car-pdi-pune"
                         className="text-indigo-600 font-semibold underline"
                     >
-                        Car PDI Inspection in Pune
+                        Car PDI Inspection
                     </Link>.
                 </p>
 

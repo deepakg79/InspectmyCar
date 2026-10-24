@@ -56,7 +56,6 @@ export const CAR_DATA: Brand[] = [
             { name: "Carens", type: "Standard" },
             { name: "Syros", type: "Standard" },
             { name: "Carnival", type: "Luxury" },
-
         ],
     },
     {

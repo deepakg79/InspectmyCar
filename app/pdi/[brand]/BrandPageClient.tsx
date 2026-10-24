@@ -9,15 +9,16 @@ export default function BrandPageClient({ brand }: { brand: string }) {
     }
 
     const { openNewCarBooking } = useBooking();
-
+const { openBookingChooser } = useBooking();
     return (
         <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-            <button
-                onClick={() => openNewCarBooking()}
-                className="btn-primary px-10 py-5 text-xl shadow-2xl"
-            >
-                Book {brand} PDI
-            </button>
+
+                                    <button
+                            onClick={openBookingChooser}
+                                className="group rounded-2xl bg-gradient-to-r from-indigo-800 via-indigo-600 to-indigo-500 px-8 py-5 font-bold text-white shadow-2xl shadow-indigo-300/40 transition-all duration-300 hover:-translate-y-1 hover:scale-[1.03]"
+                        >
+                             Book {brand} PDI
+                        </button>
             <a
                 href={`https://wa.me/919975934213?text=Hi, I want to book a PDI for my new ${brand} in Pune.`}
                 className="card-glass px-10 py-5 font-bold text-lg hover:bg-white transition-all flex items-center justify-center gap-2 border-slate-100"

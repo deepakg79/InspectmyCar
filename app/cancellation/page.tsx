@@ -1,69 +1,203 @@
-//app/info/cancellation-policy.tsx
+// app/info/cancellation-policy.tsx
+
 "use client";
+
 export default function CancellationPolicy() {
     return (
-        <main className="max-w-4xl mx-auto px-6 py-24 font-sans">
-            {/* Header Section */}
-            <div className="mb-16 border-b border-slate-100 pb-12">
-                <p className="text-indigo-600 font-black uppercase tracking-[0.3em] text-[10px] mb-4">Data Protection</p>
-                <h1 className="text-5xl font-black text-slate-900 tracking-tighter mb-4">
-                    Cancellation <span className="text-indigo-600 italic">Policy</span>
-                </h1>
-            </div>
+        <main className="bg-main min-h-screen">
 
-            {/* Content Body */}
-            <div className="space-y-12">
-                <section>
-                    <h2 className="text-xl font-black text-slate-900 mb-4 uppercase tracking-tight">1. Cancellation Policy</h2>
-                    <p className="text-slate-600 leading-relaxed font-medium mb-4">
-                        We understand that circumstances may change, and we are committed to providing you with a hassle-free cancellation experience. Here's our cancellation policy:
+            {/* =========================================================
+                HERO
+            ========================================================= */}
+
+            <section className="px-6 pt-32 pb-20">
+
+                <div className="max-w-5xl mx-auto text-center">
+
+                    <p className="text-indigo-600 font-black uppercase tracking-[0.35em] text-xs mb-4">
+                        CANCELLATION RULES
                     </p>
-                    <ul className="grid grid-cols-1 md:grid-cols-2 gap-5">
 
-                        <li className="rounded-3xl border border-emerald-200 bg-emerald-50 p-6 shadow-sm">
-                            <div className="flex items-start gap-4">
-                                <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white font-bold">
+                    <h1 className="heading text-5xl md:text-7xl mb-6">
+                        Cancellation{" "}
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-pink-500">
+                            Policy
+                        </span>
+                    </h1>
+
+                    <p className="subtext text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
+                        We understand that plans can change. Our cancellation
+                        and rescheduling policy is designed to keep the process
+                        simple, transparent and fair.
+                    </p>
+
+                </div>
+
+            </section>
+
+            {/* =========================================================
+                POLICY CONTENT
+            ========================================================= */}
+
+            <section className="px-6 pb-28">
+
+                <div className="max-w-5xl mx-auto">
+
+                    {/* Section Heading */}
+
+                    <div className="mb-10">
+
+                        <p className="text-indigo-600 font-black uppercase tracking-[0.3em] text-xs mb-3">
+                            CANCELLATION POLICY
+                        </p>
+
+                        <h2 className="heading text-3xl md:text-4xl">
+                            Cancellation & Rescheduling
+                        </h2>
+
+                        <p className="subtext mt-4 max-w-3xl leading-7">
+                            We understand that circumstances may change, and
+                            we are committed to providing you with a hassle-free
+                            cancellation experience. Here's our cancellation
+                            policy:
+                        </p>
+
+                    </div>
+
+                    {/* Policy Cards */}
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                        {/* FREE CANCELLATION */}
+
+                        <article className="card-glass group rounded-3xl border border-slate-100 p-8 shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
+
+                            <div className="flex items-start justify-between gap-5">
+
+                                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-2xl transition-transform duration-300 group-hover:scale-110">
                                     ✓
                                 </div>
 
-                                <div>
-                                    <h3 className="font-black text-emerald-900">
-                                        Free Cancellation & Rescheduling
-                                    </h3>
+                                <span className="text-6xl font-black text-slate-100">
+                                    01
+                                </span>
 
-                                    <p className="mt-2 text-sm leading-relaxed text-slate-700">
-                                        You may cancel or reschedule your inspection
-                                        <strong> free of charge up to 2 hours before </strong>
-                                        your scheduled appointment.
-                                    </p>
-                                </div>
                             </div>
-                        </li>
 
-                        <li className="rounded-3xl border border-amber-200 bg-amber-50 p-6 shadow-sm">
-                            <div className="flex items-start gap-4">
-                                <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-500 text-white font-bold">
+                            <div className="mt-7">
+
+                                <div className="mb-3 inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-black uppercase tracking-wider text-emerald-700">
+                                    No Charge
+                                </div>
+
+                                <h3 className="heading text-2xl">
+                                    Free Cancellation & Rescheduling
+                                </h3>
+
+                                <p className="subtext mt-4 leading-7">
+                                    You may cancel or reschedule your inspection
+                                    <strong className="text-slate-900">
+                                        {" "}free of charge up to 2 hours before{" "}
+                                    </strong>
+                                    your scheduled appointment.
+                                </p>
+
+                            </div>
+
+                        </article>
+
+                        {/* LATE CANCELLATION */}
+
+                        <article className="card-glass group rounded-3xl border border-slate-100 p-8 shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
+
+                            <div className="flex items-start justify-between gap-5">
+
+                                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-2xl transition-transform duration-300 group-hover:scale-110">
                                     !
                                 </div>
 
-                                <div>
-                                    <h3 className="font-black text-amber-900">
-                                        Late Cancellation
-                                    </h3>
+                                <span className="text-6xl font-black text-slate-100">
+                                    02
+                                </span>
 
-                                    <p className="mt-2 text-sm leading-relaxed text-slate-700">
-                                        Cancellations requested
-                                        <strong> within 2 hours</strong> of the scheduled
-                                        inspection time will incur a
-                                        <strong> ₹399 cancellation fee</strong>.
-                                    </p>
-                                </div>
                             </div>
-                        </li>
 
-                    </ul>
-                </section>
-            </div>
+                            <div className="mt-7">
+
+                                <div className="mb-3 inline-flex rounded-full bg-amber-50 px-3 py-1 text-xs font-black uppercase tracking-wider text-amber-700">
+                                    Late Cancellation
+                                </div>
+
+                                <h3 className="heading text-2xl">
+                                    Late Cancellation
+                                </h3>
+
+                                <p className="subtext mt-4 leading-7">
+                                    Cancellations requested
+                                    <strong className="text-slate-900">
+                                        {" "}within 2 hours
+                                    </strong>{" "}
+                                    of the scheduled inspection time will incur
+                                    a
+                                    <strong className="text-slate-900">
+                                        {" "}₹399 cancellation fee
+                                    </strong>.
+                                </p>
+
+                            </div>
+
+                        </article>
+
+                    </div>
+
+                    {/* =====================================================
+                        QUICK SUMMARY
+                    ===================================================== */}
+
+                    <div className="card-glass relative mt-8 overflow-hidden rounded-3xl border border-indigo-100 p-8 md:p-10">
+
+                        <div className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-indigo-600 to-pink-500" />
+
+                        <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+
+                            <div>
+
+                                <p className="text-indigo-600 font-black uppercase tracking-[0.2em] text-xs">
+                                    QUICK SUMMARY
+                                </p>
+
+                                <h3 className="heading mt-2 text-2xl">
+                                    Plan changed? No problem.
+                                </h3>
+
+                                <p className="subtext mt-2 max-w-2xl">
+                                    Cancel or reschedule at least 2 hours before
+                                    your appointment to avoid the cancellation
+                                    fee.
+                                </p>
+
+                            </div>
+
+                            <div className="shrink-0 rounded-2xl bg-indigo-50 px-6 py-5 text-center">
+
+<div className="text-3xl font-black bg-gradient-to-r from-indigo-600 to-pink-500 bg-clip-text text-transparent">
+   &lt; 2 Hours
+</div>
+
+<div className="mt-1 text-xs font-bold uppercase tracking-wider text-slate-500">
+    Late Cancellation
+</div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
         </main>
     );
 }

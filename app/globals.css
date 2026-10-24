@@ -170,3 +170,16 @@
         transform: translateY(0px);
     }
 }
+.dial-orbit-third {
+  transform-origin: 50% 50%;
+  animation: dial-orbit-spin 16s linear infinite;
+}
+
+@keyframes dial-orbit-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

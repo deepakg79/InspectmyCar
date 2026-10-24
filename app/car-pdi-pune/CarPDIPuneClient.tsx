@@ -32,7 +32,7 @@ export default function CarPDIPuneClient() {
                     <p className="subtext text-lg max-w-xl mx-auto lg:mx-0 leading-relaxed font-medium mb-10">
                         Whether you're taking delivery of a <b>new car</b> or
                         buying a <b>used car</b>, our independent experts
-                        perform a detailed <b>299+ point inspection</b> to help
+                        perform a detailed <b>400 point inspection</b> to help
                         you avoid hidden defects, accident repairs, repaint
                         work and expensive surprises.
 
@@ -86,7 +86,7 @@ export default function CarPDIPuneClient() {
                         <div className="absolute -bottom-6 -right-6 card-glass p-6 shadow-xl floating border-white">
 
                             <p className="text-indigo-600 font-black text-2xl">
-                                ✔ 299+
+                                ✔ 400
                             </p>
 
                             <p className="text-[10px] font-bold uppercase tracking-widest subtext">
@@ -109,11 +109,11 @@ export default function CarPDIPuneClient() {
 
                     {[
                         {
-                            title: "1000+",
+                            title: "5000+",
                             desc: "Vehicles Inspected",
                         },
                         {
-                            title: "299+",
+                            title: "400",
                             desc: "Inspection Points",
                         },
                         {
@@ -309,7 +309,7 @@ export default function CarPDIPuneClient() {
 
                     <p>
                         Every inspection follows a comprehensive{" "}
-                        <b>299+ point checklist</b> and includes a detailed
+                        <b>400 point checklist</b> and includes a detailed
                         digital report with photographs and recommendations.
                     </p>
 
@@ -351,7 +351,7 @@ export default function CarPDIPuneClient() {
                         },
                         {
                             q: "How many checkpoints are covered?",
-                            a: "Every inspection includes over 299+ inspection points covering the body, paint, engine, electronics, suspension, tyres, interiors, documentation and more.",
+                            a: "Every inspection includes over 400 inspection points covering the body, paint, engine, electronics, suspension, tyres, interiors, documentation and more.",
                         },
                         {
                             q: "Do you perform OBD diagnostics?",
@@ -408,7 +408,7 @@ export default function CarPDIPuneClient() {
                         Whether you're buying a <b>brand-new car</b> or a
                         <b> used car</b>, our independent experts help you
                         make the right decision with a comprehensive
-                        <b> 299+ point inspection</b>.
+                        <b> 400 point inspection</b>.
                     </p>
 
                     <div className="flex flex-col sm:flex-row justify-center gap-4">

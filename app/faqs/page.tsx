@@ -14,12 +14,12 @@ export default function FAQsPage() {
             a: "A PDI is a thorough check of your new car before delivery. It ensures there are no scratches, dents, mechanical issues, or missing features."
         },
         {
-            q: "Why should I get a PDI in Pune?",
-            a: "Even new cars can have transport damage, paint issues, or missing accessories. A professional PDI in Pune ensures your investment is safe before signing the final papers."
+            q: "Why should I get an expert PDI?",
+            a: "Even new cars can have transport damage, paint issues, or missing accessories. A professional PDI ensures your investment is safe before signing the final papers."
         },
         {
             q: "How long does a PDI take?",
-            a: "A standard 300+ point inspection usually takes 1–2 hours, depending on the car and dealership access."
+            a: "A standard 400 point inspection usually takes 1–2 hours, depending on the car and dealership access."
         },
         {
             q: "Can I do the PDI myself?",
@@ -30,8 +30,8 @@ export default function FAQsPage() {
             a: "Yes. Dealerships require scheduling, and inspectors coordinate to ensure inspection before delivery."
         },
         {
-            q: "How much does a PDI cost in Pune?",
-            a: "Standard cars start at ₹1,499 and luxury cars at ₹2,499 with a full inspection report."
+            q: "How much does a PDI cost?",
+            a: "Standard cars starts at ₹1,499 and luxury cars at ₹2,499 with a full inspection report."
         },
         {
             q: "What do I get after the inspection?",
@@ -55,7 +55,7 @@ export default function FAQsPage() {
         },
         {
             q: "Can you inspect cars at dealerships and individual sellers?",
-            a: "Yes. We inspect used cars at authorised dealerships, multi-brand showrooms, and private seller locations across Pune, subject to seller approval."
+            a: "Yes. We inspect used cars at authorised dealerships, multi-brand showrooms, and private seller locations, subject to seller approval."
         },
         {
             q: "Will I receive a detailed inspection report?",
@@ -99,7 +99,7 @@ export default function FAQsPage() {
     };
 
     return (
-        <main className="bg-main text-slate-900 min-h-screen">
+        <main className="bg-main min-h-screen">
 
             <Script
                 id="faq-schema"
@@ -108,15 +108,37 @@ export default function FAQsPage() {
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
             />
 
+
             {/* HERO */}
-            <section className="px-6 pt-32 pb-12 max-w-4xl mx-auto text-center">
-                <h1 className="heading text-4xl md:text-6xl mb-6">
-                    Car PDI FAQs in Pune
-                </h1>
-                <p className="subtext text-lg max-w-2xl mx-auto">
-                    Answers to common questions about car delivery, inspection, and Pre-Delivery Inspection (PDI) in Pune.
-                </p>
+            <section className="px-6 pt-32 pb-20">
+
+                <div className="max-w-6xl mx-auto text-center">
+
+                    <p className="text-indigo-600 font-black uppercase tracking-[0.35em] text-xs mb-4">
+                        FAQs
+                    </p>
+                    <h1 className="heading text-5xl md:text-7xl mb-6">
+
+                         Car PDI
+
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-600">
+
+                            {" "}FAQs
+
+                        </span>
+
+                    </h1>
+
+                    <p className="subtext text-lg md:text-xl max-w-3xl mx-auto leading-relaxed">
+                        Whether you're buying a <b>new car</b> or a <b>used car</b>,
+                        our independent experts make sure you don't miss hidden
+                        defects before making one of your biggest investments.
+                    </p>
+
+                </div>
+
             </section>
+
 
             {/* FAQ LIST */}
             <section className="px-6 pb-20 max-w-4xl mx-auto space-y-4">
@@ -168,8 +190,8 @@ export default function FAQsPage() {
                         Learn More Before Delivery
                     </h2>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <Link href="/car-pdi-pune" className="text-indigo-600 font-bold underline">
-                            Car PDI in Pune →
+                        <Link href="/new-cars" className="text-indigo-600 font-bold underline">
+                            New Car PDI →
                         </Link>
                         <Link href="/car-delivery-checklist-pune" className="text-indigo-600 font-bold underline">
                             Delivery Checklist →
@@ -191,7 +213,7 @@ export default function FAQsPage() {
                     </h2>
 
                     <p className="subtext mb-8 max-w-xl mx-auto">
-                        Talk to our experts or book a professional inspection before your car delivery in Pune.
+                        Talk to our experts or book a professional inspection before your new or used car delivery.
                     </p>
 
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">

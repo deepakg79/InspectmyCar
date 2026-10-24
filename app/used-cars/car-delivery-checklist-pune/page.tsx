@@ -184,7 +184,7 @@ export default function CarDeliveryChecklistPune() {
                     </h2>
 
                     <p className="subtext mb-8 max-w-xl mx-auto leading-relaxed">
-                        Our experts perform a <b>299+ point professional PDI</b>.
+                        Our experts perform a <b>400 point professional PDI</b>.
                         <br />
                         <span className="text-red-500 font-semibold">
                             1 in 5 new cars we inspect has hidden issues.

@@ -103,59 +103,64 @@ export default function InspectorDashboard() {
             options
         );
 
-        // Start continuous tracking
-        const watchId = navigator.geolocation.watchPosition(
-            async (pos) => {
-                try {
-                    await updateDoc(doc(db, "inspectors", auth.id), {
-                        lat: pos.coords.latitude,
-                        lng: pos.coords.longitude,
-                        lastUpdated: new Date(),
-                    });
+// Start continuous tracking
+const watchId = navigator.geolocation.watchPosition(
+    async (pos) => {
+        try {
+            await updateDoc(doc(db, "inspectors", auth.id), {
+                lat: pos.coords.latitude,
+                lng: pos.coords.longitude,
+                lastUpdated: new Date(),
+            });
 
-                    console.log(
-                        `📍 Updated: ${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`
-                    );
-                } catch (err) {
-                    console.error("Location update failed:", err);
-                }
-            },
-            (err) => {
-                // Ignore local Position Unavailable errors
-                if (
-                    process.env.NODE_ENV !== "production" &&
-                    err.code === err.POSITION_UNAVAILABLE
-                ) {
+            console.log(
+                `📍 Updated: ${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`
+            );
+        } catch (err) {
+            console.error("Location update failed:", err);
+        }
+    },
+    (err) => {
+        switch (err.code) {
+            case err.PERMISSION_DENIED:
+                // User denied location permission.
+                // This is an expected user action, not an application error.
+                console.warn("📍 Location permission not granted.");
+                return;
+
+            case err.POSITION_UNAVAILABLE:
+                // Position may temporarily be unavailable,
+                // especially during local development.
+                if (process.env.NODE_ENV !== "production") {
                     console.warn(
-                        "⚠️ Position unavailable on localhost (expected on some Macs)."
+                        "⚠️ Position unavailable on localhost/browser."
                     );
-                    return;
                 }
+                return;
 
-                switch (err.code) {
-                    case err.PERMISSION_DENIED:
-                        console.error("Location permission denied.");
-                        break;
-
-                    case err.POSITION_UNAVAILABLE:
-                        console.error("Unable to determine current location.");
-                        break;
-
-                    case err.TIMEOUT:
-                        console.error("Location request timed out.");
-                        break;
-
-                    default:
-                        console.error("Unknown geolocation error:", err.message);
+            case err.TIMEOUT:
+                if (process.env.NODE_ENV !== "production") {
+                    console.warn("⚠️ Location request timed out.");
                 }
-            },
-            options
-        );
+                return;
 
-        return () => {
-            navigator.geolocation.clearWatch(watchId);
-        };
-    }, [auth]);
+            default:
+                if (process.env.NODE_ENV !== "production") {
+                    console.warn(
+                        "⚠️ Geolocation unavailable:",
+                        err.message
+                    );
+                }
+                return;
+        }
+    },
+    options
+);
+
+return () => {
+    navigator.geolocation.clearWatch(watchId);
+};
+}, [auth]);
     const formatDate = (date: Date) => {
         return (
             date.getFullYear() +

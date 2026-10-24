@@ -104,7 +104,7 @@ export default function BookingChooserModal({
 
                 <div className="px-8 pb-8 text-center">
                     <p className="text-xs text-slate-400">
-                        Independent • Professional • 299+ Checkpoints
+                        Independent • Professional • 400 Checkpoints
                     </p>
                 </div>
             </div>

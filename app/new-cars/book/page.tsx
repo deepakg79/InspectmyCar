@@ -28,7 +28,7 @@ export default function BookPage() {
                 </h1>
                 <p className="text-lg text-slate-500 font-medium mb-10 leading-relaxed max-w-lg mx-auto">
                     Don't take delivery of a faulty car. Our experts will check your
-                    vehicle across 299+ points before you sign the papers.
+                    vehicle across 400 points before you sign the papers.
                 </p>
 
                 {/* THE ACTUAL CLICKABLE BUTTON */}

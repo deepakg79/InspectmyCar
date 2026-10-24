@@ -8,7 +8,7 @@ import {
     createContext,
     useContext,
     useState,
-    ReactNode,
+    type ReactNode,
 } from "react";
 
 import NewCarChatBot from "@/app/components/chatbots/NewCarChatBot";
@@ -44,6 +44,7 @@ interface BookingContextType {
 
     isUsedCarBotOpen: boolean;
     selectedUsedCarPlan: UsedCarPlan | null;
+
     /* ---------------- BOOKING CHOOSER ---------------- */
 
     openBookingChooser: () => void;
@@ -67,22 +68,24 @@ export function BookingProvider({
 }) {
     const pathname = usePathname();
 
+    /* ---------------------------------------------------------------------- */
+    /*                           CHATBOT VISIBILITY                           */
+    /* ---------------------------------------------------------------------- */
+
     /**
-     * Hide chatbots ONLY on Home page
+     * Chatbots are hidden only on the Home page.
      */
     const hideChatBots = pathname === "/";
+
     const showNewCarBot =
         pathname.startsWith("/new-cars") ||
         pathname.startsWith("/car-pdi") ||
-        pathname.startsWith("/pdi") ||
-        pathname.startsWith("/info");
-
-
+        pathname.startsWith("/info/pricing") ||
+ pathname.endsWith("/new-cars");
     const showUsedCarBot =
-        pathname.startsWith("/used-cars") ||
-        pathname.startsWith("/info");
-
-
+        pathname.startsWith("/used-cars")||
+        pathname.startsWith("/info/pricing") ||
+pathname.endsWith("/used-cars");
     /* ---------------------------------------------------------------------- */
     /*                               NEW CAR                                  */
     /* ---------------------------------------------------------------------- */
@@ -102,21 +105,23 @@ export function BookingProvider({
 
     const [selectedUsedCarPlan, setSelectedUsedCarPlan] =
         useState<UsedCarPlan | null>(null);
+
     /* ---------------------------------------------------------------------- */
     /*                          BOOKING CHOOSER                               */
     /* ---------------------------------------------------------------------- */
 
     const [isBookingChooserOpen, setIsBookingChooserOpen] =
         useState(false);
+
     /* ---------------------------------------------------------------------- */
     /*                           NEW CAR FUNCTIONS                            */
     /* ---------------------------------------------------------------------- */
 
     const openNewCarBooking = (plan?: NewCarPlan) => {
+        // Close Used Car chatbot when opening New Car.
         setIsUsedCarBotOpen(false);
 
         setSelectedNewCarPlan(plan ?? null);
-
         setIsNewCarBotOpen(true);
     };
 
@@ -130,10 +135,10 @@ export function BookingProvider({
     /* ---------------------------------------------------------------------- */
 
     const openUsedCarBooking = (plan?: UsedCarPlan) => {
+        // Close New Car chatbot when opening Used Car.
         setIsNewCarBotOpen(false);
 
         setSelectedUsedCarPlan(plan ?? null);
-
         setIsUsedCarBotOpen(true);
     };
 
@@ -141,6 +146,7 @@ export function BookingProvider({
         setIsUsedCarBotOpen(false);
         setSelectedUsedCarPlan(null);
     };
+
     /* ---------------------------------------------------------------------- */
     /*                        BOOKING CHOOSER                                 */
     /* ---------------------------------------------------------------------- */
@@ -152,6 +158,11 @@ export function BookingProvider({
     const closeBookingChooser = () => {
         setIsBookingChooserOpen(false);
     };
+
+    /* ---------------------------------------------------------------------- */
+    /*                               RENDER                                   */
+    /* ---------------------------------------------------------------------- */
+
     return (
         <BookingContext.Provider
             value={{

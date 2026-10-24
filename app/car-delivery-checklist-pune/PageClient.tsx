@@ -285,7 +285,7 @@ export default function PageClient() {
                     <p className="subtext mb-8 max-w-xl mx-auto leading-relaxed">
                         Whether you're taking delivery of a <b>new car</b> or
                         purchasing a <b>used car</b>, our independent experts
-                        perform a comprehensive <b>299+ point inspection</b> to
+                        perform a comprehensive <b>400 point inspection</b> to
                         help you avoid hidden defects and expensive surprises.
                     </p>
 

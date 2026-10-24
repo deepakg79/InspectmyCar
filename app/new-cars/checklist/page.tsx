@@ -2,13 +2,13 @@
 import Link from "next/link";
 
 export const metadata = {
-    title: "Car Delivery Checklist Pune (2026) | Avoid Costly Mistakes",
+    title: "Car Delivery Checklist | Avoid Costly Mistakes",
     description:
-        "Complete car delivery checklist in Pune before taking delivery. Avoid scratches, repaint issues & dealer tricks. Expert PDI guide by InspectMyCar.",
+        "Complete car delivery checklist before taking delivery of your new car. Avoid scratches, repaint issues & dealer tricks. Expert PDI guide by InspectMyCar.",
     keywords: [
-        "car delivery checklist pune",
-        "new car pdi checklist india",
-        "car inspection before delivery pune",
+        "car delivery checklist Maharashtra",
+        "new car pdi checklist Maharashtra",
+        "car inspection before delivery Maharashtra",
         "pdi checklist new car",
     ],
 };
@@ -20,20 +20,20 @@ export default function CarDeliveryChecklistPune() {
             {/* HERO */}
             <section className="px-6 pt-32 pb-16 max-w-5xl mx-auto text-center">
                 <h1 className="heading text-4xl md:text-6xl mb-6 leading-tight">
-                    Car Delivery Checklist in Pune
+                    Car Delivery Checklist for New Cars
                     <span className="block text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-pink-500">
-                        (2026 Guide)
+                        (Avoid Costly Mistakes)
                     </span>
                 </h1>
 
                 <p className="subtext text-lg max-w-3xl mx-auto leading-relaxed">
-                    Taking delivery of your new car in Pune? Before signing the final papers,
+                    Taking delivery of your new car? Before signing the final papers,
                     use this expert checklist to avoid hidden damages, repaint issues,
                     and costly mistakes.
                     <br /><br />
                     For a professional inspection, check our{" "}
-                    <Link href="/car-pdi-pune" className="text-indigo-600 font-semibold underline">
-                        car PDI service in Pune
+                    <Link href="/new-cars" className="text-indigo-600 font-semibold underline">
+                        car PDI service
                     </Link>.
                 </p>
             </section>
@@ -41,12 +41,12 @@ export default function CarDeliveryChecklistPune() {
             {/* WHY IMPORTANT */}
             <section className="px-6 pb-16 max-w-5xl mx-auto">
                 <h2 className="heading text-2xl mb-6">
-                    Why Car Delivery Inspection is Important in Pune
+                    Why Car Delivery Inspection is Important?
                 </h2>
 
                 <p className="subtext leading-relaxed">
-                    Many new cars in Pune dealerships arrive with minor transport damage,
-                    repaint jobs, or storage-related issues. Without a proper inspection,
+                    Many new cars arrive with minor transport damage,
+                    repaint jobs, or storage-related issues at dealerships. Without a proper inspection,
                     customers often discover problems only after delivery. A proper PDI
                     ensures you receive a flawless vehicle before signing final documents.
                 </p>
@@ -164,7 +164,7 @@ export default function CarDeliveryChecklistPune() {
 
                     <div>
                         <h3 className="font-bold">
-                            Do dealers allow PDI in Pune?
+                            Do dealers allow PDI?
                         </h3>
                         <p className="subtext">
                             Most dealerships allow inspection, especially if you
@@ -185,7 +185,7 @@ export default function CarDeliveryChecklistPune() {
                     </h2>
 
                     <p className="subtext mb-8 max-w-xl mx-auto leading-relaxed">
-                        Our experts perform a <b>299+ point professional PDI</b>.
+                        Our experts perform a <b>400 point professional PDI</b>.
                         <br />
                         <span className="text-red-500 font-semibold">
                             1 in 5 new cars we inspect has hidden issues.
@@ -236,7 +236,7 @@ export default function CarDeliveryChecklistPune() {
                             },
                             {
                                 "@type": "Question",
-                                name: "Do dealers allow PDI in Pune?",
+                                name: "Do dealers allow PDI?",
                                 acceptedAnswer: {
                                     "@type": "Answer",
                                     text: "Most dealerships allow inspection if informed in advance.",

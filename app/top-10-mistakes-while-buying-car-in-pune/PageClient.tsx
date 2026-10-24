@@ -92,11 +92,11 @@ export default function PageClient() {
             {/* HERO */}
             <section className="max-w-4xl mx-auto px-6 pt-32 pb-12 text-center">
                 <h1 className="heading text-4xl md:text-6xl leading-tight mb-6">
-                    Top 10 Mistakes to Avoid While Buying a New or Used Car in Pune
+                    Top 10 Mistakes to Avoid While Buying a New or Used Car
                 </h1>
 
                 <p className="subtext text-lg leading-relaxed max-w-3xl mx-auto">
-                    Buying a new or used car in Pune is exciting—but many buyers make expensive mistakes that lead to hidden damages, unexpected repairs, and unnecessary expenses.
+                    Buying a new or used car is exciting—but many buyers make expensive mistakes that lead to hidden damages, unexpected repairs, and unnecessary expenses.
                 </p>
 
                 <p className="subtext text-lg mt-4">
@@ -201,7 +201,7 @@ export default function PageClient() {
                     <p className="subtext mb-8 max-w-xl mx-auto leading-relaxed">
                         Whether you're buying a <b>brand-new car</b> or a
                         <b> used car</b>, a professional{" "}
-                        <b>299+ point inspection</b> helps you avoid hidden
+                        <b>400 point inspection</b> helps you avoid hidden
                         defects, expensive repairs, and costly mistakes.
                     </p>
 

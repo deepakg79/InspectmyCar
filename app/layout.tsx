@@ -1,4 +1,3 @@
-// app/layout.tsx
 
 import "../app/globals.css";
 import { Inter } from "next/font/google";
@@ -7,6 +6,7 @@ import type { Metadata } from "next";
 import WhatsAppButton from "@/app/components/WhatsAppButton";
 import ConditionalNavbar from "@/app/components/ConditionalNavbar";
 import Footer from "@/app/components/Footer";
+import LocationDetector from "@/app/components/LocationDetector";
 import { BookingProvider } from "@/app/context/BookingContext";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     },
 
     description:
-        "Professional car inspection services in Pune. Get independent Pre-Delivery Inspection (PDI) and Pre-Purchase Inspection (PPI) with 299+ checkpoints. Serving Baner, Hinjewadi, Wakad & Kharadi.",
+        "Professional car inspection services in Pune. Get independent Pre-Delivery Inspection (PDI) and Pre-Purchase Inspection (PPI) with 400 checkpoints. Serving Baner, Hinjewadi, Wakad & Kharadi.",
 
     keywords: [
         "car inspection Pune",
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
         siteName: "InspectMyCar",
         title: "InspectMyCar | Car PDI & Inspection Services in Pune",
         description:
-            "Independent car inspection experts in Pune. Avoid costly mistakes with our 299+ point inspection service.",
+            "Independent car inspection experts in Pune. Avoid costly mistakes with our 400 point inspection service.",
         images: [
             {
                 url: "/og-image.jpg",
@@ -58,7 +58,7 @@ export const metadata: Metadata = {
         card: "summary_large_image",
         title: "InspectMyCar | Car Inspection Pune",
         description:
-            "Professional PDI & used car inspection in Pune with 299+ checkpoints.",
+            "Professional PDI & car inspection Pune with 400 checkpoints.",
         images: ["/og-image.jpg"],
     },
 
@@ -89,6 +89,8 @@ export default function RootLayout({
         >
             <body className={`${inter.className} bg-main antialiased`}>
                 <BookingProvider>
+                    <LocationDetector />
+
                     <ConditionalNavbar />
 
                     {children}

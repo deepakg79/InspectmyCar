@@ -38,6 +38,10 @@
         {
           "name": "Curvv",
           "type": "Standard"
+        },
+        {
+          "name": "Tiago-EV",
+          "type": "Standard"
         }
       ]
     },

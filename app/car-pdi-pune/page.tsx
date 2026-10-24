@@ -4,7 +4,7 @@ import Script from "next/script";
 export const metadata: Metadata = {
     title: "Car PDI Inspection Pune | InspectMyCar - Pre Delivery Experts",
     description:
-        "Professional 299+ point car pre-delivery inspection in Pune. Detect transit damage, repaint issues & OBD errors before delivery. Book today!",
+        "Professional 400 point car pre-delivery inspection in Pune. Detect transit damage, repaint issues & OBD errors before delivery. Book today!",
     keywords: [
         "car pdi pune",
         "car inspection near me",
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     openGraph: {
         title: "Car PDI Inspection Pune | InspectMyCar",
         description:
-            "Professional 299+ point inspection in Pune. Detect hidden damage before delivery.",
+            "Professional 400 point inspection in Pune. Detect hidden damage before delivery.",
         url: "https://inspectmycar.in/car-pdi-pune",
         siteName: "InspectMyCar",
         images: [

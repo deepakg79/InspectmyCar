@@ -9,7 +9,7 @@ export const metadata: Metadata = {
         canonical: "https://inspectmycar.in/top-10-mistakes-while-buying-car-in-pune",
     },
     openGraph: {
-        title: "Top 10 Mistakes While Buying a Car in Pune",
+        title: "Top 10 Mistakes While Buying a New Car",
         description:
             "Avoid costly mistakes when buying a new car in Pune. Learn why PDI inspection is critical.",
         url: "https://inspectmycar.in/top-10-mistakes-while-buying-car-in-pune",
@@ -81,7 +81,7 @@ export default function Page() {
             a: "Yes, but professional inspectors can detect subtle issues like hidden scratches, sensor faults, or alignment problems more reliably.",
         },
         {
-            q: "Is PDI mandatory in Pune?",
+            q: "Is PDI mandatory for new cars?",
             a: "No, but skipping it may cost you in repairs or hidden defects. Most buyers find it highly recommended.",
         },
     ];
@@ -92,11 +92,11 @@ export default function Page() {
             {/* HERO */}
             <section className="max-w-4xl mx-auto px-6 pt-32 pb-12 text-center">
                 <h1 className="heading text-4xl md:text-6xl leading-tight mb-6">
-                    Top 10 Mistakes While Buying a Car in Pune
+                    Top 10 Mistakes While Buying a New Car
                 </h1>
 
                 <p className="subtext text-lg leading-relaxed max-w-3xl mx-auto">
-                    Buying a new car in Pune is exciting — but many buyers make costly mistakes that can lead to hidden damages, extra expenses, or long-term issues.
+                    Buying a new car is exciting — but many buyers make costly mistakes that can lead to hidden damages, extra expenses, or long-term issues.
                 </p>
 
                 <p className="subtext text-lg mt-4">
@@ -123,7 +123,7 @@ export default function Page() {
                                 href="/car-pdi-pune"
                                 className="inline-block mt-3 text-indigo-600 font-bold underline"
                             >
-                                👉 Get Car PDI in Pune →
+                                👉 Book Car PDI →
                             </Link>
                         )}
                     </div>
@@ -156,12 +156,12 @@ export default function Page() {
                     </h2>
 
                     <p className="subtext mb-8 max-w-xl mx-auto leading-relaxed">
-                        A professional <b>299+ point PDI inspection</b> can save you from hidden damages, repaint issues, and costly repairs.
+                        A professional <b>400 point PDI inspection</b> can save you from hidden damages, repaint issues, and costly repairs.
                     </p>
 
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
                         <Link
-                            href="/book"
+                            href="/new-cars"
                             className="btn-primary px-10 py-4 text-lg shadow-xl"
                         >
                             Book Inspection

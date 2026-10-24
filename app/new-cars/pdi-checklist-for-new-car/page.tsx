@@ -124,7 +124,7 @@ export default function PDIChecklistPage() {
                     <Link href="/car-pdi-pune" className="text-indigo-600 underline font-semibold">
                         professional car PDI inspection in Pune
                     </Link>{" "}
-                    for a complete 299+ point expert evaluation.
+                    for a complete 400 point expert evaluation.
                 </p>
             </section>
 
@@ -164,7 +164,7 @@ export default function PDIChecklistPage() {
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-600 to-pink-500" />
 
                     <h2 className="heading text-3xl mb-4">
-                        Want a Professional 299+ Point Inspection?
+                        Want a Professional 400 Point Inspection?
                     </h2>
 
                     <p className="subtext mb-8 max-w-xl mx-auto">

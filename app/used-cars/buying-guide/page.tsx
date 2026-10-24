@@ -9,9 +9,9 @@ export const metadata: Metadata = {
         canonical: "https://inspectmycar.in/used-cars/buying-guide",
     },
     openGraph: {
-        title: "Top 10 Mistakes While Buying a Used Car in Pune",
+        title: "Top 10 Mistakes While Buying a Used Car",
         description:
-            "Avoid costly mistakes when buying a used car in Pune. Learn what to check before purchase.",
+            "Avoid costly mistakes when buying a used car. Learn what to check before purchase.",
         url: "https://inspectmycar.in/used-cars/buying-guide",
         siteName: "InspectMyCar",
         images: [
@@ -92,7 +92,7 @@ export default function Page() {
             {/* HERO */}
             <section className="max-w-4xl mx-auto px-6 pt-32 pb-12 text-center">
                 <h1 className="heading text-4xl md:text-6xl leading-tight mb-6">
-                    Top 10 Mistakes While Buying a Used Car in Pune
+                    Top 10 Mistakes While Buying a Used Car
                 </h1>
 
                 <p className="subtext text-lg leading-relaxed max-w-3xl mx-auto">
@@ -100,7 +100,7 @@ export default function Page() {
                 </p>
 
                 <p className="subtext text-lg mt-4">
-                    Here are the <b>most common mistakes buyers make in Pune</b>.
+                    Here are the <b>most common mistakes the car buyers make</b>.
                 </p>
             </section>
 
@@ -122,10 +122,10 @@ export default function Page() {
 
                         {item.highlight && (
                             <Link
-                                href="/used-cars/pdi-pune"
+                                href="/used-cars"
                                 className="inline-block mt-3 text-indigo-600 font-bold underline"
                             >
-                                👉 Get Used Car Inspection in Pune →
+                                👉 Book Used Car Inspection →
                             </Link>
                         )}
                     </div>

@@ -4,7 +4,6 @@
 
 import { useEffect, useState } from "react";
 import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 import checklist from "@/app/lib/checklist";
 import { db } from "@/app/lib/firebase";
 import { PDFDocument } from "pdf-lib";
@@ -13,26 +12,94 @@ import { buildPDF } from "@/app/lib/pdfGenerator";
 import {
     collection,
     query,
-    where,
     onSnapshot,
     updateDoc,
     doc
 } from "firebase/firestore";
 
-// --- HELPERS ---
-function calculateRange(results: any, start: number, end: number) {
-    let ok = 0;
-    let total = 0;
-    for (let i = start; i <= end; i++) {
-        const val = results[i.toString()];
-        if (val !== undefined) {
-            total++;
-            if (val === 1) ok++;
-        }
+
+// ============================================================
+// TYRE CONDITION - MUST MATCH INSPECTOR INSPECTION FORM
+// ============================================================
+function getTyreCondition(depthValue: string | number) {
+    const depth = Number(depthValue);
+
+    if (!Number.isFinite(depth) || depth <= 0) {
+        return { condition: "No Tread", score: 0 };
     }
-    return total === 0 ? 0 : Math.round((ok / total) * 100);
+
+    if (depth >= 6.5) return { condition: "Excellent", score: 100 };
+    if (depth >= 5.5) return { condition: "Good", score: 80 };
+    if (depth >= 4.5) return { condition: "Average", score: 60 };
+    if (depth >= 3.5) return { condition: "Fair", score: 40 };
+    if (depth >= 2.5) return { condition: "Poor", score: 20 };
+    if (depth >= 1.0) return { condition: "Critical", score: 10 };
+
+    return { condition: "Unsafe", score: 0 };
 }
 
+const VEHICLE_TYPES = ["Petrol", "Diesel", "CNG", "EV", "Automatic"];
+
+function extractEditableComment(value: unknown): string {
+    const text = String(value ?? "").trim();
+
+    if (!text || /^Not Applicable$/i.test(text)) {
+        return "";
+    }
+
+    // These are status labels, NOT findings.
+    if (/^Condition Verified$/i.test(text)) {
+        return "";
+    }
+
+    if (/^PASSED$/i.test(text)) {
+        return "";
+    }
+
+    if (/^ISSUE$/i.test(text)) {
+        return "";
+    }
+
+    return text
+        .replace(/^ISSUE\s*-\s*/i, "")
+        .replace(/^Condition Verified\s*-\s*Findings\s*-\s*/i, "")
+        .replace(/^Condition Verified\s*-\s*/i, "")
+        .trim();
+}
+
+
+
+// Apply server-side PDF permission restrictions after every PDF has been merged.
+// Preview, Preview AI Report, Merge, and Share all pass their final merged PDF
+// through this same endpoint, which invokes qpdf on the server.
+async function protectPdfBytes(bytes: ArrayBuffer | Uint8Array): Promise<Uint8Array> {
+    // Blob accepts a definite ArrayBuffer and avoids TS DOM BodyInit errors
+    // caused by Uint8Array<ArrayBufferLike> in newer TypeScript versions.
+    const bodyBuffer = new Uint8Array(bytes).slice().buffer as ArrayBuffer;
+    const response = await fetch("/api/protect-pdf", {
+        method: "POST",
+        headers: { "Content-Type": "application/pdf" },
+        body: new Blob([bodyBuffer], { type: "application/pdf" }),
+    });
+
+    if (!response.ok) {
+        const responseText = await response.text().catch(() => "");
+        let message = `PDF protection failed (${response.status}).`;
+
+        if (responseText) {
+            try {
+                const payload = JSON.parse(responseText) as { error?: string };
+                message = payload.error || message;
+            } catch {
+                message = responseText.slice(0, 500) || message;
+            }
+        }
+
+        throw new Error(message);
+    }
+
+    return new Uint8Array(await response.arrayBuffer());
+}
 
 export default function ApprovePDIsPage() {
     const [reports, setReports] = useState<any[]>([]);
@@ -42,37 +109,215 @@ export default function ApprovePDIsPage() {
     const [editingReport, setEditingReport] = useState<any>(null);
     const [search, setSearch] = useState("");
 
+    // ============================================================
+    // ADMIN AI SUMMARY - SEPARATE FROM INSPECTOR EDITOR
+    // ============================================================
+    const [aiSummaryReport, setAiSummaryReport] = useState<any>(null);
+
+    const [aiSummary, setAiSummary] = useState({
+        overallCondition: "",
+        keyHighlights: "",
+        criticalIssues: "",
+        recommendations: "",
+        verdict: "",
+    });
+
+    // ============================================================
+    // OPEN EDITOR
+    // Uses the SAME result structure as /inspect:
+    // checklistResults -> numeric 1 / 0 / -1
+    // checklistComments -> final remarks
+    // tyreData -> tyre measurements + condition + score
+    // ============================================================
     const openEditor = (report: any) => {
-        const normalizedResults: any = {};
+        const sourceResults =
+            report?.checklistResults ||
+            report?.results ||
+            {};
+
+        const sourceComments =
+            report?.checklistComments ||
+            report?.comments ||
+            {};
+
+        const sourceTyreData =
+            report?.tyreData ||
+            {};
+
+        const normalizedResults: Record<
+            string,
+            { value: number; comment: string }
+        > = {};
 
         checklist.forEach((section) => {
             section.items.forEach((item: any, index: number) => {
-
-                const oldId =
+                const id =
                     typeof item === "object" && item.label
                         ? item.label
-                        : (section.startNo + index).toString();
+                        : String(section.startNo + index);
 
-                const newId =
-                    typeof item === "object" && item.label
-                        ? `${section.section}-${item.label}`
-                        : `${section.section}-${section.startNo + index}`;
+                const raw = sourceResults?.[id];
 
-                const val = report.results?.[oldId];
+                const value =
+                    typeof raw === "number"
+                        ? raw
+                        : typeof raw === "object" && raw !== null
+                            ? Number(
+                                raw.value ??
+                                raw.status ??
+                                raw.result ??
+                                1
+                            )
+                            : 1;
 
-                normalizedResults[newId] = {
-                    value: typeof val === "number" ? val : val?.value ?? 1,
-                    comment: report.comments?.[oldId] || ""
+                const objectComment =
+                    typeof raw === "object" && raw !== null
+                        ? String(
+                            raw.comment ??
+                            raw.finding ??
+                            raw.remarks ??
+                            raw.remark ??
+                            ""
+                        )
+                        : "";
+
+                const savedComment =
+                    objectComment || String(sourceComments?.[id] ?? "");
+
+                normalizedResults[id] = {
+                    value: Number.isFinite(value) ? value : 1,
+                    comment: extractEditableComment(savedComment),
                 };
             });
         });
 
+        setSearch("");
+
         setEditingReport({
             ...report,
             results: normalizedResults,
-            inspectorComments: report.inspectorComments || [],
+            tyreData: { ...sourceTyreData },
+            inspectorComments: Array.isArray(report?.inspectorComments)
+                ? [...report.inspectorComments]
+                : [],
+            vehicleType:
+                report?.vehicleType ||
+                report?.meta?.vehicleType ||
+                "",
         });
     };
+    // ============================================================
+    // ADMIN AI SUMMARY FLOW
+    // ============================================================
+
+    const openAISummary = (report: any) => {
+        setAiSummaryReport(report);
+
+        setAiSummary({
+            overallCondition:
+                report?.aiGeneratedSummary?.overallCondition || "",
+            keyHighlights:
+                report?.aiGeneratedSummary?.keyHighlights || "",
+            criticalIssues:
+                report?.aiGeneratedSummary?.criticalIssues || "",
+            recommendations:
+                report?.aiGeneratedSummary?.recommendations || "",
+            verdict:
+                report?.aiGeneratedSummary?.verdict || "",
+        });
+    };
+
+    const saveAISummary = async () => {
+        if (!aiSummaryReport) return;
+
+        const summaryToSave = {
+            overallCondition: aiSummary.overallCondition.trim(),
+            keyHighlights: aiSummary.keyHighlights.trim(),
+            criticalIssues: aiSummary.criticalIssues.trim(),
+            recommendations: aiSummary.recommendations.trim(),
+            verdict: aiSummary.verdict.trim(),
+        };
+
+        try {
+            await updateDoc(
+                doc(db, "reports", aiSummaryReport.id),
+                {
+                    aiGeneratedSummary: summaryToSave,
+                }
+            );
+
+            setAiSummaryReport(null);
+        } catch (error) {
+            console.error("Failed to save AI summary:", error);
+            alert("Failed to save AI Summary. Please try again.");
+        }
+    };
+
+    const generateAIReport = async (report: any) => {
+        if (!report?.aiGeneratedSummary) {
+            alert("Please insert and save the AI Summary first.");
+            return;
+        }
+
+        try {
+            const reportDoc = new jsPDF();
+
+            await buildPDF({
+                doc: reportDoc,
+                report,
+                isCustomer: false,
+                includeAISummary: true,
+            });
+
+            const pdfBytes = reportDoc.output("arraybuffer");
+            const mergedPdf = await PDFDocument.create();
+
+            const mainPdf = await PDFDocument.load(pdfBytes);
+            const mainPages = await mergedPdf.copyPages(
+                mainPdf,
+                mainPdf.getPageIndices()
+            );
+            mainPages.forEach((page) => mergedPdf.addPage(page));
+
+            const disclaimerBytes = await fetch("/Disclaimer.pdf").then((r) =>
+                r.arrayBuffer()
+            );
+            const disclaimerPdf = await PDFDocument.load(disclaimerBytes);
+            const disclaimerPages = await mergedPdf.copyPages(
+                disclaimerPdf,
+                disclaimerPdf.getPageIndices()
+            );
+            disclaimerPages.forEach((page) => mergedPdf.addPage(page));
+
+            const finalBytes = await mergedPdf.save();
+            const protectedBytes = await protectPdfBytes(finalBytes);
+            const blob = new Blob(
+                [protectedBytes.buffer.slice(protectedBytes.byteOffset, protectedBytes.byteOffset + protectedBytes.byteLength) as ArrayBuffer],
+                { type: "application/pdf" }
+            );
+
+            const url = URL.createObjectURL(blob);
+            const previewWindow = window.open(url, "_blank");
+
+            if (!previewWindow) {
+                alert(
+                    "The AI Report preview was blocked by the browser. Please allow pop-ups for this site."
+                );
+            }
+
+            setTimeout(() => URL.revokeObjectURL(url), 60000);
+        } catch (error) {
+            // Surface the actual stage/error so failures can be diagnosed.
+            // The protection endpoint intentionally returns safe messages only.
+            const message = error instanceof Error
+                ? error.message
+                : "Unknown error";
+            console.error("Failed to generate AI Report:", message);
+            alert(`Failed to generate AI Report. ${message}`);
+        }
+    };
+
+
     // 🔥 FETCH REPORTS READY FOR APPROVAL
     useEffect(() => {
         const q = query(collection(db, "reports"));
@@ -97,18 +342,6 @@ export default function ApprovePDIsPage() {
         return () => unsub();
     }, []);
 
-    // 🔥 WATERMARK
-    const drawWatermark = (doc: jsPDF) => {
-        doc.saveGraphicsState();
-        doc.setTextColor(200, 200, 200);
-        doc.setFontSize(50);
-        (doc as any).setGState(new (doc as any).GState({ opacity: 0.08 }));
-        doc.text("InspectMyCar", 105, 150, {
-            align: "center",
-            angle: 45
-        });
-        doc.restoreGraphicsState();
-    };
 
     // 🔥 FULL PDF GENERATOR (same as customer)
     const generatePDF = async (report: any) => {
@@ -146,8 +379,12 @@ export default function ApprovePDIsPage() {
         disclaimerPages.forEach(page => mergedPdf.addPage(page));
 
         const finalBytes = await mergedPdf.save();
+        const protectedBytes = await protectPdfBytes(finalBytes);
 
-        const safeBuffer = new Uint8Array(finalBytes).buffer;
+        const safeBuffer = protectedBytes.buffer.slice(
+            protectedBytes.byteOffset,
+            protectedBytes.byteOffset + protectedBytes.byteLength
+        ) as ArrayBuffer;
 
         const blob = new Blob([safeBuffer], {
             type: "application/pdf",
@@ -194,7 +431,11 @@ export default function ApprovePDIsPage() {
 
         disclaimerPages.forEach(page => mergedPdf.addPage(page));
         const finalPdfBytes = await mergedPdf.save();
-        const safeBuffer = new Uint8Array(finalPdfBytes).buffer;
+        const protectedBytes = await protectPdfBytes(finalPdfBytes);
+        const safeBuffer = protectedBytes.buffer.slice(
+            protectedBytes.byteOffset,
+            protectedBytes.byteOffset + protectedBytes.byteLength
+        ) as ArrayBuffer;
         const blob = new Blob([safeBuffer], { type: "application/pdf" });
         const fileName = `Report_${report.name}_${report.model}.pdf`;
 
@@ -216,51 +457,162 @@ export default function ApprovePDIsPage() {
             doc,
             report,
             isCustomer: false,
+            includeAISummary: !!report?.aiGeneratedSummary,
         });
     };
 
+    // ============================================================
+    // SAVE EDITED REPORT
+    // Produces the same Firebase structure as /inspect/page.tsx
+    // ============================================================
     const saveEdit = async () => {
         if (!editingReport) return;
 
-        const checklistResults: any = {};
-        const comments: any = {};
+        try {
+            const checklistResults: Record<string, number> = {};
+            const checklistComments: Record<string, string> = {};
+            const rawComments: Record<string, string> = {};
 
-        checklist.forEach((section) => {
-            section.items.forEach((item: any, index: number) => {
+            checklist.forEach((section) => {
+                section.items.forEach((item: any, index: number) => {
+                    const id =
+                        typeof item === "object" && item.label
+                            ? item.label
+                            : String(section.startNo + index);
 
-                const oldId =
-                    typeof item === "object" && item.label
-                        ? item.label
-                        : (section.startNo + index).toString();
+                    const isNA =
+                        typeof item === "object" &&
+                        Array.isArray(item.notFor) &&
+                        !!editingReport.vehicleType &&
+                        item.notFor.includes(editingReport.vehicleType);
 
-                const newId =
-                    typeof item === "object" && item.label
-                        ? `${section.section}-${item.label}`
-                        : `${section.section}-${section.startNo + index}`;
+                    if (isNA) {
+                        checklistResults[id] = -1;
+                        checklistComments[id] = "Not Applicable";
+                        rawComments[id] = "";
+                        return;
+                    }
 
-                const val = editingReport.results?.[newId];
+                    const data = editingReport.results?.[id];
 
-                if (!val) return;
+                    const value =
+                        typeof data === "number"
+                            ? data
+                            : Number(data?.value ?? 1);
 
-                checklistResults[oldId] = val.value ?? 1;
+                    const safeValue =
+                        value === 0 || value === -1 ? value : 1;
 
-                if (val.comment) {
-                    comments[oldId] = val.comment;
-                }
+let comment = String(data?.comment ?? "").trim();
+
+// Normalize old/status-only values.
+// These are not actual findings.
+if (
+    /^Condition Verified$/i.test(comment) ||
+    /^PASSED$/i.test(comment)
+) {
+    comment = "";
+}
+
+// Remove status wrappers if an older report already contains them.
+comment = comment
+    .replace(/^Condition Verified\s*-\s*Findings\s*-\s*/i, "")
+    .replace(/^Condition Verified\s*-\s*/i, "")
+    .replace(/^ISSUE\s*-\s*/i, "")
+    .trim();
+
+checklistResults[id] = safeValue;
+rawComments[id] = comment;
+
+if (safeValue === 0) {
+    checklistComments[id] = comment
+        ? `ISSUE - ${comment}`
+        : "ISSUE";
+} else if (safeValue === -1) {
+    checklistComments[id] = "Not Applicable";
+    rawComments[id] = "";
+} else {
+    // PASSED always starts clean unless Admin explicitly entered
+    // a new finding in the textbox.
+    checklistComments[id] = comment
+        ? `Condition Verified - Findings - ${comment}`
+        : "Condition Verified";
+}
+                });
             });
-        });
 
-        await updateDoc(doc(db, "reports", editingReport.id), {
-            checklistResults,
-            comments,
-            tyreData: editingReport.tyreData || {},
-            vehicleType: editingReport.vehicleType || "",
-            inspectorComments: (editingReport.inspectorComments || [])
-                .map((c: string) => c.trim())
-                .filter(Boolean),
-        });
+            // Rebuild tyreData exactly like the inspector form.
+            const tyreData: Record<string, any> = {};
 
-        setEditingReport(null);
+            checklist.forEach((section) => {
+                section.items.forEach((item: any, index: number) => {
+                    if (
+                        typeof item !== "object" ||
+                        item.type !== "TYRE"
+                    ) {
+                        return;
+                    }
+
+                    const id = item.label
+                        ? item.label
+                        : String(section.startNo + index);
+
+                    const tyre = editingReport.tyreData?.[id] || {};
+                    const depth = String(tyre.depth ?? "").trim();
+                    const condition = depth
+                        ? getTyreCondition(depth)
+                        : { condition: "", score: 0 };
+
+                    tyreData[id] = {
+                        week: String(tyre.week ?? ""),
+                        year: String(tyre.year ?? ""),
+                        depth,
+                        manufacturer: String(tyre.manufacturer ?? ""),
+                        condition: condition.condition,
+                        score: condition.score,
+                    };
+                });
+            });
+
+            const numericValues = Object.values(checklistResults).filter(
+                (value): value is number =>
+                    typeof value === "number" && value !== -1
+            );
+
+            const healthScore =
+                numericValues.length === 0
+                    ? 0
+                    : Math.round(
+                        (numericValues.filter(value => value === 1).length /
+                            numericValues.length) *
+                        100
+                    );
+
+            const inspectorComments = Array.isArray(
+                editingReport.inspectorComments
+            )
+                ? editingReport.inspectorComments
+                    .map((comment: string) => String(comment).trim())
+                    .filter(Boolean)
+                : [];
+
+            await updateDoc(doc(db, "reports", editingReport.id), {
+                checklistResults,
+                checklistComments,
+                // Kept for compatibility with older report consumers.
+                comments: rawComments,
+                tyreData,
+                healthScore,
+                vehicleType: editingReport.vehicleType || "",
+                inspectorComments,
+            });
+
+            setEditingReport(null);
+            setSearch("");
+        } catch (error) {
+            console.error("Failed to save edited report:", error);
+            alert("Failed to save changes. Please try again.");
+        }
     };
 
     // 🔥 APPROVE
@@ -369,6 +721,9 @@ export default function ApprovePDIsPage() {
                             <p className="text-sm text-slate-500">
                                 📅 {r.date} • {r.inspector}
                             </p>
+<p className="text-sm text-slate-500">
+    📍 {r.city || "—"}
+</p>
                             <p className="text-sm text-gray-500">
                                 {r.mobile}
                             </p>
@@ -391,6 +746,24 @@ export default function ApprovePDIsPage() {
                                     className="bg-black text-white px-3 py-2 rounded-lg text-xs font-bold"
                                 >
                                     Preview
+                                </button>
+
+                                <button
+                                    onClick={() => openAISummary(r)}
+                                    className="bg-indigo-600 text-white px-3 py-2 rounded-lg text-xs font-bold"
+                                >
+                                    Insert AI Summary
+                                </button>
+
+                                <button
+                                    onClick={() => generateAIReport(r)}
+                                    disabled={!r.aiGeneratedSummary}
+                                    className={`px-3 py-2 rounded-lg text-xs font-bold ${r.aiGeneratedSummary
+                                        ? "bg-violet-700 text-white"
+                                        : "bg-slate-200 text-slate-400 cursor-not-allowed"
+                                        }`}
+                                >
+                                    Preview AI Report
                                 </button>
 
                                 <label className="bg-slate-800 text-white px-3 py-2 rounded-lg text-xs font-bold cursor-pointer">
@@ -437,57 +810,217 @@ export default function ApprovePDIsPage() {
                         </div>
                     ))}
             </div>
-            {editingReport && (
+            {aiSummaryReport && (
                 <div
-                    className="fixed inset-0 bg-black/50 z-50 flex justify-center items-start pt-10"
-                    onClick={() => setEditingReport(null)}
+                    className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4"
+                    onClick={() => setAiSummaryReport(null)}
                 >
                     <div
-                        className="bg-white w-full max-w-4xl h-[90vh] rounded-2xl flex flex-col shadow-xl"
+                        className="bg-white w-full max-w-3xl max-h-[90vh] rounded-2xl shadow-xl flex flex-col"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        {/* 🔥 HEADER */}
-                        <div className="sticky top-0 z-20 bg-white border-b px-6 py-4 flex justify-between items-center">
-                            <h2 className="text-lg font-black text-slate-800">
-                                Edit PDI - {editingReport.name}
-                            </h2>
+                        <div className="sticky top-0 z-20 bg-white border-b px-6 py-4 flex justify-between items-center rounded-t-2xl">
+                            <div>
+                                <h2 className="text-lg font-black text-slate-800">
+                                    Insert AI Summary
+                                </h2>
+                                <p className="text-xs text-slate-400 mt-1">
+                                    {aiSummaryReport.name} • {aiSummaryReport.brand} {aiSummaryReport.model}
+                                </p>
+                            </div>
 
                             <button
-                                onClick={() => setEditingReport(null)}
+                                type="button"
+                                onClick={() => setAiSummaryReport(null)}
                                 className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-sm font-bold"
                             >
                                 ✕
                             </button>
                         </div>
 
-                        {/* 🔥 SCROLL AREA */}
-                        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
-
-                            {/* VEHICLE TYPE */}
+                        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
                             <div>
-                                <label className="text-xs font-bold">Vehicle Type</label>
-                                <select
-                                    value={editingReport.vehicleType || ""}
+                                <label className="block text-xs font-black text-slate-700 mb-2">
+                                    OVERALL CONDITION:
+                                </label>
+                                <textarea
+                                    rows={4}
+                                    value={aiSummary.overallCondition}
                                     onChange={(e) =>
-                                        setEditingReport((prev: any) => ({
+                                        setAiSummary((prev) => ({
                                             ...prev,
-                                            vehicleType: e.target.value
+                                            overallCondition: e.target.value,
                                         }))
                                     }
-                                    className="border px-3 py-2 rounded-lg text-sm w-full"
-                                >
-                                    <option value="">Select</option>
-                                    <option>Petrol</option>
-                                    <option>Diesel</option>
-                                    <option>CNG</option>
-                                    <option>EV</option>
-                                </select>
+                                    placeholder="Paste the overall condition summary here..."
+                                    className="w-full border border-slate-200 rounded-xl bg-slate-50 p-3 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                                />
                             </div>
-                            {/* INSPECTOR COMMENTS */}
-                            <div className="space-y-3">
 
-                                <div className="flex items-center justify-between">
-                                    <label className="text-xs font-bold">
+                            <div>
+                                <label className="block text-xs font-black text-slate-700 mb-2">
+                                    KEY HIGHLIGHTS:
+                                </label>
+                                <textarea
+                                    rows={5}
+                                    value={aiSummary.keyHighlights}
+                                    onChange={(e) =>
+                                        setAiSummary((prev) => ({
+                                            ...prev,
+                                            keyHighlights: e.target.value,
+                                        }))
+                                    }
+                                    placeholder="Paste the key highlights here..."
+                                    className="w-full border border-slate-200 rounded-xl bg-slate-50 p-3 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-black text-slate-700 mb-2">
+                                    CRITICAL ISSUES:
+                                </label>
+                                <textarea
+                                    rows={5}
+                                    value={aiSummary.criticalIssues}
+                                    onChange={(e) =>
+                                        setAiSummary((prev) => ({
+                                            ...prev,
+                                            criticalIssues: e.target.value,
+                                        }))
+                                    }
+                                    placeholder="Paste the critical issues here..."
+                                    className="w-full border border-slate-200 rounded-xl bg-slate-50 p-3 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-black text-slate-700 mb-2">
+                                    RECOMMENDATIONS:
+                                </label>
+                                <textarea
+                                    rows={5}
+                                    value={aiSummary.recommendations}
+                                    onChange={(e) =>
+                                        setAiSummary((prev) => ({
+                                            ...prev,
+                                            recommendations: e.target.value,
+                                        }))
+                                    }
+                                    placeholder="Paste the recommendations here..."
+                                    className="w-full border border-slate-200 rounded-xl bg-slate-50 p-3 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-black text-slate-700 mb-2">
+                                    VERDICT:
+                                </label>
+                                <textarea
+                                    rows={4}
+                                    value={aiSummary.verdict}
+                                    onChange={(e) =>
+                                        setAiSummary((prev) => ({
+                                            ...prev,
+                                            verdict: e.target.value,
+                                        }))
+                                    }
+                                    placeholder="Paste the final verdict here..."
+                                    className="w-full border border-slate-200 rounded-xl bg-slate-50 p-3 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="sticky bottom-0 bg-white border-t px-6 py-4 flex justify-end gap-3 rounded-b-2xl">
+                            <button
+                                type="button"
+                                onClick={() => setAiSummaryReport(null)}
+                                className="bg-slate-200 hover:bg-slate-300 px-5 py-2 rounded-xl text-sm font-black"
+                            >
+                                Cancel
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={saveAISummary}
+                                className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-xl text-sm font-black"
+                            >
+                                Save AI Summary
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {editingReport && (
+                <div
+                    className="fixed inset-0 bg-black/60 z-50 flex justify-center items-start p-3 sm:p-6"
+                    onClick={() => {
+                        setEditingReport(null);
+                        setSearch("");
+                    }}
+                >
+                    <div
+                        className="bg-white w-full max-w-5xl h-[95vh] rounded-[2rem] flex flex-col shadow-2xl overflow-hidden"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* HEADER */}
+                        <div className="shrink-0 bg-white border-b px-5 py-4 flex justify-between items-center">
+                            <div className="min-w-0">
+                                <h2 className="text-lg font-black text-slate-900 truncate">
+                                    Edit PDI - {editingReport.name}
+                                </h2>
+                                <p className="text-[10px] text-slate-400 font-bold mt-1 uppercase tracking-wider">
+                                    {editingReport.brand} {editingReport.model} • {editingReport.date || "-"}
+                                </p>
+                            </div>
+
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setEditingReport(null);
+                                    setSearch("");
+                                }}
+                                className="w-9 h-9 shrink-0 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-sm font-bold"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        {/* SCROLL AREA */}
+                        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-5 space-y-5">
+                            {/* VEHICLE TYPE */}
+                            <div className="bg-white border border-slate-100 rounded-[1.5rem] p-4 shadow-sm">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">
+                                    Vehicle Type
+                                </p>
+
+                                <div className="flex gap-2 flex-wrap">
+                                    {VEHICLE_TYPES.map((type) => (
+                                        <button
+                                            key={type}
+                                            type="button"
+                                            onClick={() =>
+                                                setEditingReport((prev: any) => ({
+                                                    ...prev,
+                                                    vehicleType: type,
+                                                }))
+                                            }
+                                            className={`flex-1 min-w-[90px] px-4 py-3 rounded-2xl text-xs font-black border transition-all ${
+                                                editingReport.vehicleType === type
+                                                    ? "bg-indigo-600 text-white border-indigo-600 shadow-md"
+                                                    : "bg-slate-50 text-slate-500 border-slate-200"
+                                            }`}
+                                        >
+                                            {type}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* INSPECTOR COMMENTS */}
+                            <div className="bg-white border border-slate-100 rounded-[1.5rem] p-4 shadow-sm space-y-3">
+                                <div className="flex items-center justify-between gap-3">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">
                                         Inspector Comments
                                     </label>
 
@@ -498,11 +1031,11 @@ export default function ApprovePDIsPage() {
                                                 ...prev,
                                                 inspectorComments: [
                                                     ...(prev.inspectorComments || []),
-                                                    ""
-                                                ]
+                                                    "",
+                                                ],
                                             }))
                                         }
-                                        className="bg-indigo-600 text-white px-3 py-2 rounded-lg text-[10px] font-black"
+                                        className="bg-indigo-600 text-white px-3 py-2 rounded-xl text-[10px] font-black"
                                     >
                                         + Add Comment
                                     </button>
@@ -516,221 +1049,369 @@ export default function ApprovePDIsPage() {
                                             value={comment}
                                             placeholder={`Comment ${index + 1}`}
                                             onChange={(e) => {
-                                                const updated = [...editingReport.inspectorComments];
-                                                updated[index] = e.target.value;
-
-                                                setEditingReport((prev: any) => ({
-                                                    ...prev,
-                                                    inspectorComments: updated
-                                                }));
+                                                setEditingReport((prev: any) => {
+                                                    const updated = [
+                                                        ...(prev.inspectorComments || []),
+                                                    ];
+                                                    updated[index] = e.target.value;
+                                                    return {
+                                                        ...prev,
+                                                        inspectorComments: updated,
+                                                    };
+                                                });
                                             }}
-                                            className="w-full border rounded-xl bg-slate-50 p-3 text-sm resize-none"
+                                            className="w-full border border-slate-200 rounded-2xl bg-slate-50 p-3 text-sm resize-none"
                                         />
                                     )
                                 )}
-
                             </div>
-                            {/* SEARCH */}
-                            <input
-                                type="text"
-                                placeholder="Search inspection item..."
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                className="w-full px-3 py-2 border rounded-lg text-sm"
-                            />
+
+                            {/* SEARCH - SAME FILTERING BEHAVIOUR AS INSPECT */}
+                            <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-sm pb-2">
+                                <input
+                                    type="text"
+                                    placeholder="Search inspection item..."
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                    className="w-full px-4 py-3 border border-slate-200 rounded-2xl text-sm font-medium outline-none focus:ring-2 focus:ring-indigo-200"
+                                />
+                            </div>
 
                             {/* CHECKLIST */}
                             <div className="space-y-6">
-                                {checklist.map((section) => (
-                                    <div key={section.section}>
-                                        <p className="text-xs font-black text-slate-500 uppercase tracking-wider mb-2">
-                                            {section.section}
-                                        </p>
+                                {(() => {
+                                    const filteredSections = checklist
+                                        .map((section) => ({
+                                            ...section,
+                                            items: section.items
+                                                .map((item: any, originalIndex: number) => ({
+                                                    item,
+                                                    originalIndex,
+                                                }))
+                                                .filter(({ item }: { item: any }) => {
+                                                    if (!search.trim()) return true;
 
-                                        <div className="space-y-2">
-                                            {section.items.map((item: any, index: number) => {
+                                                    const text =
+                                                        typeof item === "object"
+                                                            ? String(item.text || "")
+                                                            : String(item);
 
-                                                const id =
-                                                    typeof item === "object" && item.label
-                                                        ? `${section.section}-${item.label}`
-                                                        : `${section.section}-${section.startNo + index}`;
+                                                    return text
+                                                        .toLowerCase()
+                                                        .includes(search.trim().toLowerCase());
+                                                }),
+                                        }))
+                                        .filter((section) => section.items.length > 0);
 
-                                                const text =
-                                                    typeof item === "object" ? item.text : item;
+                                    if (filteredSections.length === 0) {
+                                        return (
+                                            <div className="bg-slate-50 border border-slate-200 rounded-[2rem] p-10 text-center">
+                                                <p className="text-sm font-black text-slate-500">
+                                                    No inspection items found
+                                                </p>
+                                                <p className="text-xs text-slate-400 mt-1">
+                                                    Try a different search term.
+                                                </p>
+                                            </div>
+                                        );
+                                    }
 
-                                                const isNA =
-                                                    typeof item === "object" &&
-                                                    item.notFor &&
-                                                    editingReport.vehicleType &&
-                                                    item.notFor.includes(editingReport.vehicleType);
+                                    return filteredSections.map((section) => (
+                                        <div key={section.section} className="space-y-3">
+                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">
+                                                {section.section}
+                                            </p>
 
-                                                const data =
-                                                    editingReport.results?.[id] || { value: 1, comment: "" };
-
-                                                const value = isNA ? -1 : data.value;
-                                                const comment = data.comment || "";
-
-                                                // 🔥 TYRE
-                                                if (typeof item === "object" && item.type === "TYRE") {
-                                                    const originalId =
+                                            <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 divide-y divide-slate-50 overflow-hidden">
+                                                {section.items.map(({ item, originalIndex }: { item: any; originalIndex: number }) => {
+                                                    const id =
                                                         typeof item === "object" && item.label
                                                             ? item.label
-                                                            : (section.startNo + index).toString();
+                                                            : String(section.startNo + originalIndex);
 
-                                                    const tyre = editingReport.tyreData?.[originalId] || {};
+                                                    const text =
+                                                        typeof item === "object"
+                                                            ? item.text
+                                                            : item;
+
+                                                    const isTyre =
+                                                        typeof item === "object" &&
+                                                        item.type === "TYRE";
+
+                                                    const isNA =
+                                                        typeof item === "object" &&
+                                                        Array.isArray(item.notFor) &&
+                                                        !!editingReport.vehicleType &&
+                                                        item.notFor.includes(editingReport.vehicleType);
+
+                                                    const data =
+                                                        editingReport.results?.[id] || {
+                                                            value: 1,
+                                                            comment: "",
+                                                        };
+
+                                                    const currentValue = isNA
+                                                        ? -1
+                                                        : Number(data?.value ?? 1);
+
+                                                    const comment = String(
+                                                        data?.comment ?? ""
+                                                    );
+
+                                                    const tyre =
+                                                        editingReport.tyreData?.[id] || {
+                                                            week: "",
+                                                            year: "",
+                                                            depth: "",
+                                                            manufacturer: "",
+                                                        };
+
+                                                    const tyreCondition = tyre.depth
+                                                        ? getTyreCondition(tyre.depth)
+                                                        : null;
 
                                                     return (
                                                         <div
-                                                            key={`${section.section}-${id}-${index}`}
-                                                            className="flex justify-between items-center gap-4 p-3 rounded-xl border bg-slate-50"
+                                                            key={`${section.section}-${id}`}
+                                                            className="p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4"
                                                         >
-                                                            <div className="max-w-[65%]">
-                                                                <p className="text-[10px] font-black text-slate-400">
+                                                            {/* ITEM TEXT */}
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className="text-[9px] text-slate-300 font-black">
                                                                     #{id}
                                                                 </p>
-                                                                <p className="text-xs font-semibold text-slate-700 break-words">
+                                                                <p className="text-xs font-bold text-slate-700 break-words">
                                                                     {text}
                                                                 </p>
                                                             </div>
 
-                                                            <div className="flex gap-2 shrink-0">
-                                                                <input
-                                                                    placeholder="Week"
-                                                                    value={tyre.week || ""}
-                                                                    onChange={(e) => {
-                                                                        const val = e.target.value;
+                                                            {/* TYRE */}
+                                                            {isTyre ? (
+                                                                <div className="flex flex-col gap-2 w-full lg:w-[320px] shrink-0">
+                                                                    <div className="grid grid-cols-2 gap-2">
+                                                                        <select
+                                                                            className="w-full p-2 bg-slate-100 rounded-xl text-xs text-center font-bold"
+                                                                            value={tyre.week || ""}
+                                                                            onChange={(e) =>
+                                                                                setEditingReport((prev: any) => ({
+                                                                                    ...prev,
+                                                                                    tyreData: {
+                                                                                        ...prev.tyreData,
+                                                                                        [id]: {
+                                                                                            ...prev.tyreData?.[id],
+                                                                                            week: e.target.value,
+                                                                                        },
+                                                                                    },
+                                                                                }))
+                                                                            }
+                                                                        >
+                                                                            <option value="">Week</option>
+                                                                            {Array.from({ length: 52 }, (_, i) =>
+                                                                                String(i + 1).padStart(2, "0")
+                                                                            ).map((week) => (
+                                                                                <option key={week} value={week}>
+                                                                                    {week}
+                                                                                </option>
+                                                                            ))}
+                                                                        </select>
 
-                                                                        setEditingReport((prev: any) => ({
-                                                                            ...prev,
-                                                                            tyreData: {
-                                                                                ...prev.tyreData,
-                                                                                [originalId]: {
-                                                                                    ...prev.tyreData?.[originalId],
-                                                                                    week: val,
-                                                                                },
-                                                                            },
-                                                                        }));
-                                                                    }}
-                                                                    className="border px-2 py-1 text-xs w-16 rounded"
-                                                                />
+                                                                        <input
+                                                                            type="text"
+                                                                            inputMode="numeric"
+                                                                            maxLength={4}
+                                                                            placeholder="Year"
+                                                                            value={tyre.year || ""}
+                                                                            onChange={(e) => {
+                                                                                const value = e.target.value.replace(/\D/g, "").slice(0, 4);
+                                                                                setEditingReport((prev: any) => ({
+                                                                                    ...prev,
+                                                                                    tyreData: {
+                                                                                        ...prev.tyreData,
+                                                                                        [id]: {
+                                                                                            ...prev.tyreData?.[id],
+                                                                                            year: value,
+                                                                                        },
+                                                                                    },
+                                                                                }));
+                                                                            }}
+                                                                            className="w-full p-2 bg-slate-100 rounded-xl text-xs text-center font-bold"
+                                                                        />
+                                                                    </div>
 
-                                                                <input
-                                                                    placeholder="Year"
-                                                                    value={tyre.year || ""}
-                                                                    onChange={(e) => {
-                                                                        const val = e.target.value;
+                                                                    <div className="grid grid-cols-2 gap-2">
+                                                                        <input
+                                                                            type="number"
+                                                                            inputMode="decimal"
+                                                                            step="0.1"
+                                                                            min="0"
+                                                                            placeholder="Depth mm"
+                                                                            value={tyre.depth || ""}
+                                                                            onChange={(e) =>
+                                                                                setEditingReport((prev: any) => ({
+                                                                                    ...prev,
+                                                                                    tyreData: {
+                                                                                        ...prev.tyreData,
+                                                                                        [id]: {
+                                                                                            ...prev.tyreData?.[id],
+                                                                                            depth: e.target.value,
+                                                                                        },
+                                                                                    },
+                                                                                }))
+                                                                            }
+                                                                            className="w-full p-2 bg-slate-100 rounded-xl text-xs text-center font-bold"
+                                                                        />
 
-                                                                        setEditingReport((prev: any) => ({
-                                                                            ...prev,
-                                                                            tyreData: {
-                                                                                ...prev.tyreData,
-                                                                                [originalId]: {
-                                                                                    ...prev.tyreData?.[originalId],
-                                                                                    year: val,
-                                                                                },
-                                                                            },
-                                                                        }));
-                                                                    }}
-                                                                    className="border px-2 py-1 text-xs w-20 rounded"
-                                                                />
-                                                            </div>
+                                                                        <input
+                                                                            type="text"
+                                                                            placeholder="Manufacturer"
+                                                                            value={tyre.manufacturer || ""}
+                                                                            onChange={(e) =>
+                                                                                setEditingReport((prev: any) => ({
+                                                                                    ...prev,
+                                                                                    tyreData: {
+                                                                                        ...prev.tyreData,
+                                                                                        [id]: {
+                                                                                            ...prev.tyreData?.[id],
+                                                                                            manufacturer: e.target.value,
+                                                                                        },
+                                                                                    },
+                                                                                }))
+                                                                            }
+                                                                            className="w-full p-2 bg-slate-100 rounded-xl text-xs font-bold"
+                                                                        />
+                                                                    </div>
+
+                                                                    {tyreCondition && (
+                                                                        <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-slate-100">
+                                                                            <span className="text-[10px] font-black text-slate-500">
+                                                                                {tyreCondition.condition}
+                                                                            </span>
+                                                                            <span className="text-[10px] font-black text-slate-700">
+                                                                                {tyreCondition.score}%
+                                                                            </span>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            ) : (
+                                                                /* NORMAL CHECKLIST */
+                                                                <div className="flex flex-col gap-2 w-full lg:w-[320px] shrink-0">
+                                                                    <div className={`flex p-1 rounded-2xl ${isNA ? "bg-slate-200 opacity-60" : "bg-slate-100"}`}>
+                                                                        <button
+                                                                            type="button"
+                                                                            disabled={isNA}
+onClick={() =>
+    !isNA &&
+    setEditingReport((prev: any) => ({
+        ...prev,
+        results: {
+            ...prev.results,
+            [id]: {
+                ...(prev.results?.[id] || {}),
+                value: 1,
+                comment: "",
+            },
+        },
+    }))
+}
+                                                                            className={`flex-1 px-3 py-2 text-[10px] font-black rounded-xl ${
+                                                                                currentValue === 1
+                                                                                    ? "bg-green-500 text-white"
+                                                                                    : "text-slate-500"
+                                                                            }`}
+                                                                        >
+                                                                            PASSED
+                                                                        </button>
+
+                                                                        <button
+                                                                            type="button"
+                                                                            disabled={isNA}
+                                                                            onClick={() =>
+                                                                                !isNA &&
+                                                                                setEditingReport((prev: any) => ({
+                                                                                    ...prev,
+                                                                                    results: {
+                                                                                        ...prev.results,
+                                                                                        [id]: {
+                                                                                            ...(prev.results?.[id] || {}),
+                                                                                            value: 0,
+                                                                                        },
+                                                                                    },
+                                                                                }))
+                                                                            }
+                                                                            className={`flex-1 px-3 py-2 text-[10px] font-black rounded-xl ${
+                                                                                currentValue === 0
+                                                                                    ? "bg-red-500 text-white"
+                                                                                    : "text-slate-500"
+                                                                            }`}
+                                                                        >
+                                                                            ISSUE
+                                                                        </button>
+                                                                    </div>
+
+                                                                    {isNA ? (
+                                                                        <span className="text-[10px] font-black text-slate-400 text-right">
+                                                                            NOT APPLICABLE
+                                                                        </span>
+                                                                    ) : (
+                                                                        <textarea
+                                                                            rows={2}
+                                                                            placeholder={
+                                                                                currentValue === 0
+                                                                                    ? "ISSUE / Findings"
+                                                                                    : "Condition Verified / Findings"
+                                                                            }
+                                                                            value={comment}
+                                                                            onChange={(e) =>
+                                                                                setEditingReport((prev: any) => ({
+                                                                                    ...prev,
+                                                                                    results: {
+                                                                                        ...prev.results,
+                                                                                        [id]: {
+                                                                                            ...(prev.results?.[id] || {}),
+                                                                                            value: currentValue === -1 ? 1 : currentValue,
+                                                                                            comment: e.target.value,
+                                                                                        },
+                                                                                    },
+                                                                                }))
+                                                                            }
+                                                                            className={`w-full p-2 rounded-xl text-[10px] resize-none ${
+                                                                                currentValue === 0
+                                                                                    ? "bg-red-50 border border-red-200"
+                                                                                    : "bg-slate-50 border border-slate-200"
+                                                                            }`}
+                                                                        />
+                                                                    )}
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     );
-                                                }
-
-                                                return (
-                                                    <div
-                                                        key={`${section.section}-${id}-${index}`}
-                                                        className="flex justify-between items-start gap-4 p-3 rounded-xl border bg-slate-50"
-                                                    >
-                                                        {/* LEFT */}
-                                                        <div className="max-w-[65%]">
-                                                            <p className="text-[10px] font-black text-slate-400">
-                                                                #{id}
-                                                            </p>
-                                                            <p className="text-xs font-semibold text-slate-700 break-words">
-                                                                {text}
-                                                            </p>
-                                                        </div>
-
-                                                        {/* RIGHT */}
-                                                        <div className="flex flex-col items-end gap-2 w-[130px] shrink-0">
-
-                                                            {isNA && (
-                                                                <span className="text-[10px] font-black text-slate-400">
-                                                                    NA
-                                                                </span>
-                                                            )}
-
-                                                            {!isNA && (
-                                                                <select
-                                                                    value={value}
-                                                                    onChange={(e) => {
-                                                                        const val = Number(e.target.value);
-
-                                                                        setEditingReport((prev: any) => ({
-                                                                            ...prev,
-                                                                            results: {
-                                                                                ...prev.results,
-                                                                                [id]: {
-                                                                                    ...prev.results[id],
-                                                                                    value: val,
-                                                                                },
-                                                                            },
-                                                                        }));
-                                                                    }}
-                                                                    className="w-full border px-2 py-1 text-xs rounded-lg font-bold bg-white"
-                                                                >
-                                                                    <option value={1}>OK</option>
-                                                                    <option value={0}>ISSUE</option>
-                                                                </select>
-                                                            )}
-
-                                                            {!isNA && value === 0 && (
-                                                                <input
-                                                                    placeholder="Comment"
-                                                                    value={comment}
-                                                                    onChange={(e) => {
-                                                                        const val = e.target.value;
-
-                                                                        setEditingReport((prev: any) => ({
-                                                                            ...prev,
-                                                                            results: {
-                                                                                ...prev.results,
-                                                                                [id]: {
-                                                                                    ...prev.results[id],
-                                                                                    comment: val,
-                                                                                },
-                                                                            },
-                                                                        }));
-                                                                    }}
-                                                                    className="w-full border border-red-200 bg-red-50 px-2 py-1 text-xs rounded-lg"
-                                                                />
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                );
-                                            })}
+                                                })}
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    ));
+                                })()}
                             </div>
                         </div>
 
-                        {/* 🔥 FOOTER */}
-                        <div className="sticky bottom-0 bg-white border-t px-6 py-3 flex justify-end gap-3">
+                        {/* FOOTER */}
+                        <div className="shrink-0 bg-white border-t px-5 py-3 flex justify-end gap-3">
                             <button
-                                onClick={saveEdit}
-                                className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-xl text-sm font-black"
+                                type="button"
+                                onClick={() => {
+                                    setEditingReport(null);
+                                    setSearch("");
+                                }}
+                                className="bg-slate-200 hover:bg-slate-300 px-5 py-2.5 rounded-xl text-sm font-black"
                             >
-                                Save Changes
+                                Cancel
                             </button>
 
                             <button
-                                onClick={() => setEditingReport(null)}
-                                className="bg-slate-200 hover:bg-slate-300 px-5 py-2 rounded-xl text-sm font-black"
+                                type="button"
+                                onClick={saveEdit}
+                                className="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl text-sm font-black"
                             >
-                                Cancel
+                                Save Changes
                             </button>
                         </div>
                     </div>

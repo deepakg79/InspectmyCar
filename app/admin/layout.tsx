@@ -13,7 +13,7 @@ const menuItems = [
     { name: "Approve PDIs", path: "/admin/approve", icon: "✅" },
     { name: "Manage Slots", path: "/admin/slots", icon: "⛔" },
     { name: "Manage Inspectors", path: "/admin/inspectors", icon: "🛡️" },
-    { name: "Assign Executives", path: "/admin/assign", icon: "👥" },
+    { name: "Invoicing", path: "/admin/invoicing", icon: "🧾" },
     { name: "Live Dispatch", path: "/admin/dispatch", icon: "📡" },
     { name: "Market Analytics", path: "/admin/stats", icon: "📈" },
     { name: "Manage Car Models", path: "/admin/car-models", icon: "🚗" },
