@@ -69,38 +69,6 @@ function extractEditableComment(value: unknown): string {
 
 
 
-// Apply server-side PDF permission restrictions after every PDF has been merged.
-// Preview, Preview AI Report, Merge, and Share all pass their final merged PDF
-// through this same endpoint, which invokes qpdf on the server.
-async function protectPdfBytes(bytes: ArrayBuffer | Uint8Array): Promise<Uint8Array> {
-    // Blob accepts a definite ArrayBuffer and avoids TS DOM BodyInit errors
-    // caused by Uint8Array<ArrayBufferLike> in newer TypeScript versions.
-    const bodyBuffer = new Uint8Array(bytes).slice().buffer as ArrayBuffer;
-    const response = await fetch("/api/protect-pdf", {
-        method: "POST",
-        headers: { "Content-Type": "application/pdf" },
-        body: new Blob([bodyBuffer], { type: "application/pdf" }),
-    });
-
-    if (!response.ok) {
-        const responseText = await response.text().catch(() => "");
-        let message = `PDF protection failed (${response.status}).`;
-
-        if (responseText) {
-            try {
-                const payload = JSON.parse(responseText) as { error?: string };
-                message = payload.error || message;
-            } catch {
-                message = responseText.slice(0, 500) || message;
-            }
-        }
-
-        throw new Error(message);
-    }
-
-    return new Uint8Array(await response.arrayBuffer());
-}
-
 export default function ApprovePDIsPage() {
     const [reports, setReports] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -290,11 +258,11 @@ export default function ApprovePDIsPage() {
             disclaimerPages.forEach((page) => mergedPdf.addPage(page));
 
             const finalBytes = await mergedPdf.save();
-            const protectedBytes = await protectPdfBytes(finalBytes);
-            const blob = new Blob(
-                [protectedBytes.buffer.slice(protectedBytes.byteOffset, protectedBytes.byteOffset + protectedBytes.byteLength) as ArrayBuffer],
-                { type: "application/pdf" }
-            );
+            const safeBuffer = finalBytes.buffer.slice(
+                finalBytes.byteOffset,
+                finalBytes.byteOffset + finalBytes.byteLength
+            ) as ArrayBuffer;
+            const blob = new Blob([safeBuffer], { type: "application/pdf" });
 
             const url = URL.createObjectURL(blob);
             const previewWindow = window.open(url, "_blank");
@@ -308,7 +276,6 @@ export default function ApprovePDIsPage() {
             setTimeout(() => URL.revokeObjectURL(url), 60000);
         } catch (error) {
             // Surface the actual stage/error so failures can be diagnosed.
-            // The protection endpoint intentionally returns safe messages only.
             const message = error instanceof Error
                 ? error.message
                 : "Unknown error";
@@ -379,11 +346,10 @@ export default function ApprovePDIsPage() {
         disclaimerPages.forEach(page => mergedPdf.addPage(page));
 
         const finalBytes = await mergedPdf.save();
-        const protectedBytes = await protectPdfBytes(finalBytes);
 
-        const safeBuffer = protectedBytes.buffer.slice(
-            protectedBytes.byteOffset,
-            protectedBytes.byteOffset + protectedBytes.byteLength
+        const safeBuffer = finalBytes.buffer.slice(
+            finalBytes.byteOffset,
+            finalBytes.byteOffset + finalBytes.byteLength
         ) as ArrayBuffer;
 
         const blob = new Blob([safeBuffer], {
@@ -431,10 +397,9 @@ export default function ApprovePDIsPage() {
 
         disclaimerPages.forEach(page => mergedPdf.addPage(page));
         const finalPdfBytes = await mergedPdf.save();
-        const protectedBytes = await protectPdfBytes(finalPdfBytes);
-        const safeBuffer = protectedBytes.buffer.slice(
-            protectedBytes.byteOffset,
-            protectedBytes.byteOffset + protectedBytes.byteLength
+        const safeBuffer = finalPdfBytes.buffer.slice(
+            finalPdfBytes.byteOffset,
+            finalPdfBytes.byteOffset + finalPdfBytes.byteLength
         ) as ArrayBuffer;
         const blob = new Blob([safeBuffer], { type: "application/pdf" });
         const fileName = `Report_${report.name}_${report.model}.pdf`;
