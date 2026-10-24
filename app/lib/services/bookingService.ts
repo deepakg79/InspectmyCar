@@ -159,6 +159,17 @@ export const syncInspectorCounts = async (): Promise<string> => {
             return;
         }
 
+        // Inspectors with city set to "Unknown" must not contribute to
+        // any configured city's capacity (including DEFAULT_CITY).
+        const rawCity =
+            typeof data.city === "string"
+                ? data.city.trim()
+                : "";
+
+        if (rawCity.toLowerCase() === "unknown") {
+            return;
+        }
+
         const city = normalizeCity(data.city);
         counts[city] += 1;
     });
