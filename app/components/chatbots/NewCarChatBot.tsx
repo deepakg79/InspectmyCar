@@ -409,111 +409,59 @@ useEffect(() => {
 
 
 
-    const fetchBlockedSlots = async () => {
 
-        try {
+const fetchBlockedSlots = async () => {
+    try {
+        const today = new Date().toISOString().split("T")[0];
 
-            const today = new Date().toISOString().split("T")[0];
+        // Fetch only future blocked slots for the selected city.
+        const q = query(
+            collection(db, "blockedSlots"),
+            where("city", "==", selectedCity),
+            where("date", ">=", today)
+        );
 
+        const snapshot = await getDocs(q);
 
+        const slotMap: Record<string, string[]> = {};
+        const fullMap: Record<string, boolean> = {};
 
-            const q = query(
+        snapshot.forEach((snapshotDoc) => {
+            const data = snapshotDoc.data();
 
-                collection(db, "blockedSlots"),
+            const date = data.date?.toString().trim();
+            if (!date) return;
 
-                where("date", ">=", today)
+            if (data.type === "date") {
+                fullMap[date] = true;
+                return;
+            }
 
-            );
+            if (data.type === "slot") {
+                const normalizedSlot = String(data.slot ?? "")
+                    .trim()
+                    .replace(/^0/, "");
 
+                if (!normalizedSlot) return;
 
-
-            const snapshot = await getDocs(q);
-
-
-
-            const slotMap: Record<string, string[]> = {};
-
-            const fullMap: Record<string, boolean> = {};
-
-
-
-            snapshot.forEach((snapshotDoc) => {
-
-                const data = snapshotDoc.data();
-
-
-
-                // Legacy blocks created before city support are treated as Pune.
-
-                const blockCity =
-
-                    (data.city as CityName | undefined) || "Pune";
-
-
-
-                if (blockCity !== selectedCity) return;
-
-
-
-                const date = data.date?.toString().trim();
-
-                if (!date) return;
-
-
-
-                if (data.type === "date") {
-
-                    fullMap[date] = true;
-
-                    return;
-
+                if (!slotMap[date]) {
+                    slotMap[date] = [];
                 }
 
-
-
-                if (data.type === "slot") {
-
-                    const normalizedSlot = String(data.slot ?? "")
-
-                        .trim()
-
-                        .replace(/^0/, "");
-
-
-
-                    if (!normalizedSlot) return;
-
-
-
-                    if (!slotMap[date]) slotMap[date] = [];
-
-                    if (!slotMap[date].includes(normalizedSlot)) {
-
-                        slotMap[date].push(normalizedSlot);
-
-                    }
-
+                if (!slotMap[date].includes(normalizedSlot)) {
+                    slotMap[date].push(normalizedSlot);
                 }
+            }
+        });
 
-            });
-
-
-
-            setBlockedSlotsMap(slotMap);
-
-            setFullDayBlockedMap(fullMap);
-
-        } catch (error) {
-
-            console.error("Failed to fetch blocked slots:", error);
-
-            setBlockedSlotsMap({});
-
-            setFullDayBlockedMap({});
-
-        }
-
-    };
+        setBlockedSlotsMap(slotMap);
+        setFullDayBlockedMap(fullMap);
+    } catch (error) {
+        console.error("Failed to fetch blocked slots:", error);
+        setBlockedSlotsMap({});
+        setFullDayBlockedMap({});
+    }
+};
 
 
 
