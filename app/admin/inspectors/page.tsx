@@ -47,18 +47,19 @@ interface InspectorForm {
     name: string;
     mobile: string;
     password: string;
-    city: CityName;
+    city: CityName | "Unknown";
 }
 
 interface EditForm {
     name: string;
     mobile: string;
-    city: CityName;
+    city: CityName | "Unknown";
 }
 
 const INSPECTORS_COLLECTION = "inspectors";
 
-const cities = getCities();
+const cities: CityName[] = getCities();
+const inspectorCityOptions: Array<CityName | "Unknown"> = [...cities, "Unknown"];
 
 const Toast = ({
     message,
@@ -138,7 +139,11 @@ export default function ManageInspectors() {
         window.setTimeout(() => setToast(null), 3000);
     };
 
-    const normalizeCity = (city?: string): CityName => {
+    const normalizeCity = (city?: string): CityName | "Unknown" => {
+        if (city?.trim().toLowerCase() === "unknown") {
+            return "Unknown";
+        }
+
         if (city && cities.includes(city as CityName)) {
             return city as CityName;
         }
@@ -290,7 +295,10 @@ export default function ManageInspectors() {
             return;
         }
 
-        if (!cities.includes(formData.city)) {
+        if (
+            formData.city !== "Unknown" &&
+            !cities.includes(formData.city as CityName)
+        ) {
             showNotice("Please select a valid city", "error");
             return;
         }
@@ -373,7 +381,10 @@ export default function ManageInspectors() {
             return;
         }
 
-        if (!cities.includes(editForm.city)) {
+        if (
+            editForm.city !== "Unknown" &&
+            !cities.includes(editForm.city as CityName)
+        ) {
             showNotice("Please select a valid city", "error");
             return;
         }
@@ -642,12 +653,12 @@ export default function ManageInspectors() {
                             onChange={(e) =>
                                 setFormData({
                                     ...formData,
-                                    city: e.target.value as CityName,
+                                    city: e.target.value as CityName | "Unknown",
                                 })
                             }
                             className="w-full p-4 bg-slate-50 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-200"
                         >
-                            {cities.map((city) => (
+                            {inspectorCityOptions.map((city) => (
                                 <option key={city} value={city}>
                                     {city === "ChhatrapatiSambhajinagar"
                                         ? "Chhatrapati Sambhajinagar"
@@ -897,12 +908,12 @@ export default function ManageInspectors() {
                                     setEditForm({
                                         ...editForm,
                                         city: e.target
-                                            .value as CityName,
+                                            .value as CityName | "Unknown",
                                     })
                                 }
                                 className="w-full p-4 bg-slate-50 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-200"
                             >
-                                {cities.map((city) => (
+                                {inspectorCityOptions.map((city) => (
                                     <option
                                         key={city}
                                         value={city}
