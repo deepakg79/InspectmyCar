@@ -1425,6 +1425,9 @@ return normalizedComment
                     const tyre =
                         report?.tyreData?.[id];
 
+                    const spareUnavailable =
+                        id === "E" && tyre?.available === false;
+
                     const week =
                         tyre?.week || "-";
 
@@ -1437,19 +1440,27 @@ return normalizedComment
                     const manufacturer =
                         tyre?.manufacturer || "-";
 
-                    const tyreCondition =
-                        tyre?.condition ||
-                        (depth !== "-" && depth !== ""
-                            ? getTyreConditionForPDF(depth)
-                            : "");
+                    const tyreCondition = spareUnavailable
+                        ? ""
+                        : tyre?.condition ||
+                            (depth !== "-" && depth !== ""
+                                ? getTyreConditionForPDF(depth)
+                                : "");
 
-                    const tyreDetails =
-                        `${week} / ${year}\n${depth} mm / ${manufacturer}`;
+                    const tyreDetails = spareUnavailable
+                        ? "Not Available"
+                        : `${week} / ${year}\n${depth} mm / ${manufacturer}`;
 
                     sectionRows.push({
                         item: text,
-                        status: "PASSED",
-                        remarks: tyreCondition ? `${tyreCondition} Condition` : "Condition Verified",
+                        // An unavailable spare tyre is not a passed checkpoint.
+                        // Show NA in the STATUS (Passed / Issue) column.
+                        status: spareUnavailable ? "NA" : "PASSED",
+                        remarks: spareUnavailable
+                            ? "Not Available"
+                            : tyreCondition
+                                ? `${tyreCondition} Condition`
+                                : "Condition Verified",
                         isTyre: true,
                         tyreDetails,
                     });
@@ -2143,23 +2154,26 @@ return normalizedComment
         const tyre =
             tyreMap?.[item.id] || {};
 
+        const spareUnavailable =
+            item.id === "E" && tyre?.available === false;
+
         const depth =
             tyre?.depth || "";
 
-        const condition =
-            tyre?.condition ||
-            (
-                depth
-                    ? tyreConditionForMap(
-                        depth
-                    )
-                    : "No Tread"
-            );
+        const condition = spareUnavailable
+            ? "Not Available"
+            : tyre?.condition ||
+                (
+                    depth
+                        ? tyreConditionForMap(
+                            depth
+                        )
+                        : "No Tread"
+                );
 
-        const conditionColor =
-            tyreConditionColor(
-                condition
-            );
+        const conditionColor = spareUnavailable
+            ? [120, 120, 120] as [number, number, number]
+            : tyreConditionColor(condition);
 
         const week =
             tyre?.week || "-";
@@ -2315,7 +2329,8 @@ return normalizedComment
         doc.text(
             condition.toUpperCase(),
             item.x + 2.5,
-            item.y + 13
+            item.y + 13,
+            spareUnavailable ? { maxWidth: cardW - 5 } : undefined
         );
 
 
@@ -2338,31 +2353,38 @@ return normalizedComment
 
 
         doc.text(
-            `Remark: ${week}/${year} ${manufacturer}`,
+            spareUnavailable
+                ? "Remark: Not Available"
+                : `Remark: ${week}/${year} ${manufacturer}`,
             item.x + 2.5,
             item.y + 19
         );
 
 
         doc.text(
-            `Depth: ${depthText}  |  Score: ${tyre?.score ?? 0}%`,
+            spareUnavailable
+                ? "Depth: N/A  |  Score: N/A"
+                : `Depth: ${depthText}  |  Score: ${tyre?.score ?? 0}%`,
             item.x + 2.5,
             item.y + 25
         );
 
 
         doc.text(
-            "Range: See tread condition legend below",
+            spareUnavailable
+                ? "Spare tyre not fitted"
+                : "Range: See tread condition legend below",
             item.x + 2.5,
             item.y + 31
         );
 
 
         doc.text(
-            condition === "No Tread" ||
-                condition === "Unsafe"
-                ? "Action: Replacement recommended."
-                : "Action: Drive normally.",
+            spareUnavailable
+                ? "Action: Not applicable."
+                : condition === "No Tread" || condition === "Unsafe"
+                    ? "Action: Replacement recommended."
+                    : "Action: Drive normally.",
             item.x + 2.5,
             item.y + 37
         );

@@ -523,16 +523,18 @@ if (safeValue === 0) {
                         : String(section.startNo + index);
 
                     const tyre = editingReport.tyreData?.[id] || {};
-                    const depth = String(tyre.depth ?? "").trim();
+                    const available = id === "E" ? tyre.available !== false : true;
+                    const depth = available ? String(tyre.depth ?? "").trim() : "";
                     const condition = depth
                         ? getTyreCondition(depth)
                         : { condition: "", score: 0 };
 
                     tyreData[id] = {
-                        week: String(tyre.week ?? ""),
-                        year: String(tyre.year ?? ""),
+                        week: available ? String(tyre.week ?? "") : "",
+                        year: available ? String(tyre.year ?? "") : "",
                         depth,
-                        manufacturer: String(tyre.manufacturer ?? ""),
+                        manufacturer: available ? String(tyre.manufacturer ?? "") : "",
+                        available,
                         condition: condition.condition,
                         score: condition.score,
                     };
@@ -1129,7 +1131,13 @@ if (safeValue === 0) {
                                                             year: "",
                                                             depth: "",
                                                             manufacturer: "",
+                                                            available: true,
                                                         };
+
+                                                    // Older reports did not store availability,
+                                                    // so the spare tyre defaults to available.
+                                                    const spareTyreUnavailable =
+                                                        id === "E" && tyre.available === false;
 
                                                     const tyreCondition = tyre.depth
                                                         ? getTyreCondition(tyre.depth)
@@ -1153,6 +1161,44 @@ if (safeValue === 0) {
                                                             {/* TYRE */}
                                                             {isTyre ? (
                                                                 <div className="flex flex-col gap-2 w-full lg:w-[320px] shrink-0">
+                                                                    {id === "E" && (
+                                                                        <select
+                                                                            className="w-full p-2.5 bg-indigo-50 border border-indigo-200 rounded-xl text-xs font-black text-indigo-800"
+                                                                            value={spareTyreUnavailable ? "no" : "yes"}
+                                                                            onChange={(e) => {
+                                                                                const available = e.target.value === "yes";
+                                                                                setEditingReport((prev: any) => {
+                                                                                    const current = prev.tyreData?.[id] || {};
+                                                                                    return {
+                                                                                        ...prev,
+                                                                                        tyreData: {
+                                                                                            ...prev.tyreData,
+                                                                                            [id]: {
+                                                                                                ...current,
+                                                                                                available,
+                                                                                                ...(available
+                                                                                                    ? {}
+                                                                                                    : {
+                                                                                                        week: "",
+                                                                                                        year: "",
+                                                                                                        depth: "",
+                                                                                                        manufacturer: "",
+                                                                                                        condition: "",
+                                                                                                        score: 0,
+                                                                                                    }),
+                                                                                            },
+                                                                                        },
+                                                                                    };
+                                                                                });
+                                                                            }}
+                                                                        >
+                                                                            <option value="yes">Spare Tyre: Available</option>
+                                                                            <option value="no">Spare Tyre: Not Available</option>
+                                                                        </select>
+                                                                    )}
+
+                                                                    {!spareTyreUnavailable && (
+                                                                        <>
                                                                     <div className="grid grid-cols-2 gap-2">
                                                                         <select
                                                                             className="w-full p-2 bg-slate-100 rounded-xl text-xs text-center font-bold"
@@ -1255,6 +1301,8 @@ if (safeValue === 0) {
                                                                                 {tyreCondition.score}%
                                                                             </span>
                                                                         </div>
+                                                                    )}
+                                                                        </>
                                                                     )}
                                                                 </div>
                                                             ) : (

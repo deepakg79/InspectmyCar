@@ -48,6 +48,7 @@ type ResultValue =
         manufacturer?: string;
         condition?: string;
         score?: number;
+        available?: boolean;
     };
 
 
@@ -598,6 +599,37 @@ export default function InspectionForm() {
 
 
     // ========================================================
+    // UPDATE SPARE TYRE AVAILABILITY
+    // ========================================================
+
+    const updateSpareTyreAvailability = (
+        available: boolean
+    ) => {
+        setResults(prev => {
+            const existing = prev["E"];
+            const current =
+                typeof existing === "object" &&
+                existing &&
+                "week" in existing
+                    ? existing
+                    : {};
+
+            return {
+                ...prev,
+                E: {
+                    ...current,
+                    available,
+                    week: available ? (current.week || "") : "",
+                    year: available ? (current.year || "") : "",
+                    depth: available ? (current.depth || "") : "",
+                    manufacturer: available ? (current.manufacturer || "") : "",
+                },
+            };
+        });
+    };
+
+
+    // ========================================================
     // GET TYRE DATA FROM RESULT
     // ========================================================
 
@@ -621,6 +653,7 @@ export default function InspectionForm() {
                 year?: string;
                 depth?: string;
                 manufacturer?: string;
+                available?: boolean;
             };
         }
 
@@ -630,6 +663,7 @@ export default function InspectionForm() {
             year: "",
             depth: "",
             manufacturer: "",
+            available: true,
         };
     };
 
@@ -712,6 +746,7 @@ export default function InspectionForm() {
                     manufacturer: string;
                     condition: string;
                     score: number;
+                    available: boolean;
                 }
             > = {};
 
@@ -764,6 +799,11 @@ export default function InspectionForm() {
                             manufacturer:
                                 item.manufacturer ||
                                 "",
+
+                            available:
+                                id === "E"
+                                    ? item.available !== false
+                                    : true,
 
                             condition:
                                 depth
@@ -2078,6 +2118,20 @@ export default function InspectionForm() {
                                                         "
                                                     >
 
+                                                        {label === "E" && (
+                                                            <select
+                                                                className="w-full p-2 bg-slate-100 rounded-xl text-xs font-bold"
+                                                                value={tyre.available === false ? "no" : "yes"}
+                                                                onChange={e => updateSpareTyreAvailability(e.target.value === "yes")}
+                                                            >
+                                                                <option value="yes">Spare Tyre Available</option>
+                                                                <option value="no">Not Available</option>
+                                                            </select>
+                                                        )}
+
+                                                        {!(label === "E" && tyre.available === false) && (
+                                                            <>
+
                                                         {/* ROW 1 */}
 
                                                         <div
@@ -2295,6 +2349,9 @@ export default function InspectionForm() {
 
                                                             </div>
 
+                                                        )}
+
+                                                            </>
                                                         )}
 
                                                     </div>
