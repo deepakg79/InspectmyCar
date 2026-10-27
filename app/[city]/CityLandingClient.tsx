@@ -762,189 +762,84 @@ export default function CityLandingClient({
 
 
             {/* =================================================
-
-                USED CAR
-
+                USED CAR — INDIGO CARD
             ================================================= */}
 
-
-
             <Link
-
               href={`/${getCitySlug(cityName)}?type=used`}
-
               onClick={(event) => {
-
                 event.preventDefault();
-
                 handleUsedCarBooking("Standard");
-
               }}
-
-              className="group relative overflow-hidden rounded-[2.5rem] bg-slate-900 p-10 text-white transition-all duration-500 hover:-translate-y-3 hover:shadow-2xl"
-
+              className="group relative overflow-hidden rounded-[2.5rem] border border-indigo-800/60 bg-gradient-to-br from-indigo-950 via-indigo-900 to-indigo-950 p-10 text-white shadow-xl transition-all duration-500 hover:-translate-y-3 hover:shadow-2xl hover:shadow-indigo-900/20"
             >
+              {/* Indigo hover glow */}
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-indigo-700/40 via-violet-700/20 to-indigo-950 opacity-0 transition duration-500 group-hover:opacity-100" />
 
-
-
-              <div className="absolute inset-0 bg-gradient-to-br from-slate-800 via-slate-900 to-black opacity-0 transition duration-500 group-hover:opacity-100" />
-
-
+              <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-indigo-500/20 blur-3xl transition duration-500 group-hover:bg-violet-500/25" />
 
               <div className="relative">
-
-
-
-                <div className="flex items-start justify-between">
-
-
-
+                <div className="flex items-start justify-between gap-4">
                   <div>
-
-
-
-                    <div className="mb-8 flex h-20 w-20 items-center justify-center rounded-3xl bg-white/10 text-5xl transition group-hover:-rotate-6">
-
+                    <div className="mb-8 flex h-20 w-20 items-center justify-center rounded-3xl border border-indigo-400/30 bg-indigo-500/20 text-5xl transition duration-300 group-hover:-rotate-6 group-hover:bg-indigo-500/30">
                       🚙
-
                     </div>
 
-
-
-                    <span className="inline-block rounded-full bg-orange-500/20 px-4 py-2 text-xs font-black uppercase tracking-widest text-orange-300">
-
+                    <span className="inline-block rounded-full border border-indigo-400/30 bg-indigo-500/20 px-4 py-2 text-xs font-black uppercase tracking-widest text-indigo-200">
                       Used Car PPI
-
                     </span>
-
-
-
                   </div>
 
-
-
-                  <span className="rounded-full bg-emerald-500/20 px-4 py-2 text-xs font-black uppercase tracking-widest text-emerald-300">
-
-                    From ₹
-
-                    {formatPrice(usedCarPrice)}
-
+                  <span className="rounded-full border border-indigo-400/30 bg-indigo-500/20 px-4 py-2 text-xs font-black uppercase tracking-widest text-indigo-200">
+                    From ₹{formatPrice(usedCarPrice)}
                   </span>
-
-
-
                 </div>
 
-
-
-                <h3 className="!text-white mt-8 mb-4 text-4xl">
-
+                <h3 className="!mt-8 !mb-4 !text-4xl !text-white">
                   Pre-Purchase Inspection
-
                 </h3>
 
-
-
-                <p className="mb-8 leading-relaxed text-slate-300">
-
-                  Avoid buying a problematic vehicle
-
-                  in {cityPricing.name}. We inspect
-
-                  accident history, engine condition,
-
-                  suspension, electronics and hidden
-
-                  defects before you pay.
-
+                <p className="mb-8 leading-relaxed text-indigo-100/85">
+                  Avoid buying a problematic vehicle in{" "}
+                  {cityPricing.name}. We inspect accident history,
+                  engine condition, suspension, electronics and
+                  hidden defects before you pay.
                 </p>
 
-
-
                 <div className="grid grid-cols-2 gap-4">
-
-
-
                   {[
-
                     "Engine Health",
-
                     "Accident Detection",
-
                     "Flood Damage",
-
                     "OBD Scan",
-
                     "Suspension Check",
-
                     "Road Test",
-
                   ].map((item) => (
-
                     <div
-
                       key={item}
-
                       className="flex items-center gap-3"
-
                     >
-
-
-
-                      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-sm font-black text-indigo-300">
-
+                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-indigo-400/30 bg-indigo-500/20 text-sm font-black text-indigo-200">
                         ✓
-
                       </div>
 
-
-
-                      <span className="text-sm font-semibold text-slate-200">
-
+                      <span className="text-sm font-semibold text-indigo-50">
                         {item}
-
                       </span>
-
-
-
                     </div>
-
                   ))}
-
-
-
                 </div>
 
-
-
-                <div className="mt-10 flex items-center justify-between">
-
-
-
-                  <span className="font-black text-indigo-300 transition group-hover:translate-x-2">
-
+                <div className="mt-10 flex items-center justify-between gap-4">
+                  <span className="font-black text-indigo-200 transition group-hover:translate-x-2">
                     Explore Service →
-
                   </span>
 
-
-
-                  <div className="rounded-2xl bg-white px-5 py-3 font-black text-slate-900 shadow-lg">
-
+                  <div className="rounded-2xl border border-indigo-300/30 bg-indigo-500/25 px-5 py-3 font-black text-white shadow-lg transition group-hover:bg-indigo-500/40">
                     USED CARS
-
                   </div>
-
-
-
                 </div>
-
-
-
               </div>
-
-
-
             </Link>
 
 
