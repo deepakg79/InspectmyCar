@@ -1146,15 +1146,20 @@ return normalizedComment
 
                     doc.setLineWidth(0.25);
 
+                    // Move the separator upward so it clears the text
+                    // that follows in the next summary row.
+                    const separatorY =
+                        sectionY -
+                        sectionGap / 2 -
+                        2.5;
+
                     doc.line(
                         innerX,
-                        sectionY -
-                        sectionGap / 2,
+                        separatorY,
                         cardX +
                         cardWidth -
                         8,
-                        sectionY -
-                        sectionGap / 2
+                        separatorY
                     );
                 }
             }
