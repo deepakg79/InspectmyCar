@@ -539,15 +539,50 @@ Recommended PDI
 
 <div className="relative isolate mx-auto w-full max-w-[620px] lg:mt-[4.5rem]">
     <div className="relative aspect-[3/2] w-full overflow-hidden rounded-[2rem] bg-[#06152f] shadow-[0_30px_80px_rgba(0,0,0,0.15)] lg:rounded-[2.3rem]">
-    <Image
-        src="/new-cars-pdi.png"
-        alt={`Professional new-car pre-delivery inspection in ${selectedCity}`}
-        width={1536}
-        height={1024}
-        priority
-        sizes="(max-width: 1024px) 100vw, 50vw"
-        className="absolute inset-0 h-full w-full object-contain object-center"
-    />
+        <Image
+            src="/new-cars-pdi.png"
+            alt={`Professional new-car pre-delivery inspection in ${selectedCity}`}
+            width={1536}
+            height={1024}
+            priority
+            sizes="(max-width: 1024px) 100vw, 50vw"
+            className="absolute inset-0 h-full w-full object-contain object-center"
+        />
+
+        {/* Animated blue vertical scanning line */}
+        <div
+            aria-hidden="true"
+            className="new-car-scan-vertical pointer-events-none absolute top-[39%] bottom-[18%] z-10 w-[3px]"
+        >
+            <div className="absolute inset-0 bg-cyan-300 shadow-[0_0_8px_3px_rgba(34,211,238,0.95)]" />
+            <div className="absolute -inset-x-[8px] inset-y-0 bg-cyan-400/25 blur-md" />
+        </div>
+
+        <style jsx>{`
+            .new-car-scan-vertical {
+                left: 23%;
+                animation: new-car-scan 2.2s ease-in-out infinite alternate;
+            }
+
+            @keyframes new-car-scan {
+                from {
+                    left: 23%;
+                    opacity: 0.95;
+                }
+                to {
+                    left: 82%;
+                    opacity: 0.95;
+                }
+            }
+
+            @media (prefers-reduced-motion: reduce) {
+                .new-car-scan-vertical {
+                    animation: none;
+                    left: 50%;
+                    opacity: 0.55;
+                }
+            }
+        `}</style>
     </div>
 
     {/* QUICK STATS — placed below the hero image */}

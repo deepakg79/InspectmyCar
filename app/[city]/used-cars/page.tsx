@@ -465,9 +465,44 @@ export default function UsedCarsPage() {
             sizes="(max-width: 1024px) 100vw, 50vw"
             className="block h-auto w-full object-contain"
         />
+
+        {/* Animated blue vertical scanning line */}
+        <div
+            aria-hidden="true"
+            className="ppi-scan-vertical pointer-events-none absolute top-[38%] bottom-[20%] z-10 w-[3px]"
+        >
+            <div className="absolute inset-0 bg-cyan-300 shadow-[0_0_8px_3px_rgba(34,211,238,0.95)]" />
+            <div className="absolute -inset-x-2 inset-y-0 bg-cyan-400/30 blur-md" />
+        </div>
+
+        <style jsx>{`
+            .ppi-scan-vertical {
+                left: 13%;
+                animation: ppi-scan-v 2.2s ease-in-out infinite alternate;
+            }
+
+            @keyframes ppi-scan-v {
+                from {
+                    left: 16%;
+                    opacity: 0.95;
+                }
+                to {
+                    left: 82%;
+                    opacity: 0.95;
+                }
+            }
+
+            @media (prefers-reduced-motion: reduce) {
+                .ppi-scan-vertical {
+                    animation: none;
+                    left: 50%;
+                    opacity: 0.55;
+                }
+            }
+        `}</style>
     </div>
 
-                        {/* QUICK STATS */}
+    {/* QUICK STATS */}
 
 
 
@@ -661,10 +696,6 @@ export default function UsedCarsPage() {
 
 
             </section>
-
-
-
-
 
 
             {/* =================================================
