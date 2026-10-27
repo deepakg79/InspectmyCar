@@ -619,11 +619,11 @@ export default function UsedCarsPage() {
 
                                 {
 
-                                    icon: "⚡",
+                                    icon: "🤖",
 
-                                    value: "Same Day",
+                                    value: "AI Assisted",
 
-                                    label: "Receive a detailed report.",
+                                    label: "Receive a detailed AI assisted report.",
 
                                 },
 

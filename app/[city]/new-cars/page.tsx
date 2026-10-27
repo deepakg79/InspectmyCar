@@ -647,11 +647,11 @@ Recommended PDI
 
                                 {
 
-                                    icon: "⚡",
+                                    icon: "🤖",
 
-                                    value: "Instant Report",
+                                    value: "AI Assisted Report",
 
-                                    label: "Digital report with findings.",
+                                    label: "Digital AI Assisted report with findings.",
 
                                 },
 

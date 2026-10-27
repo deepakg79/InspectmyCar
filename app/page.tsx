@@ -540,13 +540,39 @@ onChange={(e) => {
                                 <div className="w-full max-w-[560px]">
 
 
+    {/* AI badge above the inspection dial */}
+{/* AI-Assisted Digital Reports Badge */}
+<div className="mb-6 flex justify-end">
+    <div className="inline-flex items-center gap-3 rounded-2xl border border-[#C7D2FE] bg-white/90 px-5 py-3 shadow-lg backdrop-blur-xl">
 
-                                    <div className="mx-auto flex w-full flex-col items-center">
+        <div>
+            {/* AI Badge */}
+            <span className="mb-1 inline-block rounded-full bg-[#EEF2FF] px-2 py-1 text-[9px] font-black uppercase tracking-widest text-[#6366F1]">
+                AI-Powered
+            </span>
 
+            {/* Report Title */}
+            <p className="text-sm font-black text-[#3730A3]">
+                AI-Assisted Digital Reports
+            </p>
 
+            {/* Powered By + Gemini Logo */}
+            <p className="flex items-center gap-1 text-xs font-semibold text-[#6366F1]">
+                Powered by
+                <img
+                    src="/ai-logo.png"
+                    alt="Gemini"
+                    className="h-24 w-24 object-contain"
+                />
+            </p>
+        </div>
+    </div>
+</div>
 
-                                        <div className="inspection-dial relative aspect-square w-full">
-
+    {/* Inspection dial */}
+    <div className="mx-auto flex w-full flex-col items-center">
+        <div className="inspection-dial relative aspect-square w-full">
+            {/* Keep all your existing dial content here */}
 
 
                                             <div className="dial-orbit dial-orbit-outer absolute inset-[4%] rounded-full border border-dashed border-[#6366F1]/40" />
@@ -1570,15 +1596,15 @@ onChange={(e) => {
 
 
 
-                                   icon: "📄",
+                                   icon: "🤖",
 
 
 
-                                   title: "Instant Report",
+                                   title: "AI Assisted Report",
 
 
 
-                                   desc: "Receive a detailed digital report with photographs and recommendations.",
+                                   desc: "AI ssisted Digital report with findings, photos and expert recommendations for every inspection.",
 
 
 
