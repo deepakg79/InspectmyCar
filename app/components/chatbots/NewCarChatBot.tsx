@@ -2152,12 +2152,6 @@ setIsConfirmed(true);
 
                                         </p>
 
-                                        <p className="text-[9px] font-bold text-slate-400 mt-1">
-
-                                            {inspectorCount} inspector{inspectorCount === 1 ? "" : "s"} available in {cityPricing.name}
-
-                                        </p>
-
                                     </div>
 
                                     <div className="grid grid-cols-3 gap-2">
