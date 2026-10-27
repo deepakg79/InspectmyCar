@@ -714,71 +714,66 @@ A comprehensive vehicle inspection report combines a structured 400-point inspec
                 OVERALL VEHICLE HEALTH
             ========================================================= */}
 
-            <section className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
+<section className="mx-auto max-w-[1440px] px-5 py-16 sm:px-8 lg:px-12">
+  <SectionHeading
+    eyebrow="OVERALL VEHICLE HEALTH"
+    title="At-a-Glance Vehicle Condition"
+    description="Category scores make it easier to understand where the vehicle is performing well and where attention may be required."
+  />
 
-                <SectionHeading
-                    eyebrow="OVERALL VEHICLE HEALTH"
-                    title="At-a-Glance Vehicle Condition"
-                    description="Category scores make it easier to understand where the vehicle is performing well and where attention may be required."
-                />
+  <div className="mt-10 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-10">
+    <div className="mx-auto grid max-w-5xl grid-cols-2 items-center gap-x-4 gap-y-8 sm:gap-x-10 sm:gap-y-10 lg:grid-cols-4">
 
-                <div className="mt-10 rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
+      {/* Top: two cards */}
+      <div className="lg:col-start-2">
+        <HealthCard title="Engine Assembly" score={99} />
+      </div>
 
-                    <div className="grid gap-10 md:grid-cols-3">
+      <div className="lg:col-start-3">
+        <HealthCard title="Transmission Assembly" score={100} />
+      </div>
 
-                        <HealthCard
-                            title="Engine Assembly"
-                            score={99}
-                        />
+      {/* Middle: left card */}
+      <div className="lg:col-start-1 lg:row-start-2">
+        <HealthCard title="Exterior Body" score={96} />
+      </div>
 
-                        <HealthCard
-                            title="Transmission Assembly"
-                            score={100}
-                        />
+      {/* Center: overall health */}
+      <div className="col-span-2 flex items-center justify-center lg:col-span-2 lg:col-start-2 lg:row-start-2">
+        <div className="relative flex h-40 w-40 flex-col items-center justify-center rounded-[2.5rem] border border-sky-400/30 bg-[#0B1220] text-white shadow-xl shadow-sky-900/15 sm:h-48 sm:w-48">
+          <div className="absolute inset-2 rounded-[2rem] border border-sky-400/15" />
 
-                        <HealthCard
-                            title="Exterior Body"
-                            score={96}
-                        />
+          <span className="relative text-xs font-bold uppercase tracking-[0.18em] text-sky-400">
+            Overall
+          </span>
 
-                        <div className="flex items-center justify-center">
+          <span className="relative mt-2 text-5xl font-black tracking-tight sm:text-6xl">
+            98%
+          </span>
 
-                            <div className="flex h-44 w-44 flex-col items-center justify-center rounded-[2.5rem] bg-[#061f3b] text-white shadow-xl">
+          <span className="relative mt-1 text-xs text-slate-400">
+            Vehicle Health
+          </span>
+        </div>
+      </div>
 
-                                <span className="text-sm font-medium text-slate-300">
-                                    Overall Score
-                                </span>
+      {/* Middle: right card */}
+      <div className="lg:col-start-4 lg:row-start-2">
+        <HealthCard title="Interior & Safety" score={100} />
+      </div>
 
-                                <span className="mt-2 text-5xl font-black">
-                                    98%
-                                </span>
+      {/* Bottom: two cards */}
+      <div className="lg:col-start-2">
+        <HealthCard title="Steering, Brakes & Suspension" score={100} />
+      </div>
 
-                                <span className="mt-1 text-xs text-slate-400">
-                                    Vehicle Health
-                                </span>
+      <div className="lg:col-start-3">
+        <HealthCard title="Wheels & Tyres" score={100} />
+      </div>
 
-                            </div>
-
-                        </div>
-
-                        <HealthCard
-                            title="Interior & Safety"
-                            score={100}
-                        />
-
-                        <HealthCard
-                            title="Steering, Brakes & Suspension"
-                            score={100}
-                        />
-
-                        <HealthCard
-                            title="Wheels & Tyres"
-                            score={100}
-                        />
-
-                    </div>
-                </div>
-            </section>
+    </div>
+  </div>
+</section>
 
             {/* =========================================================
                 PDI ISSUES SUMMARY
