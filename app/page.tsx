@@ -118,11 +118,10 @@ export default function Home() {
 
 
 
-       const newCarStartingPrice =
+const priceAdjustment = selectedCity === "Pune" ? 0 : 200;
 
-
-
-           newCarFuelPrice("withoutGauge");
+const newCarStartingPrice =
+    newCarFuelPrice("withoutGauge") + priceAdjustment;
 
 
 
