@@ -763,8 +763,7 @@ return (
                                         </p>
 
                                         <p className="text-xs font-bold text-slate-500 mt-1">
-                                            PDI price varies by city. Select
-                                            your city to see the estimated
+PDI price varies by city & vehicle type. Select your city and car type to see the estimated
                                             price.
                                         </p>
                                     </div>

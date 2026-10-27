@@ -560,13 +560,13 @@ Recommended PDI
 
         <style jsx>{`
             .new-car-scan-vertical {
-                left: 23%;
+                left: 16%;
                 animation: new-car-scan 2.2s ease-in-out infinite alternate;
             }
 
             @keyframes new-car-scan {
                 from {
-                    left: 23%;
+                    left: 16%;
                     opacity: 0.95;
                 }
                 to {
