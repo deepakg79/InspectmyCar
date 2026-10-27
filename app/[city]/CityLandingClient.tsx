@@ -762,7 +762,7 @@ export default function CityLandingClient({
 
 
             {/* =================================================
-                USED CAR — INDIGO CARD
+                USED CAR — HOME LANDING PAGE INDIGO THEME
             ================================================= */}
 
             <Link
@@ -771,26 +771,23 @@ export default function CityLandingClient({
                 event.preventDefault();
                 handleUsedCarBooking("Standard");
               }}
-              className="group relative overflow-hidden rounded-[2.5rem] border border-indigo-800/60 bg-gradient-to-br from-indigo-950 via-indigo-900 to-indigo-950 p-10 text-white shadow-xl transition-all duration-500 hover:-translate-y-3 hover:shadow-2xl hover:shadow-indigo-900/20"
+              className="group relative overflow-hidden rounded-[2.5rem] bg-[#3730A3] p-10 text-white transition-all duration-500 hover:-translate-y-3 hover:shadow-2xl"
             >
-              {/* Indigo hover glow */}
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-indigo-700/40 via-violet-700/20 to-indigo-950 opacity-0 transition duration-500 group-hover:opacity-100" />
-
-              <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-indigo-500/20 blur-3xl transition duration-500 group-hover:bg-violet-500/25" />
+              <div className="absolute inset-0 bg-gradient-to-br from-[#4F46E5] via-[#3730A3] to-[#3730A3] opacity-0 transition duration-500 group-hover:opacity-100" />
 
               <div className="relative">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <div className="mb-8 flex h-20 w-20 items-center justify-center rounded-3xl border border-indigo-400/30 bg-indigo-500/20 text-5xl transition duration-300 group-hover:-rotate-6 group-hover:bg-indigo-500/30">
+                    <div className="mb-8 flex h-20 w-20 items-center justify-center rounded-3xl bg-[#818CF8]/15 text-5xl transition group-hover:-rotate-6">
                       🚙
                     </div>
 
-                    <span className="inline-block rounded-full border border-indigo-400/30 bg-indigo-500/20 px-4 py-2 text-xs font-black uppercase tracking-widest text-indigo-200">
+                    <span className="inline-block rounded-full bg-[#818CF8]/20 px-4 py-2 text-xs font-black uppercase tracking-widest text-[#E0E7FF]">
                       Used Car PPI
                     </span>
                   </div>
 
-                  <span className="rounded-full border border-indigo-400/30 bg-indigo-500/20 px-4 py-2 text-xs font-black uppercase tracking-widest text-indigo-200">
+                  <span className="rounded-full bg-[#818CF8]/20 px-4 py-2 text-xs font-black uppercase tracking-widest text-[#A5B4FC]">
                     From ₹{formatPrice(usedCarPrice)}
                   </span>
                 </div>
@@ -799,10 +796,9 @@ export default function CityLandingClient({
                   Pre-Purchase Inspection
                 </h3>
 
-                <p className="mb-8 leading-relaxed text-indigo-100/85">
-                  Avoid buying a problematic vehicle in{" "}
-                  {cityPricing.name}. We inspect accident history,
-                  engine condition, suspension, electronics and
+                <p className="mb-8 leading-relaxed text-[#E0E7FF]">
+                  Avoid buying a problematic vehicle in {cityPricing.name}. We inspect
+                  accident history, engine condition, suspension, electronics and
                   hidden defects before you pay.
                 </p>
 
@@ -819,11 +815,11 @@ export default function CityLandingClient({
                       key={item}
                       className="flex items-center gap-3"
                     >
-                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-indigo-400/30 bg-indigo-500/20 text-sm font-black text-indigo-200">
+                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#818CF8]/15 text-sm font-black text-[#A5B4FC]">
                         ✓
                       </div>
 
-                      <span className="text-sm font-semibold text-indigo-50">
+                      <span className="text-sm font-semibold text-[#EEF2FF]">
                         {item}
                       </span>
                     </div>
@@ -831,11 +827,11 @@ export default function CityLandingClient({
                 </div>
 
                 <div className="mt-10 flex items-center justify-between gap-4">
-                  <span className="font-black text-indigo-200 transition group-hover:translate-x-2">
+                  <span className="font-black text-[#A5B4FC] transition group-hover:translate-x-2">
                     Explore Service →
                   </span>
 
-                  <div className="rounded-2xl border border-indigo-300/30 bg-indigo-500/25 px-5 py-3 font-black text-white shadow-lg transition group-hover:bg-indigo-500/40">
+                  <div className="rounded-2xl bg-white px-5 py-3 font-black text-[#3730A3] shadow-lg">
                     USED CARS
                   </div>
                 </div>
