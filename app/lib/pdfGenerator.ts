@@ -658,97 +658,47 @@ return normalizedComment
     };
 
     // ============================================================
-    // ISSUES SUMMARY
+    // PDI ISSUES SUMMARY + INSPECTOR COMMENTS
+    // Inspector comments are appended to this same table, not shown
+    // as a separate "Inspector Recommendations" section.
     // ============================================================
 
     const issues: any[] = [];
 
-
     checklist.forEach((section) => {
+        section.items.forEach((item: any, index: number) => {
+            const id =
+                typeof item === "object" && item.label
+                    ? item.label
+                    : String(section.startNo + index);
 
-        section.items.forEach(
-            (item: any, index: number) => {
+            const itemText =
+                typeof item === "object"
+                    ? item.text
+                    : item;
 
-                const id =
-                    typeof item === "object" &&
-                        item.label
-                        ? item.label
-                        : String(
-                            section.startNo +
-                            index
-                        );
-
-
-                const text =
-                    typeof item === "object"
-                        ? item.text
-                        : item;
-
-
-                // Do not include tyre data
-                // in normal issues summary
-                if (
-                    typeof item === "object" &&
-                    item.type === "TYRE"
-                ) {
-                    return;
-                }
-
-
-                const val =
-                    getChecklistValue(id);
-
-
-                if (val === 0) {
-                    const savedRemark =
-                        report?.checklistComments?.[id] ||
-                        getChecklistRemark(id, val);
-
-                    const cleanRemark =
-                        String(savedRemark || "")
-                            .replace(/^ISSUE\s*-\s*/i, "")
-                            .trim();
-
-                    issues.push([
-                        cleanRemark
-                            ? `${text} - ${cleanRemark}`
-                            : text,
-                    ]);
-                }
+            // Do not include tyre data in the normal issues summary.
+            if (typeof item === "object" && item.type === "TYRE") {
+                return;
             }
-        );
-    });
 
-    if (issues.length > 0) {
-        autoTable(doc, {
-            startY: 200,
+            const val = getChecklistValue(id);
 
-            head: [
-                ["PDI Issues Summary"],
-            ],
+            if (val === 0) {
+                const savedRemark =
+                    report?.checklistComments?.[id] ||
+                    getChecklistRemark(id, val);
 
-            body: issues,
+                const cleanRemark = String(savedRemark || "")
+                    .replace(/^ISSUE\s*-\s*/i, "")
+                    .trim();
 
-            headStyles: {
-                fillColor: [2, 27, 58],
-                textColor: 255,
-                fontStyle: "bold",
-            },
-
-            styles: {
-                textColor: [127, 29, 29], // DARK RED
-                fontStyle: "bold",
-            },
-
-            didDrawPage: () => {
-                drawWatermark(doc);
-            },
+                issues.push([
+                    cleanRemark ? `${itemText} - ${cleanRemark}` : itemText,
+                ]);
+            }
         });
-    }
-
-    // ============================================================
-    // INSPECTOR OBSERVATIONS
-    // ============================================================
+    });
 
     const inspectorComments =
         report.inspectorComments ||
@@ -756,19 +706,23 @@ return normalizedComment
         [];
 
     // Convert pasted checkpoint comments into a consistent, readable form.
-    // Examples:
-    //   "Fuel Tank: Check for leaks - 97" -> "97 Fuel Tank: Check for leaks"
-    //   "Transmission Gaskets & Seals: Check for leaks - 111 Transmission Gaskets & Seals: Check for leaks"
-    //      -> "111 Transmission Gaskets & Seals: Check for leaks"
     // Exact checkpoint names without a number are matched to the original checklist.
     const checkpointLookup: Array<{ id: string; text: string }> = [];
+
     checklist.forEach((section: any) => {
         section.items.forEach((item: any, index: number) => {
-            const id = typeof item === "object" && item.label
-                ? String(item.label)
-                : String(section.startNo + index);
-            const text = String(typeof item === "object" ? item.text : item).trim();
-            if (text) checkpointLookup.push({ id, text });
+            const id =
+                typeof item === "object" && item.label
+                    ? String(item.label)
+                    : String(section.startNo + index);
+
+            const checkpointText = String(
+                typeof item === "object" ? item.text : item
+            ).trim();
+
+            if (checkpointText) {
+                checkpointLookup.push({ id, text: checkpointText });
+            }
         });
     });
 
@@ -776,8 +730,7 @@ return normalizedComment
         const raw = String(value ?? "").trim();
         if (!raw) return "";
 
-        // Keep the serial number and checkpoint name together, even if the
-        // pasted comment contains a newline immediately after the number.
+        // Keep the serial number and checkpoint name together.
         if (/^\d{1,4}(?:\s|[.)-])/.test(raw)) {
             return raw.replace(/^(\d{1,4})\s+/, "$1\u00A0");
         }
@@ -796,49 +749,45 @@ return normalizedComment
         if (numberMatch) {
             const serial = numberMatch[1];
             const trailingText = (numberMatch[2] || "").trim();
-            // If the pasted text repeats the checkpoint after its number, drop the duplicate.
-            const duplicateCheckpoint = trailingText.toLowerCase() === checkpoint.text.toLowerCase();
-            const extra = trailingText && !duplicateCheckpoint ? ` - ${trailingText}` : "";
+            const duplicateCheckpoint =
+                trailingText.toLowerCase() === checkpoint.text.toLowerCase();
+            const extra =
+                trailingText && !duplicateCheckpoint ? ` - ${trailingText}` : "";
+
             return `${serial}\u00A0${checkpoint.text}${extra}`;
         }
 
-        const id = checkpoint.id;
-        return `${id}\u00A0${checkpoint.text}${remainder ? ` ${remainder}` : ""}`;
+        return `${checkpoint.id}\u00A0${checkpoint.text}${remainder ? ` ${remainder}` : ""}`;
     };
 
-    if (
-        inspectorComments.length > 0
-    ) {
+    const normalizedInspectorComments = Array.isArray(inspectorComments)
+        ? inspectorComments
+            .map((comment: unknown) => normalizeInspectorComment(comment))
+            .filter(Boolean)
+        : [];
 
+    // Append inspector comments after the PDI issue rows in the same table.
+    normalizedInspectorComments.forEach((comment: string) => {
+        issues.push([comment]);
+    });
+
+    if (issues.length > 0) {
         autoTable(doc, {
-
-            startY:
-                issues.length > 0 && (doc as any).lastAutoTable
-                    ? (doc as any).lastAutoTable.finalY + 10
-                    : 200,
-
-            head: [
-                ["Inspector Recommendations"],
-            ],
-
-            body:
-                inspectorComments
-                    .map((comment: string) => normalizeInspectorComment(comment))
-                    .filter(Boolean)
-                    .map((comment: string) => [comment]),
-
+            startY: 200,
+            head: [["PDI Issues Summary"]],
+            body: issues,
             headStyles: {
                 fillColor: [2, 27, 58],
                 textColor: 255,
                 fontStyle: "bold",
             },
-
             styles: {
+                textColor: [127, 29, 29],
+                fontStyle: "bold",
                 fontSize: 10,
                 cellPadding: 4,
                 valign: "middle",
             },
-
             didDrawPage: () => {
                 drawWatermark(doc);
             },
