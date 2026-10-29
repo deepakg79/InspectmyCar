@@ -964,8 +964,9 @@ return normalizedComment
         }
 
         // Keep the authorized inspector signature and certified seal together.
-        // If there is insufficient room after the summary, move both to a new page.
-        const signatureBlockHeight = 52;
+        // Reserve extra space so the seal cannot be clipped at the page boundary.
+        // The full signature/seal group needs about 54 mm; use a 70 mm safety buffer.
+        const signatureBlockHeight = 70;
         if (summaryY + signatureBlockHeight > bottomLimit) {
             doc.addPage();
             drawSummaryPageTitle(true);
