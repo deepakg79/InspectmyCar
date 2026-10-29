@@ -964,8 +964,7 @@ return normalizedComment
         }
 
         // Keep the authorized inspector signature and certified seal together.
-        // Reserve extra space so the seal cannot be clipped at the page boundary.
-        // The full signature/seal group needs about 54 mm; use a 70 mm safety buffer.
+        // If there is insufficient room after the summary, move both to a new page.
         const signatureBlockHeight = 70;
         if (summaryY + signatureBlockHeight > bottomLimit) {
             doc.addPage();
@@ -1017,11 +1016,7 @@ return normalizedComment
 
 
     // ============================================================
-    // FULL IMAGE PAGE — AFTER AI SUMMARY
-    // IMPORTANT: Keep this section AFTER ADMIN AI EXECUTIVE SUMMARY.
-    // The AI summary may add multiple pages. This explicit page break
-    // places the full image on a fresh page after the entire summary and
-    // inspector signature/seal, instead of forcing it to remain on page 3.
+    // PAGE 3 - FULL IMAGE
     // ============================================================
 
     doc.addPage();
