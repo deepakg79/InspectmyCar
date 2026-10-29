@@ -1015,33 +1015,7 @@ return normalizedComment
     drawWatermark(doc);
 
 
-    // ============================================================
-    // PAGE 3 - FULL IMAGE
-    // ============================================================
 
-    doc.addPage();
-
-    const secondPage = new Image();
-
-    secondPage.src =
-        "/car_photo_points.jpg";
-
-    await new Promise(
-        (res) =>
-            (secondPage.onload = res)
-    );
-
-
-    doc.addImage(
-        secondPage,
-        "JPEG",
-        0,
-        0,
-        210,
-        297
-    );
-
-    drawWatermark(doc);
 
 
     // ============================================================
