@@ -796,9 +796,8 @@ return normalizedComment
 
     // ============================================================
     // ADMIN AI EXECUTIVE SUMMARY
-    // ============================================================
-    // Included only for the Admin "Preview AI Report" flow.
-    // Always starts on a fresh page.
+    // Paginate summary sections automatically so long AI text and
+    // the inspector signature/seal are never drawn beyond the page.
     // ============================================================
 
     let aiSummaryEndY: number | null = null;
@@ -807,475 +806,209 @@ return normalizedComment
         const ai = report.aiGeneratedSummary;
 
         const summarySections = [
-            {
-                label: "OVERALL CONDITION",
-                value: String(ai.overallCondition || "-").trim() || "-",
-            },
-            {
-                label: "KEY HIGHLIGHTS",
-                value: String(ai.keyHighlights || "-").trim() || "-",
-            },
-            {
-                label: "CRITICAL ISSUES",
-                value: String(ai.criticalIssues || "-").trim() || "-",
-            },
-            {
-                label: "RECOMMENDATIONS",
-                value: String(ai.recommendations || "-").trim() || "-",
-            },
-            {
-                label: "VERDICT",
-                value: String(ai.verdict || "-").trim() || "-",
-            },
+            { label: "OVERALL CONDITION", value: String(ai.overallCondition || "-").trim() || "-" },
+            { label: "KEY HIGHLIGHTS", value: String(ai.keyHighlights || "-").trim() || "-" },
+            { label: "CRITICAL ISSUES", value: String(ai.criticalIssues || "-").trim() || "-" },
+            { label: "RECOMMENDATIONS", value: String(ai.recommendations || "-").trim() || "-" },
+            { label: "VERDICT", value: String(ai.verdict || "-").trim() || "-" },
         ];
 
-        // ============================================================
-        // ALWAYS START AI SUMMARY ON A NEW PAGE
-        // ============================================================
-
-        doc.addPage();
-
-        drawReportHeader(doc, inspectionNumber);
-        drawWatermark(doc);
-
         const pageWidth = 210;
+        const pageHeight = 297;
         const marginX = 14;
-
         const cardX = marginX;
         const cardWidth = pageWidth - marginX * 2;
-
         const innerX = cardX + 8;
         const innerWidth = cardWidth - 16;
-
-        // ============================================================
-        // TITLE
-        // ============================================================
-
-        let summaryY = 25;
-
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(16);
-        doc.setTextColor(...COLORS.primary);
-
-        const title = "AI SUMMARY AND RECOMMENDATIONS";
-
-        doc.text(
-            title,
-            marginX,
-            summaryY
-        );
-
-        // ============================================================
-        // POWERED BY + LOGO
-        // ============================================================
-
-        const titleWidth = doc.getTextWidth(title);
-
-        const poweredText = "Powered by";
-
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(6);
-
-        const poweredTextWidth =
-            doc.getTextWidth(poweredText);
+        const labelWidth = 42;
+        const bodyX = innerX + labelWidth + 3;
+        const bodyWidth = innerWidth - labelWidth - 3;
+        const bottomLimit = 278;
+        const lineHeight = 4.3;
+        const cardPaddingTop = 5;
+        const cardPaddingBottom = 5;
+        const sectionGap = 3.5;
 
         const logo = new Image();
         logo.src = "/ai-logo.png";
-
         await new Promise<void>((resolve) => {
             logo.onload = () => resolve();
             logo.onerror = () => resolve();
         });
 
-        const logoWidth = 15;
-        const logoHeight = 5;
+        const drawSummaryPageTitle = (continued: boolean) => {
+            drawReportHeader(doc, inspectionNumber);
+            drawWatermark(doc);
 
-        const pillPaddingX = 3;
-        const pillHeight = 7;
+            const title = continued
+                ? "AI SUMMARY AND RECOMMENDATIONS (CONTINUED)"
+                : "AI SUMMARY AND RECOMMENDATIONS";
 
-        const pillWidth =
-            poweredTextWidth +
-            logoWidth +
-            3 +
-            pillPaddingX * 2;
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(continued ? 13 : 16);
+            doc.setTextColor(...COLORS.primary);
+            doc.text(title, marginX, 25);
 
-        const pillX =
-            marginX +
-            titleWidth +
-            4;
+            if (!continued) {
+                const titleWidth = doc.getTextWidth(title);
+                const poweredText = "Powered by";
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(6);
+                const poweredTextWidth = doc.getTextWidth(poweredText);
+                const logoWidth = 15;
+                const logoHeight = 5;
+                const pillPaddingX = 3;
+                const pillHeight = 7;
+                const pillWidth = poweredTextWidth + logoWidth + 3 + pillPaddingX * 2;
+                const pillX = marginX + titleWidth + 4;
+                const pillY = 19;
 
-        const pillY =
-            summaryY - 6;
+                doc.setDrawColor(...COLORS.primary);
+                doc.setLineWidth(0.4);
+                doc.roundedRect(pillX, pillY, pillWidth, pillHeight, pillHeight / 2, pillHeight / 2, "S");
+                doc.setTextColor(...COLORS.primary);
+                doc.text(poweredText, pillX + pillPaddingX, pillY + 4.6);
 
-        // Powered-by oval
-        doc.setDrawColor(...COLORS.primary);
-        doc.setLineWidth(0.4);
-
-        doc.roundedRect(
-            pillX,
-            pillY,
-            pillWidth,
-            pillHeight,
-            pillHeight / 2,
-            pillHeight / 2,
-            "S"
-        );
-
-        // Powered by text
-        doc.setTextColor(...COLORS.primary);
-
-        doc.text(
-            poweredText,
-            pillX + pillPaddingX,
-            pillY + 4.6
-        );
-
-        // AI logo
-        if (
-            logo.complete &&
-            logo.naturalWidth > 0
-        ) {
-            doc.addImage(
-                logo,
-                "PNG",
-                pillX +
-                pillPaddingX +
-                poweredTextWidth +
-                3,
-                pillY + 1,
-                logoWidth,
-                logoHeight
-            );
-        }
-
-        // ============================================================
-        // TITLE DIVIDER
-        // ============================================================
-
-        doc.setFillColor(219, 153, 10);
-
-        doc.rect(
-            marginX,
-            summaryY + 3,
-            42,
-            1.2,
-            "F"
-        );
-
-        doc.setDrawColor(210, 218, 230);
-        doc.setLineWidth(0.5);
-
-        doc.line(
-            marginX + 46,
-            summaryY + 3.6,
-            pageWidth - marginX,
-            summaryY + 3.6
-        );
-
-        // Move below title
-        summaryY += 13;
-
-        // ============================================================
-        // COMPACT CARD SETTINGS
-        // ============================================================
-
-        const cardPaddingTop = 6;
-        const cardPaddingBottom = 6;
-
-        const sectionGap = 3.5;
-
-        const labelWidth = 42;
-
-        const bodyX =
-            innerX +
-            labelWidth +
-            3;
-
-        const bodyWidth =
-            innerWidth -
-            labelWidth -
-            3;
-
-        // ============================================================
-        // CALCULATE COMPACT CARD HEIGHT
-        // ============================================================
-
-        let calculatedHeight =
-            cardPaddingTop +
-            cardPaddingBottom;
-
-        summarySections.forEach(
-            (section) => {
-                doc.setFont(
-                    "helvetica",
-                    "normal"
-                );
-
-                doc.setFontSize(9.5);
-
-                const bodyLines =
-                    doc.splitTextToSize(
-                        section.value,
-                        bodyWidth
-                    );
-
-                calculatedHeight +=
-                    Math.max(
-                        8,
-                        bodyLines.length * 4.3
-                    ) +
-                    sectionGap;
-            }
-        );
-
-        calculatedHeight -= sectionGap;
-
-        // ============================================================
-        // SUMMARY CARD
-        // ============================================================
-
-        doc.setFillColor(
-            247,
-            249,
-            252
-        );
-
-        doc.setDrawColor(
-            220,
-            226,
-            235
-        );
-
-        doc.setLineWidth(0.6);
-
-        doc.roundedRect(
-            cardX,
-            summaryY,
-            cardWidth,
-            calculatedHeight,
-            4,
-            4,
-            "FD"
-        );
-
-        // ============================================================
-        // DRAW FIVE SUMMARY SECTIONS
-        // ============================================================
-
-        let sectionY =
-            summaryY +
-            cardPaddingTop +
-            3;
-
-        summarySections.forEach(
-            (section, index) => {
-
-                // Label
-                doc.setFont(
-                    "helvetica",
-                    "bold"
-                );
-
-                doc.setFontSize(9.5);
-
-                doc.setTextColor(
-                    ...COLORS.primary
-                );
-
-                const labelLines =
-                    doc.splitTextToSize(
-                        `${section.label}:`,
-                        labelWidth
-                    );
-
-                doc.text(
-                    labelLines,
-                    innerX,
-                    sectionY
-                );
-
-                // Body
-                doc.setFont(
-                    "helvetica",
-                    "normal"
-                );
-
-                doc.setFontSize(9.5);
-
-                doc.setTextColor(
-                    31,
-                    41,
-                    55
-                );
-
-                const bodyLines =
-                    doc.splitTextToSize(
-                        section.value,
-                        bodyWidth
-                    );
-
-                doc.text(
-                    bodyLines,
-                    bodyX,
-                    sectionY
-                );
-
-                const lineCount =
-                    Math.max(
-                        labelLines.length,
-                        bodyLines.length
-                    );
-
-                sectionY +=
-                    Math.max(
-                        8,
-                        lineCount * 4.3
-                    ) +
-                    sectionGap;
-
-                // Separator
-                if (
-                    index <
-                    summarySections.length - 1
-                ) {
-                    doc.setDrawColor(
-                        225,
-                        229,
-                        235
-                    );
-
-                    doc.setLineWidth(0.25);
-
-                    // Move the separator upward so it clears the text
-                    // that follows in the next summary row.
-                    const separatorY =
-                        sectionY -
-                        sectionGap / 2 -
-                        2.5;
-
-                    doc.line(
-                        innerX,
-                        separatorY,
-                        cardX +
-                        cardWidth -
-                        8,
-                        separatorY
+                if (logo.complete && logo.naturalWidth > 0) {
+                    doc.addImage(
+                        logo,
+                        "PNG",
+                        pillX + pillPaddingX + poweredTextWidth + 3,
+                        pillY + 1,
+                        logoWidth,
+                        logoHeight
                     );
                 }
             }
-        );
 
-        // ============================================================
-        // SIGNATURE + SEAL
-        // KEEP ON SAME PAGE
-        // ============================================================
+            doc.setFillColor(219, 153, 10);
+            doc.rect(marginX, 30, 42, 1.2, "F");
+            doc.setDrawColor(210, 218, 230);
+            doc.setLineWidth(0.5);
+            doc.line(marginX + 46, 30.6, pageWidth - marginX, 30.6);
+        };
 
-        aiSummaryEndY =
-            summaryY +
-            calculatedHeight;
+        doc.addPage();
+        drawSummaryPageTitle(false);
+        let summaryY = 39;
+
+        for (const section of summarySections) {
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(9.5);
+
+            const allBodyLines: string[] = doc.splitTextToSize(section.value, bodyWidth);
+            const labelLines: string[] = doc.splitTextToSize(`${section.label}:`, labelWidth);
+            let lineOffset = 0;
+            let firstChunk = true;
+
+            // Long individual fields are also split across pages, rather than
+            // allowing a single oversized card to run off the bottom.
+            while (lineOffset < allBodyLines.length) {
+                let availableHeight = bottomLimit - summaryY;
+                if (availableHeight < 24) {
+                    doc.addPage();
+                    drawSummaryPageTitle(true);
+                    summaryY = 39;
+                    availableHeight = bottomLimit - summaryY;
+                }
+
+                const maxLines = Math.max(
+                    1,
+                    Math.floor((availableHeight - cardPaddingTop - cardPaddingBottom - 2) / lineHeight)
+                );
+                const chunkLines = allBodyLines.slice(lineOffset, lineOffset + maxLines);
+                const displayLabel = firstChunk ? labelLines : [`${section.label} (CONT.):`];
+                const lineCount = Math.max(displayLabel.length, chunkLines.length);
+                const cardHeight = cardPaddingTop + cardPaddingBottom + Math.max(8, lineCount * lineHeight);
+
+                // If this chunk does not fit, move it to a fresh page and
+                // recalculate the chunk size using the full available area.
+                if (summaryY + cardHeight > bottomLimit && summaryY > 39) {
+                    doc.addPage();
+                    drawSummaryPageTitle(true);
+                    summaryY = 39;
+                    continue;
+                }
+
+                doc.setFillColor(247, 249, 252);
+                doc.setDrawColor(220, 226, 235);
+                doc.setLineWidth(0.6);
+                doc.roundedRect(cardX, summaryY, cardWidth, cardHeight, 3, 3, "FD");
+
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(8.5);
+                doc.setTextColor(...COLORS.primary);
+                doc.text(displayLabel, innerX, summaryY + cardPaddingTop + 3);
+
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(9.5);
+                doc.setTextColor(31, 41, 55);
+                doc.text(chunkLines, bodyX, summaryY + cardPaddingTop + 3);
+
+                if (lineOffset + chunkLines.length < allBodyLines.length) {
+                    doc.setDrawColor(225, 229, 235);
+                    doc.setLineWidth(0.25);
+                    doc.line(innerX, summaryY + cardHeight - 1.5, cardX + cardWidth - 8, summaryY + cardHeight - 1.5);
+                }
+
+                summaryY += cardHeight + sectionGap;
+                lineOffset += chunkLines.length;
+                firstChunk = false;
+
+                if (lineOffset < allBodyLines.length) {
+                    doc.addPage();
+                    drawSummaryPageTitle(true);
+                    summaryY = 39;
+                }
+            }
+        }
+
+        // Keep the authorized inspector signature and certified seal together.
+        // If there is insufficient room after the summary, move both to a new page.
+        const signatureBlockHeight = 52;
+        if (summaryY + signatureBlockHeight > bottomLimit) {
+            doc.addPage();
+            drawSummaryPageTitle(true);
+            summaryY = 39;
+        }
 
         const signatureX = 142;
         const signatureWidth = 52;
+        const signatureTitleY = summaryY + 7;
 
-        const signatureTitleY =
-            aiSummaryEndY + 7;
-
-        // Signature title
-        doc.setFont(
-            "helvetica",
-            "bold"
-        );
-
+        doc.setFont("helvetica", "bold");
         doc.setFontSize(7.5);
-
-        doc.setTextColor(
-            ...COLORS.primary
-        );
-
+        doc.setTextColor(...COLORS.primary);
         doc.text(
             "AUTHORIZED INSPECTOR SIGNATURE",
-            signatureX +
-            signatureWidth / 2,
+            signatureX + signatureWidth / 2,
             signatureTitleY,
-            {
-                align: "center",
-            }
+            { align: "center" }
         );
 
-        // Signature line
-        const signatureLineY =
-            signatureTitleY + 7;
-
-        doc.setDrawColor(
-            ...COLORS.primary
-        );
-
+        const signatureLineY = signatureTitleY + 7;
+        doc.setDrawColor(...COLORS.primary);
         doc.setLineWidth(0.5);
-
-        doc.line(
-            signatureX,
-            signatureLineY,
-            signatureX +
-            signatureWidth,
-            signatureLineY
-        );
-
-        // ============================================================
-        // CERTIFIED SEAL
-        // ============================================================
+        doc.line(signatureX, signatureLineY, signatureX + signatureWidth, signatureLineY);
 
         const sealImage = new Image();
-
-        sealImage.src =
-            "/inspectmycar-certified-seal.png";
-
-        await new Promise<void>(
-            (resolve) => {
-                sealImage.onload =
-                    () => resolve();
-
-                sealImage.onerror =
-                    () => resolve();
-            }
-        );
+        sealImage.src = "/inspectmycar-certified-seal.png";
+        await new Promise<void>((resolve) => {
+            sealImage.onload = () => resolve();
+            sealImage.onerror = () => resolve();
+        });
 
         const sealSize = 30;
+        const sealX = signatureX + signatureWidth / 2 - sealSize / 2;
+        const sealY = signatureLineY + 4;
 
-        const sealX =
-            signatureX +
-            signatureWidth / 2 -
-            sealSize / 2;
-
-        const sealY =
-            signatureLineY + 4;
-
-        if (
-            sealImage.complete &&
-            sealImage.naturalWidth > 0
-        ) {
-            doc.addImage(
-                sealImage,
-                "PNG",
-                sealX,
-                sealY,
-                sealSize,
-                sealSize
-            );
+        if (sealImage.complete && sealImage.naturalWidth > 0) {
+            doc.addImage(sealImage, "PNG", sealX, sealY, sealSize, sealSize);
         }
 
-        // Final bottom position used by the next section
-        aiSummaryEndY =
-            Math.max(
-                aiSummaryEndY,
-                sealY +
-                sealSize +
-                6
-            );
-
+        aiSummaryEndY = sealY + sealSize + 6;
         drawWatermark(doc);
     }
-
-
 
 
 
@@ -1338,7 +1071,7 @@ return normalizedComment
 
     type ChecklistPDFRow = {
         item: string;
-        status: "ISSUE" | "PASSED" | "NA";
+        status: "ISSUE" | "PASSED" | "NA" | "VISIBLE" | "NOT VISIBLE";
         remarks: string;
         isTyre?: boolean;
         tyreDetails?: string;
@@ -1382,11 +1115,16 @@ return normalizedComment
                     const spareUnavailable =
                         id === "E" && tyre?.available === false;
 
-                    const week =
-                        tyre?.week || "-";
+                    const manufacturingDateVisible =
+                        tyre?.manufacturingDateVisible !== false;
 
-                    const year =
-                        tyre?.year || "-";
+                    const week = manufacturingDateVisible
+                        ? tyre?.week || "-"
+                        : "Not Visible";
+
+                    const year = manufacturingDateVisible
+                        ? tyre?.year || "-"
+                        : "Not Visible";
 
                     const depth =
                         tyre?.depth || "-";
@@ -1407,9 +1145,13 @@ return normalizedComment
 
                     sectionRows.push({
                         item: text,
-                        // An unavailable spare tyre is not a passed checkpoint.
-                        // Show NA in the STATUS (Passed / Issue) column.
-                        status: spareUnavailable ? "NA" : "PASSED",
+                        // Tyre status reflects manufacturing-date visibility.
+                        // An unavailable spare tyre remains NA.
+                        status: spareUnavailable
+                            ? "NA"
+                            : manufacturingDateVisible
+                                ? "VISIBLE"
+                                : "NOT VISIBLE",
                         remarks: spareUnavailable
                             ? "Not Available"
                             : tyreCondition
@@ -1759,7 +1501,9 @@ return normalizedComment
 
                 else if (
                     value ===
-                    "PASSED"
+                    "PASSED" ||
+                    value ===
+                    "VISIBLE"
                 ) {
 
                     data.cell.styles.textColor =
@@ -1767,6 +1511,22 @@ return normalizedComment
                             45,
                             157,
                             16,
+                        ];
+
+                    data.cell.styles.fontStyle =
+                        "bold";
+                }
+
+                else if (
+                    value ===
+                    "NOT VISIBLE"
+                ) {
+
+                    data.cell.styles.textColor =
+                        [
+                            220,
+                            38,
+                            38,
                         ];
 
                     data.cell.styles.fontStyle =
@@ -2114,35 +1874,41 @@ return normalizedComment
         const depth =
             tyre?.depth || "";
 
-        const condition = spareUnavailable
-            ? "Not Available"
-            : tyre?.condition ||
-                (
-                    depth
-                        ? tyreConditionForMap(
-                            depth
-                        )
-                        : "No Tread"
-                );
+const manufacturingDateVisible =
+    tyre?.manufacturingDateVisible !== false;
 
+const condition = spareUnavailable
+    ? "Not Available"
+    : !manufacturingDateVisible
+        ? "Not Visible"
+        : tyre?.condition ||
+            (
+                depth
+                    ? tyreConditionForMap(depth)
+                    : "No Tread"
+            );
         const conditionColor = spareUnavailable
             ? [120, 120, 120] as [number, number, number]
             : tyreConditionColor(condition);
 
-        const week =
-            tyre?.week || "-";
 
-        const year =
-            tyre?.year || "-";
+const manufacturer =
+    tyre?.manufacturer || "-";
 
-        const manufacturer =
-            tyre?.manufacturer || "-";
+// If false, hide the manufacturing week/year.
 
-        const depthText =
-            depth
-                ? `${depth} mm`
-                : "-";
+const week = manufacturingDateVisible
+    ? tyre?.week || "-"
+    : "Not Visible";
 
+const year = manufacturingDateVisible
+    ? tyre?.year || "-"
+    : "Not Visible";
+
+const depthText =
+    depth
+        ? `${depth} mm`
+        : "-";
 
         const cardW = 54;
         const cardH = 42;
@@ -2306,14 +2072,18 @@ return normalizedComment
         doc.setFontSize(6.3);
 
 
-        doc.text(
-            spareUnavailable
-                ? "Remark: Not Available"
-                : `Remark: ${week}/${year} ${manufacturer}`,
-            item.x + 2.5,
-            item.y + 19
-        );
-
+doc.text(
+    spareUnavailable
+        ? "Remark: Not Available"
+        : manufacturingDateVisible
+            ? `Week/Year: ${week}/${year} | ${manufacturer}`
+            : `Mfg. Date: Not Visible | ${manufacturer}`,
+    item.x + 2.5,
+    item.y + 19,
+    {
+        maxWidth: cardW - 5,
+    }
+);
 
         doc.text(
             spareUnavailable

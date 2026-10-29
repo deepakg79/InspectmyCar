@@ -49,6 +49,7 @@ type ResultValue =
         condition?: string;
         score?: number;
         available?: boolean;
+        manufacturingDateVisible?: boolean;
     };
 
 
@@ -597,7 +598,32 @@ export default function InspectionForm() {
         });
     };
 
+const updateTyreVisibility = (
+    id: string,
+    visible: boolean
+) => {
+    setResults(prev => {
+        const existing = prev[id];
 
+        const current =
+            typeof existing === "object" &&
+            existing &&
+            "week" in existing
+                ? existing
+                : {};
+
+        return {
+            ...prev,
+            [id]: {
+                ...current,
+                manufacturingDateVisible: visible,
+                // Clear the date when it cannot be inspected.
+                week: visible ? (current.week || "") : "",
+                year: visible ? (current.year || "") : "",
+            },
+        };
+    });
+};
     // ========================================================
     // UPDATE SPARE TYRE AVAILABILITY
     // ========================================================
@@ -633,39 +659,33 @@ export default function InspectionForm() {
     // GET TYRE DATA FROM RESULT
     // ========================================================
 
-    const getTyreData = (
-        id: string
-    ) => {
+const getTyreData = (id: string) => {
+    const value = results[id];
 
-        const value =
-            results[id];
-
-
-        if (
-            typeof value ===
-            "object" &&
-            value &&
-            "week" in value
-        ) {
-
-            return value as {
-                week?: string;
-                year?: string;
-                depth?: string;
-                manufacturer?: string;
-                available?: boolean;
-            };
-        }
-
-
-        return {
-            week: "",
-            year: "",
-            depth: "",
-            manufacturer: "",
-            available: true,
+    if (
+        typeof value === "object" &&
+        value &&
+        "week" in value
+    ) {
+        return value as {
+            week?: string;
+            year?: string;
+            depth?: string;
+            manufacturer?: string;
+            available?: boolean;
+            manufacturingDateVisible?: boolean;
         };
+    }
+
+    return {
+        week: "",
+        year: "",
+        depth: "",
+        manufacturer: "",
+        available: true,
+        manufacturingDateVisible: true,
     };
+};
 
 
     // ========================================================
@@ -747,6 +767,7 @@ export default function InspectionForm() {
                     condition: string;
                     score: number;
                     available: boolean;
+                    manufacturingDateVisible: boolean;
                 }
             > = {};
 
@@ -814,6 +835,8 @@ export default function InspectionForm() {
                                 depth
                                     ? tyreCondition.score
                                     : 0,
+                            manufacturingDateVisible:
+                                    item.manufacturingDateVisible !== false,
                         };
 
 
@@ -2131,7 +2154,40 @@ export default function InspectionForm() {
 
                                                         {!(label === "E" && tyre.available === false) && (
                                                             <>
+{/* MANUFACTURING DATE VISIBILITY */}
 
+<select
+    className={`
+        w-full
+        p-2
+        rounded-xl
+        text-xs
+        font-bold
+        ${
+            tyre.manufacturingDateVisible === false
+                ? "bg-amber-50 text-amber-700 border border-amber-200"
+                : "bg-slate-100 text-slate-700"
+        }
+    `}
+    value={
+        tyre.manufacturingDateVisible === false
+            ? "no"
+            : "yes"
+    }
+    onChange={e =>
+        updateTyreVisibility(
+            label,
+            e.target.value === "yes"
+        )
+    }
+>
+    <option value="yes">
+        Manufacturing Week/Year Visible
+    </option>
+    <option value="no">
+        Not Visible — Opposite Side
+    </option>
+</select>
                                                         {/* ROW 1 */}
 
                                                         <div
