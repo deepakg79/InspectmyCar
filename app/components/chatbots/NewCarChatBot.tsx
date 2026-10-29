@@ -492,57 +492,97 @@ const fetchBlockedSlots = async () => {
 
 
     const isSlotBlocked = (dateStr: string, slot: string) => {
+
         if (fullDayBlockedMap[dateStr]) return true;
-        const normalizedSlot = String(slot ?? "").trim().replace(/^0/, "");
-        return (blockedSlotsMap[dateStr] ?? []).some(
-            (blockedSlot) => String(blockedSlot ?? "").trim().replace(/^0/, "") === normalizedSlot
-        );
+
+        return blockedSlotsMap[dateStr]?.includes(slot) ?? false;
+
     };
 
 
-
-    const normalizeSlotKey = (slot: string) =>
-        String(slot ?? "").trim().replace(/^0/, "");
 
     const getRemainingCapacity = (dateStr: string, slot: string) => {
-        const normalizedSlot = normalizeSlotKey(slot);
-        const dateAvailability = availability[dateStr];
 
-        // The service returns a value for every configured slot. Keep a safe
-        // fallback for older cached responses while preserving real capacity.
-        if (dateAvailability && normalizedSlot in dateAvailability) {
-            return Math.max(0, Number(dateAvailability[normalizedSlot]) || 0);
-        }
+        return availability[dateStr]?.[slot] ?? inspectorCount;
 
-        return Math.max(0, inspectorCount);
     };
 
-    const isSlotUnavailable = (dateStr: string, slot: string) =>
-        isSlotBlocked(dateStr, slot) || getRemainingCapacity(dateStr, slot) <= 0;
+
+
+    const isSlotUnavailable = (dateStr: string, slot: string) => {
+
+        if (isSlotBlocked(dateStr, slot)) return true;
+
+        return getRemainingCapacity(dateStr, slot) <= 0;
+
+    };
+
+
 
     const isDayFullyBlocked = (dateStr: string) => {
+
         if (fullDayBlockedMap[dateStr]) return true;
-        return slotsConfig.length > 0 && slotsConfig.every(
-            (slot) => isSlotUnavailable(dateStr, slot)
+
+
+
+        return slotsConfig.every((slot) =>
+
+            isSlotUnavailable(dateStr, slot)
+
         );
+
     };
 
+
+
     const getDayStyle = (dateStr: string) => {
-        if (isDayFullyBlocked(dateStr)) {
-            return "bg-red-500 text-white border-red-500 opacity-60 cursor-not-allowed";
+
+        if (fullDayBlockedMap[dateStr]) {
+
+            return "bg-red-500 text-white border-red-500 opacity-40 cursor-not-allowed";
+
         }
 
-        const unavailableCount = slotsConfig.filter(
-            (slot) => isSlotUnavailable(dateStr, slot)
+
+
+        const unavailableCount = slotsConfig.filter((slot) =>
+
+            isSlotUnavailable(dateStr, slot)
+
         ).length;
 
+
+
+        const totalPossible = slotsConfig.length;
+
+
+
+        if (unavailableCount >= totalPossible) {
+
+            return "bg-red-500 text-white border-red-500 opacity-40 cursor-not-allowed";
+
+        }
+
+
+
         if (unavailableCount >= 3) {
+
             return "bg-orange-400 text-white border-orange-400";
+
         }
+
+
+
         if (unavailableCount >= 1) {
+
             return "bg-yellow-400 text-black border-yellow-400";
+
         }
+
+
+
         return "bg-emerald-500 text-white border-emerald-500";
+
     };
 
 
@@ -2046,7 +2086,7 @@ setIsConfirmed(true);
 
                                         const d = new Date(); d.setDate(d.getDate() + i);
 
-                                        const dateStr = d.toISOString().slice(0, 10);
+                                        const dateStr = d.toISOString().split('T')[0];
 
                                         const isFull = isDayFullyBlocked(dateStr);
 
@@ -2144,7 +2184,7 @@ setIsConfirmed(true);
 
                                                     }}
 
-                                                    className={`py-3 text-[10px] font-black rounded-xl border-2 transition-all ${isTaken ? "bg-gray-200 border-gray-300 text-gray-500 line-through opacity-100 cursor-not-allowed" : form.slot === s ? "border-indigo-600 bg-indigo-600 text-white" : "bg-white border-slate-100 text-slate-600 hover:border-indigo-300"}`}
+                                                    className={`py-3 text-[10px] font-black rounded-xl border-2 transition-all ${isTaken ? "bg-slate-50 border-slate-50 text-slate-300 line-through" : form.slot === s ? "border-indigo-600 bg-indigo-600 text-white" : "bg-white border-slate-100 text-slate-600 hover:border-indigo-300"}`}
 
                                                 >
 
