@@ -13,6 +13,7 @@ import {
     getCities,
     type CityName,
 } from "@/app/components/city_price";
+import { isPastSlot } from "@/app/lib/slotConfig";
 
 const BOOKINGS = "bookings";
 const INSPECTOR_COUNT = "inspector_count";
@@ -420,6 +421,15 @@ export const checkSlotAvailability = async (
     const targetDate = normalizeBookingDate(data.date);
     const slot = normalizeSlot(data.slot);
 
+    if (targetDate && slot && isPastSlot(targetDate, slot)) {
+        return {
+            available: false,
+            remaining: 0,
+            inspectorCount,
+            bookingCount: 0,
+        };
+    }
+
     const snapshot = await getDocs(collection(db, BOOKINGS));
     let bookingCount = 0;
 
@@ -496,6 +506,10 @@ export const createBooking = async (data: {
     const targetDate = normalizeBookingDate(data.date);
     if (!targetDate) {
         throw new Error("Date must be a valid date in YYYY-MM-DD format.");
+    }
+
+    if (isPastSlot(targetDate, slot)) {
+        throw new Error("This time slot has already passed in India time. Please select a future slot.");
     }
 
     const existingBookings = await getDocs(collection(db, BOOKINGS));

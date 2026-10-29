@@ -53,7 +53,7 @@ import {
 
 
 
-import { ALL_SLOTS } from "../../lib/slotConfig";
+import { ALL_SLOTS, isPastSlot } from "../../lib/slotConfig";
 
 
 
@@ -153,6 +153,8 @@ export default function ChatBot({ forceOpen, setForceOpen, initialPlan }: ChatBo
     >({});
 
     const [inspectorCount, setInspectorCount] = useState(1);
+    // Trigger periodic re-renders so slots automatically grey out as time passes.
+    const [, setClockTick] = useState(0);
 
     const [loading, setLoading] = useState(false);
 
@@ -217,6 +219,14 @@ export default function ChatBot({ forceOpen, setForceOpen, initialPlan }: ChatBo
     });
 
 
+
+    useEffect(() => {
+        const timer = window.setInterval(() => {
+            setClockTick((tick) => tick + 1);
+        }, 30_000);
+
+        return () => window.clearInterval(timer);
+    }, []);
 
     useEffect(() => {
 
@@ -542,6 +552,10 @@ const fetchBlockedSlots = async () => {
 
 
     const isSlotUnavailable = (dateStr: string, slot: string) => {
+
+        // Past dates and today's slots whose start time has passed are unavailable,
+        // regardless of bookings or inspector capacity.
+        if (isPastSlot(dateStr, slot)) return true;
 
         if (isSlotBlocked(dateStr, slot)) return true;
 
@@ -1147,7 +1161,13 @@ useEffect(() => {
 
         }
 
-
+        if (isPastSlot(form.date, form.slot)) {
+            setToast({
+                msg: "This time slot has already passed. Please select a future slot.",
+                type: "error",
+            });
+            return;
+        }
 
         setLoading(true);
 
@@ -1159,7 +1179,14 @@ useEffect(() => {
 
             await fetchBlockedSlots();
 
-
+            // Time may have passed while the form was open or while requests ran.
+            if (isPastSlot(form.date, form.slot)) {
+                setToast({
+                    msg: "This time slot has already passed. Please select a future slot.",
+                    type: "error",
+                });
+                return;
+            }
 
             if (isSlotBlocked(form.date, form.slot)) {
 
@@ -2191,10 +2218,11 @@ setIsConfirmed(true);
                                         {slotsConfig.map(s => {
 
                                             const isBlocked = isSlotBlocked(form.date, s);
+                                            const pastTime = isPastSlot(form.date, s);
 
                                             const remaining = getRemainingCapacity(form.date, s);
 
-                                            const isTaken = isBlocked || remaining <= 0;
+                                            const isTaken = pastTime || isBlocked || remaining <= 0;
 
 
 
