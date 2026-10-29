@@ -15,6 +15,7 @@ import { NewCarPlan } from "../../context/BookingContext";
 import {
 
     getBookingsAndAvailability,
+    getIndiaDateString,
 
     checkSlotAvailability,
 
@@ -75,6 +76,45 @@ interface ChatBotProps {
 
 
 type FuelType = "petrol" | "diesel" | "cng" | "ev" | "hybrid";
+
+/** Add calendar days to a YYYY-MM-DD value without using the host timezone. */
+const addDaysToISODate = (dateString: string, days: number): string => {
+    const date = new Date(`${dateString}T00:00:00.000Z`);
+    date.setUTCDate(date.getUTCDate() + days);
+    return date.toISOString().slice(0, 10);
+};
+
+/** Normalize blocked-slot date values to the same YYYY-MM-DD calendar key. */
+const normalizeCalendarDate = (value: unknown): string => {
+    if (typeof value === "string") {
+        const raw = value.trim();
+        const iso = raw.match(/^(\d{4}-\d{2}-\d{2})/);
+        if (iso) return iso[1];
+
+        const local = raw.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
+        if (local) {
+            return `${local[3]}-${local[2].padStart(2, "0")}-${local[1].padStart(2, "0")}`;
+        }
+    }
+
+    let date: Date | null = null;
+    if (value instanceof Date) {
+        date = value;
+    } else if (value && typeof value === "object" && "toDate" in value) {
+        const toDate = (value as { toDate?: () => Date }).toDate;
+        if (typeof toDate === "function") {
+            try {
+                date = toDate.call(value);
+            } catch {
+                date = null;
+            }
+        }
+    }
+
+    if (!date || Number.isNaN(date.getTime())) return "";
+    return getIndiaDateString(date);
+};
+
 
 
 
@@ -412,25 +452,22 @@ useEffect(() => {
 
 const fetchBlockedSlots = async () => {
     try {
-        const today = new Date().toISOString().split("T")[0];
+        const today = getIndiaDateString();
 
-        // Fetch only future blocked slots for the selected city.
+        // Filter normalized dates in JavaScript to avoid UTC/string-boundary issues.
         const q = query(
             collection(db, "blockedSlots"),
-            where("city", "==", selectedCity),
-            where("date", ">=", today)
+            where("city", "==", selectedCity)
         );
 
         const snapshot = await getDocs(q);
-
         const slotMap: Record<string, string[]> = {};
         const fullMap: Record<string, boolean> = {};
 
         snapshot.forEach((snapshotDoc) => {
             const data = snapshotDoc.data();
-
-            const date = data.date?.toString().trim();
-            if (!date) return;
+            const date = normalizeCalendarDate(data.date);
+            if (!date || date < today) return;
 
             if (data.type === "date") {
                 fullMap[date] = true;
@@ -443,11 +480,7 @@ const fetchBlockedSlots = async () => {
                     .replace(/^0/, "");
 
                 if (!normalizedSlot) return;
-
-                if (!slotMap[date]) {
-                    slotMap[date] = [];
-                }
-
+                if (!slotMap[date]) slotMap[date] = [];
                 if (!slotMap[date].includes(normalizedSlot)) {
                     slotMap[date].push(normalizedSlot);
                 }
@@ -464,7 +497,6 @@ const fetchBlockedSlots = async () => {
 };
 
 
-
     const fetchBookings = async () => {
 
         try {
@@ -475,7 +507,7 @@ const fetchBlockedSlots = async () => {
 
             setAvailability(data.availability || {});
 
-            setInspectorCount(data.inspectorCount || 1);
+            setInspectorCount(data.inspectorCount);
 
         } catch (error) {
 
@@ -483,7 +515,7 @@ const fetchBlockedSlots = async () => {
 
             setAvailability({});
 
-            setInspectorCount(1);
+            setInspectorCount(0);
 
         }
 
@@ -2084,9 +2116,9 @@ setIsConfirmed(true);
 
                                     {Array.from({ length: 21 }, (_, i) => {
 
-                                        const d = new Date(); d.setDate(d.getDate() + i);
-
-                                        const dateStr = d.toISOString().split('T')[0];
+                                        const dateStr = addDaysToISODate(getIndiaDateString(), i);
+                                        // Parse at UTC midnight so the displayed day/month cannot shift by timezone.
+                                        const d = new Date(`${dateStr}T00:00:00.000Z`);
 
                                         const isFull = isDayFullyBlocked(dateStr);
 
@@ -2116,9 +2148,9 @@ setIsConfirmed(true);
 
                                             >
 
-                                                {d.getDate()}
+                                                {d.getUTCDate()}
 
-                                                <span className="text-[8px] opacity-60">{d.toLocaleString('default', { month: 'short' })}</span>
+                                                <span className="text-[8px] opacity-60">{new Intl.DateTimeFormat('en-US', { month: 'short', timeZone: 'UTC' }).format(d)}</span>
 
                                             </button>
 

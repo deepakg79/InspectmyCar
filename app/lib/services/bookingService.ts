@@ -3,8 +3,6 @@ import {
     collection,
     addDoc,
     getDocs,
-    query,
-    where,
     serverTimestamp,
     doc,
     setDoc,
@@ -19,6 +17,71 @@ import {
 const BOOKINGS = "bookings";
 const INSPECTOR_COUNT = "inspector_count";
 const INSPECTORS = "inspectors";
+
+
+/**
+ * Return today's date in the business timezone (India), as YYYY-MM-DD.
+ * Do not use toISOString() for "today": it uses UTC and can be one day
+ * behind the Indian calendar date between midnight and 05:29 IST.
+ */
+export const getIndiaDateString = (date: Date = new Date()): string => {
+    const parts = new Intl.DateTimeFormat("en-GB", {
+        timeZone: "Asia/Kolkata",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+    }).formatToParts(date);
+
+    const part = (type: string) =>
+        parts.find((item) => item.type === type)?.value ?? "";
+
+    return `${part("year")}-${part("month")}-${part("day")}`;
+};
+
+/**
+ * Convert Firestore date values to the YYYY-MM-DD key used by the calendar.
+ * Supports the app's existing string field, ISO date/time strings, Dates,
+ * and Firestore Timestamp-like objects.
+ */
+const normalizeBookingDate = (value: unknown): string => {
+    if (value instanceof Date && !Number.isNaN(value.getTime())) {
+        return getIndiaDateString(value);
+    }
+
+    if (value && typeof value === "object" && "toDate" in value) {
+        const toDate = (value as { toDate?: () => Date }).toDate;
+        if (typeof toDate === "function") {
+            try {
+                const date = toDate.call(value);
+                if (date instanceof Date && !Number.isNaN(date.getTime())) {
+                    return getIndiaDateString(date);
+                }
+            } catch {
+                // Fall through to string handling.
+            }
+        }
+    }
+
+    if (typeof value !== "string") return "";
+
+    const raw = value.trim();
+    if (!raw) return "";
+
+    // Preserve date-only values exactly; parsing them as Date can shift dates.
+    const isoDate = raw.match(/^(\d{4}-\d{2}-\d{2})(?:$|T|\s)/);
+    if (isoDate) return isoDate[1];
+
+    // Support legacy DD/MM/YYYY or DD-MM-YYYY values if any exist.
+    const localDate = raw.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
+    if (localDate) {
+        const day = localDate[1].padStart(2, "0");
+        const month = localDate[2].padStart(2, "0");
+        return `${localDate[3]}-${month}-${day}`;
+    }
+
+    const parsed = new Date(raw);
+    return Number.isNaN(parsed.getTime()) ? "" : getIndiaDateString(parsed);
+};
 
 /*
  * inspector_count is intentionally NOT tied to a hardcoded Firestore
@@ -298,202 +361,87 @@ export type SlotAvailability = {
 export const getBookingsAndAvailability = async (
     city: CityName = DEFAULT_CITY
 ): Promise<BookingAvailability> => {
-    const today =
-        new Date()
-            .toISOString()
-            .split("T")[0];
+    const today = getIndiaDateString();
+    const normalizedCity = normalizeCity(city);
+    const inspectorCount = await getInspectorCount(normalizedCity);
 
-    const normalizedCity =
-        normalizeCity(city);
-
-    const inspectorCount =
-        await getInspectorCount(normalizedCity);
-
-    const q = query(
-        collection(db, BOOKINGS),
-        where("date", ">=", today)
-    );
-
-    const snapshot = await getDocs(q);
-
-    const bookingCountMap: Record<
-        string,
-        Record<string, number>
-    > = {};
+    /*
+     * Normalize/filter dates in JavaScript instead of relying on Firestore's
+     * string comparison. This handles YYYY-MM-DD strings and legacy date types.
+     */
+    const snapshot = await getDocs(collection(db, BOOKINGS));
+    const bookingCountMap: Record<string, Record<string, number>> = {};
 
     snapshot.forEach((bookingDoc) => {
         const data = bookingDoc.data();
+        const date = normalizeBookingDate(data.date);
+        const slot = normalizeSlot(data.slot);
 
-        if (
-            !consumesInspectorCapacity(
-                data.status
-            )
-        ) {
-            return;
-        }
+        if (!date || date < today || !slot) return;
+        if (!consumesInspectorCapacity(data.status)) return;
+        if (normalizeCity(data.city) !== normalizedCity) return;
 
-        const bookingCity =
-            normalizeCity(data.city);
-
-        if (
-            bookingCity !== normalizedCity
-        ) {
-            return;
-        }
-
-        const date =
-            data.date
-                ?.toString()
-                .trim();
-
-        const slot =
-            normalizeSlot(data.slot);
-
-        if (!date || !slot) {
-            return;
-        }
-
-        if (!bookingCountMap[date]) {
-            bookingCountMap[date] = {};
-        }
-
-        bookingCountMap[date][slot] =
-            (
-                bookingCountMap[date][slot] ||
-                0
-            ) + 1;
+        if (!bookingCountMap[date]) bookingCountMap[date] = {};
+        bookingCountMap[date][slot] = (bookingCountMap[date][slot] || 0) + 1;
     });
 
-    const availability: Record<
-        string,
-        Record<string, number>
-    > = {};
-
-    Object.entries(
-        bookingCountMap
-    ).forEach(([date, slots]) => {
+    const availability: Record<string, Record<string, number>> = {};
+    Object.entries(bookingCountMap).forEach(([date, slots]) => {
         availability[date] = {};
-
-        Object.entries(slots).forEach(
-            ([slot, bookingCount]) => {
-                availability[date][slot] =
-                    Math.max(
-                        inspectorCount -
-                            bookingCount,
-                        0
-                    );
-            }
-        );
+        Object.entries(slots).forEach(([slot, bookingCount]) => {
+            availability[date][slot] = Math.max(inspectorCount - bookingCount, 0);
+        });
     });
 
-    const bookings: Record<
-        string,
-        string[]
-    > = {};
-
-    Object.entries(
-        availability
-    ).forEach(([date, slots]) => {
-        const fullSlots =
-            Object.entries(slots)
-                .filter(
-                    ([, remaining]) =>
-                        remaining <= 0
-                )
-                .map(([slot]) => slot);
-
-        if (fullSlots.length > 0) {
-            bookings[date] = fullSlots;
-        }
+    const bookings: Record<string, string[]> = {};
+    Object.entries(availability).forEach(([date, slots]) => {
+        const fullSlots = Object.entries(slots)
+            .filter(([, remaining]) => remaining <= 0)
+            .map(([slot]) => slot);
+        if (fullSlots.length > 0) bookings[date] = fullSlots;
     });
 
-    return {
-        bookings,
-        availability,
-        inspectorCount,
-    };
+    return { bookings, availability, inspectorCount };
 };
 
 /* -------------------------------------------------------------------------- */
 /* Check Single Slot Availability                                             */
 /* -------------------------------------------------------------------------- */
 
-export const checkSlotAvailability =
-    async (data: {
+export const checkSlotAvailability = async (
+    data: {
         city?: CityName;
         date: string;
         slot: string;
-    }): Promise<SlotAvailability> => {
-        const city =
-            normalizeCity(data.city);
+    }
+): Promise<SlotAvailability> => {
+    const city = normalizeCity(data.city);
+    const inspectorCount = await getInspectorCount(city);
+    const targetDate = normalizeBookingDate(data.date);
+    const slot = normalizeSlot(data.slot);
 
-        const inspectorCount =
-            await getInspectorCount(city);
+    const snapshot = await getDocs(collection(db, BOOKINGS));
+    let bookingCount = 0;
 
-        const slot =
-            normalizeSlot(data.slot);
+    snapshot.forEach((bookingDoc) => {
+        const booking = bookingDoc.data();
 
-        const q = query(
-            collection(db, BOOKINGS),
-            where(
-                "date",
-                "==",
-                data.date
-            )
-        );
+        if (!consumesInspectorCapacity(booking.status)) return;
+        if (normalizeCity(booking.city) !== city) return;
+        if (normalizeBookingDate(booking.date) !== targetDate) return;
+        if (normalizeSlot(booking.slot) !== slot) return;
 
-        const snapshot =
-            await getDocs(q);
+        bookingCount += 1;
+    });
 
-        let bookingCount = 0;
-
-        snapshot.forEach((bookingDoc) => {
-            const booking =
-                bookingDoc.data();
-
-            if (
-                !consumesInspectorCapacity(
-                    booking.status
-                )
-            ) {
-                return;
-            }
-
-            const bookingCity =
-                normalizeCity(
-                    booking.city
-                );
-
-            if (bookingCity !== city) {
-                return;
-            }
-
-            if (
-                normalizeSlot(
-                    booking.slot
-                ) !== slot
-            ) {
-                return;
-            }
-
-            bookingCount++;
-        });
-
-        const remaining =
-            Math.max(
-                inspectorCount -
-                    bookingCount,
-                0
-            );
-
-        return {
-            available:
-                remaining > 0,
-            remaining,
-            inspectorCount,
-            bookingCount,
-        };
+    const remaining = Math.max(inspectorCount - bookingCount, 0);
+    return {
+        available: remaining > 0,
+        remaining,
+        inspectorCount,
+        bookingCount,
     };
+};
 
 /* -------------------------------------------------------------------------- */
 /* Create Booking                                                             */
@@ -545,54 +493,24 @@ export const createBooking = async (data: {
     const inspectorCount =
         await getInspectorCount(city);
 
-    const bookingQuery =
-        query(
-            collection(db, BOOKINGS),
-            where(
-                "date",
-                "==",
-                data.date
-            )
-        );
+    const targetDate = normalizeBookingDate(data.date);
+    if (!targetDate) {
+        throw new Error("Date must be a valid date in YYYY-MM-DD format.");
+    }
 
-    const existingBookings =
-        await getDocs(
-            bookingQuery
-        );
-
+    const existingBookings = await getDocs(collection(db, BOOKINGS));
     let bookingCount = 0;
 
-    existingBookings.forEach(
-        (bookingDoc) => {
-            const booking =
-                bookingDoc.data();
+    existingBookings.forEach((bookingDoc) => {
+        const booking = bookingDoc.data();
 
-            if (
-                !consumesInspectorCapacity(
-                    booking.status
-                )
-            ) {
-                return;
-            }
+        if (!consumesInspectorCapacity(booking.status)) return;
+        if (normalizeCity(booking.city) !== city) return;
+        if (normalizeBookingDate(booking.date) !== targetDate) return;
+        if (normalizeSlot(booking.slot) !== slot) return;
 
-            const bookingCity =
-                normalizeCity(
-                    booking.city
-                );
-
-            const bookingSlot =
-                normalizeSlot(
-                    booking.slot
-                );
-
-            if (
-                bookingCity === city &&
-                bookingSlot === slot
-            ) {
-                bookingCount++;
-            }
-        }
-    );
+        bookingCount += 1;
+    });
 
     if (
         bookingCount >=
