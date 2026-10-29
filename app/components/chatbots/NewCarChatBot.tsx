@@ -490,80 +490,61 @@ const fetchBlockedSlots = async () => {
     };
 
 
-const getRemainingCapacity = (
-    dateStr: string,
-    slot: string
-): number => {
-    const normalizedSlot = slot.trim().replace(/^0/, "");
 
-    // A missing capacity must not be treated as available.
-    const remaining = availability[dateStr]?.[normalizedSlot];
+    const isSlotBlocked = (dateStr: string, slot: string) => {
+        if (fullDayBlockedMap[dateStr]) return true;
+        const normalizedSlot = String(slot ?? "").trim().replace(/^0/, "");
+        return (blockedSlotsMap[dateStr] ?? []).some(
+            (blockedSlot) => String(blockedSlot ?? "").trim().replace(/^0/, "") === normalizedSlot
+        );
+    };
 
-    if (remaining === undefined || remaining === null) {
-        return 0;
-    }
 
-    return Math.max(0, remaining);
-};
 
-const isSlotBlocked = (
-    dateStr: string,
-    slot: string
-): boolean => {
-    if (fullDayBlockedMap[dateStr]) {
-        return true;
-    }
+    const normalizeSlotKey = (slot: string) =>
+        String(slot ?? "").trim().replace(/^0/, "");
 
-    const normalizedSlot = slot.trim().replace(/^0/, "");
+    const getRemainingCapacity = (dateStr: string, slot: string) => {
+        const normalizedSlot = normalizeSlotKey(slot);
+        const dateAvailability = availability[dateStr];
 
-    return (
-        blockedSlotsMap[dateStr]?.includes(normalizedSlot) ?? false
-    );
-};
+        // The service returns a value for every configured slot. Keep a safe
+        // fallback for older cached responses while preserving real capacity.
+        if (dateAvailability && normalizedSlot in dateAvailability) {
+            return Math.max(0, Number(dateAvailability[normalizedSlot]) || 0);
+        }
 
-const isSlotUnavailable = (
-    dateStr: string,
-    slot: string
-): boolean => {
-    if (isSlotBlocked(dateStr, slot)) {
-        return true;
-    }
+        return Math.max(0, inspectorCount);
+    };
 
-    return getRemainingCapacity(dateStr, slot) <= 0;
-};
+    const isSlotUnavailable = (dateStr: string, slot: string) =>
+        isSlotBlocked(dateStr, slot) || getRemainingCapacity(dateStr, slot) <= 0;
 
-const isDayFullyBlocked = (dateStr: string): boolean => {
-    if (fullDayBlockedMap[dateStr]) {
-        return true;
-    }
+    const isDayFullyBlocked = (dateStr: string) => {
+        if (fullDayBlockedMap[dateStr]) return true;
+        return slotsConfig.length > 0 && slotsConfig.every(
+            (slot) => isSlotUnavailable(dateStr, slot)
+        );
+    };
 
-    return (
-        slotsConfig.length > 0 &&
-        slotsConfig.every((slot) =>
-            isSlotUnavailable(dateStr, slot)
-        )
-    );
-};
+    const getDayStyle = (dateStr: string) => {
+        if (isDayFullyBlocked(dateStr)) {
+            return "bg-red-500 text-white border-red-500 opacity-60 cursor-not-allowed";
+        }
 
-const getDayStyle = (dateStr: string): string => {
-    if (isDayFullyBlocked(dateStr)) {
-        return "bg-red-500 text-white border-red-500 opacity-60 cursor-not-allowed";
-    }
+        const unavailableCount = slotsConfig.filter(
+            (slot) => isSlotUnavailable(dateStr, slot)
+        ).length;
 
-    const unavailableCount = slotsConfig.filter((slot) =>
-        isSlotUnavailable(dateStr, slot)
-    ).length;
+        if (unavailableCount >= 3) {
+            return "bg-orange-400 text-white border-orange-400";
+        }
+        if (unavailableCount >= 1) {
+            return "bg-yellow-400 text-black border-yellow-400";
+        }
+        return "bg-emerald-500 text-white border-emerald-500";
+    };
 
-    if (unavailableCount >= 3) {
-        return "bg-orange-400 text-white border-orange-400";
-    }
-
-    if (unavailableCount >= 1) {
-        return "bg-yellow-400 text-black border-yellow-400";
-    }
-
-    return "bg-emerald-500 text-white border-emerald-500";
-};
 
 
     const handleLocationChange = async (val: string) => {
@@ -2065,7 +2046,7 @@ setIsConfirmed(true);
 
                                         const d = new Date(); d.setDate(d.getDate() + i);
 
-                                        const dateStr = d.toISOString().split('T')[0];
+                                        const dateStr = d.toISOString().slice(0, 10);
 
                                         const isFull = isDayFullyBlocked(dateStr);
 
@@ -2163,13 +2144,7 @@ setIsConfirmed(true);
 
                                                     }}
 
-                                                    className={`py-3 text-[10px] font-black rounded-xl border-2 transition-all ${
-    isTaken
-        ? "bg-gray-200 border-gray-300 text-gray-500 line-through opacity-100 cursor-not-allowed"
-        : form.slot === s
-            ? "border-indigo-600 bg-indigo-600 text-white"
-            : "bg-white border-slate-100 text-slate-600 hover:border-indigo-300"
-}`}
+                                                    className={`py-3 text-[10px] font-black rounded-xl border-2 transition-all ${isTaken ? "bg-gray-200 border-gray-300 text-gray-500 line-through opacity-100 cursor-not-allowed" : form.slot === s ? "border-indigo-600 bg-indigo-600 text-white" : "bg-white border-slate-100 text-slate-600 hover:border-indigo-300"}`}
 
                                                 >
 
