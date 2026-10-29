@@ -1017,7 +1017,11 @@ return normalizedComment
 
 
     // ============================================================
-    // PAGE 3 - FULL IMAGE
+    // FULL IMAGE PAGE — AFTER AI SUMMARY
+    // IMPORTANT: Keep this section AFTER ADMIN AI EXECUTIVE SUMMARY.
+    // The AI summary may add multiple pages. This explicit page break
+    // places the full image on a fresh page after the entire summary and
+    // inspector signature/seal, instead of forcing it to remain on page 3.
     // ============================================================
 
     doc.addPage();
