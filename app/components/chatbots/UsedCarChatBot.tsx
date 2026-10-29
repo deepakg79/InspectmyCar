@@ -13,7 +13,7 @@ import {
     getBookingsAndAvailability,
     createBooking,
 } from "@/app/lib/services/bookingService";
-import { ALL_SLOTS } from "../../lib/slotConfig";
+import { ALL_SLOTS, getIndiaDateKey, isPastSlot } from "../../lib/slotConfig";
 import {
     CAR_DATA,
     YEAR_OPTIONS,
@@ -41,6 +41,16 @@ export default function UsedCarChatBot({
     void initialPlan;
 
     const [open, setOpen] = useState(false);
+    const [, setClockTick] = useState(0);
+
+    // Re-render periodically so today's slots become unavailable as time passes.
+    useEffect(() => {
+        const timer = window.setInterval(() => {
+            setClockTick((tick) => tick + 1);
+        }, 30_000);
+
+        return () => window.clearInterval(timer);
+    }, []);
 
     const {
         selectedCity,
@@ -127,7 +137,7 @@ export default function UsedCarChatBot({
             const data = await getBookingsAndAvailability(city);
 
             setAvailability(data.availability || {});
-            setInspectorCount(data.inspectorCount || 1);
+            setInspectorCount(data.inspectorCount ?? 1);
 
             return data;
         } catch (err) {
@@ -148,7 +158,7 @@ export default function UsedCarChatBot({
         city: CityName = selectedCity
     ) => {
         try {
-            const today = new Date().toISOString().split("T")[0];
+            const today = getIndiaDateKey();
 
             const q = query(
                 collection(db, "blockedSlots"),
@@ -261,6 +271,9 @@ export default function UsedCarChatBot({
         date: string,
         slot: string
     ) => {
+        // Past dates and slots whose start time has passed in India are unavailable.
+        if (isPastSlot(date, slot)) return 0;
+
         if (isSlotAdminBlocked(date, slot)) {
             return 0;
         }
@@ -306,6 +319,10 @@ export default function UsedCarChatBot({
 
         if (!form.preferredDate) return "Select inspection date";
         if (!form.slot) return "Select slot";
+
+        if (isPastSlot(form.preferredDate, form.slot)) {
+            return "This time slot has already passed. Please select a future slot.";
+        }
 
         if (isDayFullyBlocked(form.preferredDate)) {
             return "Selected date is fully booked";
@@ -376,10 +393,24 @@ export default function UsedCarChatBot({
              * - admin blocking the whole day
              * - inspector capacity changes
              */
+            // Re-check time before and after the async refresh to prevent
+            // submitting a slot that passed while availability was loading.
+            if (isPastSlot(form.preferredDate, form.slot)) {
+                throw new Error(
+                    "This time slot has already passed in India time. Please select a future slot."
+                );
+            }
+
             const latest =
                 await refreshAvailability(
                     selectedCity
                 );
+
+            if (isPastSlot(form.preferredDate, form.slot)) {
+                throw new Error(
+                    "This time slot has already passed in India time. Please select a future slot."
+                );
+            }
 
 const latestAvailability: {
     availability: Record<string, Record<string, number>>;
@@ -1050,16 +1081,18 @@ PDI price varies by city & vehicle type. Select your city and car type to see th
 
                                 <div className="grid grid-cols-7 gap-1.5">
                                     {Array.from(
-                                        { length: 21 },
+                                        { length: 11 },
                                         (_, i) => {
-                                            const d = new Date();
-                                            d.setDate(
-                                                d.getDate() + i
-                                            );
-
-                                            const dateStr = d
-                                                .toISOString()
-                                                .split("T")[0];
+                                            // Build calendar dates from India-local today,
+                                            // avoiding host-timezone/UTC date shifts.
+                                            const todayKey = getIndiaDateKey();
+                                            const d = new Date(`${todayKey}T00:00:00.000Z`);
+                                            d.setUTCDate(d.getUTCDate() + i);
+                                            const dateStr = [
+                                                d.getUTCFullYear(),
+                                                String(d.getUTCMonth() + 1).padStart(2, "0"),
+                                                String(d.getUTCDate()).padStart(2, "0"),
+                                            ].join("-");
 
                                             const isFull =
                                                 isDayFullyBlocked(dateStr);
@@ -1099,13 +1132,14 @@ PDI price varies by city & vehicle type. Select your city and car type to see th
                                                                 : "hover:brightness-95"
                                                         }`}
                                                 >
-                                                    {d.getDate()}
+                                                    {d.getUTCDate()}
 
                                                     <span className="text-[8px] opacity-60">
                                                         {d.toLocaleString(
-                                                            "default",
+                                                            "en-US",
                                                             {
                                                                 month: "short",
+                                                                timeZone: "UTC",
                                                             }
                                                         )}
                                                     </span>
@@ -1140,8 +1174,13 @@ PDI price varies by city & vehicle type. Select your city and car type to see th
                                                     s
                                                 );
 
+                                            const pastTime = isPastSlot(
+                                                form.preferredDate,
+                                                s
+                                            );
+
                                             const isTaken =
-                                                remaining <= 0;
+                                                pastTime || remaining <= 0;
 
                                             const isAdminBlocked =
                                                 isSlotAdminBlocked(
@@ -1155,6 +1194,7 @@ PDI price varies by city & vehicle type. Select your city and car type to see th
                                                     disabled={isTaken}
                                                     onClick={() => {
                                                         if (
+                                                            isPastSlot(form.preferredDate, s) ||
                                                             isDayFullyBlocked(
                                                                 form.preferredDate
                                                             )
@@ -1208,7 +1248,13 @@ PDI price varies by city & vehicle type. Select your city and car type to see th
                                                             </span>
                                                         )}
 
-                                                    {isAdminBlocked && (
+                                                    {pastTime && (
+                                                        <span className="block text-[8px] mt-0.5">
+                                                            Past
+                                                        </span>
+                                                    )}
+
+                                                    {!pastTime && isAdminBlocked && (
                                                         <span className="block text-[8px] mt-0.5">
                                                             Blocked
                                                         </span>
