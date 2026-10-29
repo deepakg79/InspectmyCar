@@ -9,7 +9,7 @@ import {
     doc,
     setDoc,
 } from "firebase/firestore";
-
+import { ALL_SLOTS } from "@/app/lib/slotConfig";
 import {
     DEFAULT_CITY,
     getCities,
@@ -298,16 +298,10 @@ export type SlotAvailability = {
 export const getBookingsAndAvailability = async (
     city: CityName = DEFAULT_CITY
 ): Promise<BookingAvailability> => {
-    const today =
-        new Date()
-            .toISOString()
-            .split("T")[0];
+    const today = new Date().toISOString().split("T")[0];
+    const normalizedCity = normalizeCity(city);
 
-    const normalizedCity =
-        normalizeCity(city);
-
-    const inspectorCount =
-        await getInspectorCount(normalizedCity);
+    const inspectorCount = await getInspectorCount(normalizedCity);
 
     const q = query(
         collection(db, BOOKINGS),
@@ -324,30 +318,16 @@ export const getBookingsAndAvailability = async (
     snapshot.forEach((bookingDoc) => {
         const data = bookingDoc.data();
 
-        if (
-            !consumesInspectorCapacity(
-                data.status
-            )
-        ) {
+        if (!consumesInspectorCapacity(data.status)) {
             return;
         }
 
-        const bookingCity =
-            normalizeCity(data.city);
-
-        if (
-            bookingCity !== normalizedCity
-        ) {
+        if (normalizeCity(data.city) !== normalizedCity) {
             return;
         }
 
-        const date =
-            data.date
-                ?.toString()
-                .trim();
-
-        const slot =
-            normalizeSlot(data.slot);
+        const date = String(data.date ?? "").trim();
+        const slot = normalizeSlot(data.slot);
 
         if (!date || !slot) {
             return;
@@ -358,10 +338,7 @@ export const getBookingsAndAvailability = async (
         }
 
         bookingCountMap[date][slot] =
-            (
-                bookingCountMap[date][slot] ||
-                0
-            ) + 1;
+            (bookingCountMap[date][slot] || 0) + 1;
     });
 
     const availability: Record<
@@ -369,51 +346,75 @@ export const getBookingsAndAvailability = async (
         Record<string, number>
     > = {};
 
-    Object.entries(
-        bookingCountMap
-    ).forEach(([date, slots]) => {
-        availability[date] = {};
+    const bookings: Record<string, string[]> = {};
 
-        Object.entries(slots).forEach(
-            ([slot, bookingCount]) => {
-                availability[date][slot] =
-                    Math.max(
-                        inspectorCount -
-                            bookingCount,
-                        0
-                    );
+    // Initialize all nine slots for each date with the inspector capacity.
+    // Subtract active bookings to determine remaining capacity.
+    for (let i = 0; i < 21; i++) {
+        const date = new Date();
+        date.setDate(date.getDate() + i);
+
+        const dateStr = [
+            date.getFullYear(),
+            String(date.getMonth() + 1).padStart(2, "0"),
+            String(date.getDate()).padStart(2, "0"),
+        ].join("-");
+
+        availability[dateStr] = {};
+
+        for (const slot of ALL_SLOTS) {
+            const normalizedSlot = normalizeSlot(slot);
+            const booked =
+                bookingCountMap[dateStr]?.[normalizedSlot] ?? 0;
+
+            availability[dateStr][normalizedSlot] = Math.max(
+                0,
+                inspectorCount - booked
+            );
+
+            if (availability[dateStr][normalizedSlot] <= 0) {
+                if (!bookings[dateStr]) {
+                    bookings[dateStr] = [];
+                }
+
+                bookings[dateStr].push(normalizedSlot);
             }
-        );
-    });
-
-    const bookings: Record<
-        string,
-        string[]
-    > = {};
-
-    Object.entries(
-        availability
-    ).forEach(([date, slots]) => {
-        const fullSlots =
-            Object.entries(slots)
-                .filter(
-                    ([, remaining]) =>
-                        remaining <= 0
-                )
-                .map(([slot]) => slot);
-
-        if (fullSlots.length > 0) {
-            bookings[date] = fullSlots;
         }
-    });
+    }
+
+    // Also retain availability for any future dates returned by Firestore
+    // that were not included in the initial 21-day calendar.
+    for (const [date, slots] of Object.entries(bookingCountMap)) {
+        if (!availability[date]) {
+            availability[date] = {};
+        }
+
+        for (const [slot, booked] of Object.entries(slots)) {
+            if (availability[date][slot] === undefined) {
+                availability[date][slot] = Math.max(
+                    0,
+                    inspectorCount - booked
+                );
+            }
+
+            if (availability[date][slot] <= 0) {
+                if (!bookings[date]) {
+                    bookings[date] = [];
+                }
+
+                if (!bookings[date].includes(slot)) {
+                    bookings[date].push(slot);
+                }
+            }
+        }
+    }
 
     return {
-        bookings,
         availability,
+        bookings,
         inspectorCount,
     };
 };
-
 /* -------------------------------------------------------------------------- */
 /* Check Single Slot Availability                                             */
 /* -------------------------------------------------------------------------- */

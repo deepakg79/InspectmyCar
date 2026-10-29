@@ -490,101 +490,80 @@ const fetchBlockedSlots = async () => {
     };
 
 
+const getRemainingCapacity = (
+    dateStr: string,
+    slot: string
+): number => {
+    const normalizedSlot = slot.trim().replace(/^0/, "");
 
-    const isSlotBlocked = (dateStr: string, slot: string) => {
+    // A missing capacity must not be treated as available.
+    const remaining = availability[dateStr]?.[normalizedSlot];
 
-        if (fullDayBlockedMap[dateStr]) return true;
+    if (remaining === undefined || remaining === null) {
+        return 0;
+    }
 
-        return blockedSlotsMap[dateStr]?.includes(slot) ?? false;
+    return Math.max(0, remaining);
+};
 
-    };
+const isSlotBlocked = (
+    dateStr: string,
+    slot: string
+): boolean => {
+    if (fullDayBlockedMap[dateStr]) {
+        return true;
+    }
 
+    const normalizedSlot = slot.trim().replace(/^0/, "");
 
+    return (
+        blockedSlotsMap[dateStr]?.includes(normalizedSlot) ?? false
+    );
+};
 
-    const getRemainingCapacity = (dateStr: string, slot: string) => {
+const isSlotUnavailable = (
+    dateStr: string,
+    slot: string
+): boolean => {
+    if (isSlotBlocked(dateStr, slot)) {
+        return true;
+    }
 
-        return availability[dateStr]?.[slot] ?? inspectorCount;
+    return getRemainingCapacity(dateStr, slot) <= 0;
+};
 
-    };
+const isDayFullyBlocked = (dateStr: string): boolean => {
+    if (fullDayBlockedMap[dateStr]) {
+        return true;
+    }
 
-
-
-    const isSlotUnavailable = (dateStr: string, slot: string) => {
-
-        if (isSlotBlocked(dateStr, slot)) return true;
-
-        return getRemainingCapacity(dateStr, slot) <= 0;
-
-    };
-
-
-
-    const isDayFullyBlocked = (dateStr: string) => {
-
-        if (fullDayBlockedMap[dateStr]) return true;
-
-
-
-        return slotsConfig.every((slot) =>
-
+    return (
+        slotsConfig.length > 0 &&
+        slotsConfig.every((slot) =>
             isSlotUnavailable(dateStr, slot)
+        )
+    );
+};
 
-        );
+const getDayStyle = (dateStr: string): string => {
+    if (isDayFullyBlocked(dateStr)) {
+        return "bg-red-500 text-white border-red-500 opacity-60 cursor-not-allowed";
+    }
 
-    };
+    const unavailableCount = slotsConfig.filter((slot) =>
+        isSlotUnavailable(dateStr, slot)
+    ).length;
 
+    if (unavailableCount >= 3) {
+        return "bg-orange-400 text-white border-orange-400";
+    }
 
+    if (unavailableCount >= 1) {
+        return "bg-yellow-400 text-black border-yellow-400";
+    }
 
-    const getDayStyle = (dateStr: string) => {
-
-        if (fullDayBlockedMap[dateStr]) {
-
-            return "bg-red-500 text-white border-red-500 opacity-40 cursor-not-allowed";
-
-        }
-
-
-
-        const unavailableCount = slotsConfig.filter((slot) =>
-
-            isSlotUnavailable(dateStr, slot)
-
-        ).length;
-
-
-
-        const totalPossible = slotsConfig.length;
-
-
-
-        if (unavailableCount >= totalPossible) {
-
-            return "bg-red-500 text-white border-red-500 opacity-40 cursor-not-allowed";
-
-        }
-
-
-
-        if (unavailableCount >= 3) {
-
-            return "bg-orange-400 text-white border-orange-400";
-
-        }
-
-
-
-        if (unavailableCount >= 1) {
-
-            return "bg-yellow-400 text-black border-yellow-400";
-
-        }
-
-
-
-        return "bg-emerald-500 text-white border-emerald-500";
-
-    };
-
+    return "bg-emerald-500 text-white border-emerald-500";
+};
 
 
     const handleLocationChange = async (val: string) => {
@@ -2184,7 +2163,13 @@ setIsConfirmed(true);
 
                                                     }}
 
-                                                    className={`py-3 text-[10px] font-black rounded-xl border-2 transition-all ${isTaken ? "bg-slate-50 border-slate-50 text-slate-300 line-through" : form.slot === s ? "border-indigo-600 bg-indigo-600 text-white" : "bg-white border-slate-100 text-slate-600 hover:border-indigo-300"}`}
+                                                    className={`py-3 text-[10px] font-black rounded-xl border-2 transition-all ${
+    isTaken
+        ? "bg-gray-200 border-gray-300 text-gray-500 line-through opacity-100 cursor-not-allowed"
+        : form.slot === s
+            ? "border-indigo-600 bg-indigo-600 text-white"
+            : "bg-white border-slate-100 text-slate-600 hover:border-indigo-300"
+}`}
 
                                                 >
 
