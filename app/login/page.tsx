@@ -1,174 +1,217 @@
 "use client";
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 
-// 🔥 Firebase
+import { useState, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+} from "firebase/firestore";
 import { db } from "@/app/lib/firebase";
-import { collection, query, where, getDocs } from "firebase/firestore";
+
+type LoginMode = "admin" | "inspector";
 
 export default function LoginPage() {
-    const [mode, setMode] = useState<"admin" | "inspector">("inspector");
-    const [mobile, setMobile] = useState("");
-    const [password, setPassword] = useState("");
-    const [loading, setLoading] = useState(false);
-    const [mounted, setMounted] = useState(false);
-    const router = useRouter();
+  const router = useRouter();
 
-    useEffect(() => setMounted(true), []);
+  const [mode, setMode] = useState<LoginMode>("inspector");
+  const [mobile, setMobile] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-    const handleLogin = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
+  async function handleLogin(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
 
-        try {
-            // 🔐 ADMIN LOGIN (ENV KEY)
-            if (mode === "admin") {
-                if (password === process.env.NEXT_PUBLIC_ADMIN_KEY) {
-                    localStorage.setItem("pdi_admin", "true");
-                    window.location.href = "/admin/bookings";
-                } else {
-                    alert("Invalid Admin Key.");
-                }
-            }
+    if (loading) return;
 
-            // 👷 INSPECTOR LOGIN (FIREBASE)
-            else {
-                const q = query(
-                    collection(db, "inspectors"),
-                    where("mobile", "==", mobile),
-                    where("password", "==", password)
-                );
+    setLoading(true);
+    setError("");
 
-                const snapshot = await getDocs(q);
+    try {
+      if (mode === "admin") {
+        // The admin password is validated on the server.
+        // Do not use NEXT_PUBLIC_ADMIN_KEY in client-side code.
+        const response = await fetch("/api/admin-login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          cache: "no-store",
+          body: JSON.stringify({ password }),
+        });
 
-                if (!snapshot.empty) {
-                    const docSnap = snapshot.docs[0];
-                    const data = docSnap.data();
+        const result = await response.json();
 
-                    const authData = {
-                        id: docSnap.id,
-                        name: data.name,
-                        mobile: data.mobile
-                    };
-
-                    // ✅ Unified storage
-                    localStorage.setItem("pdi_inspector", JSON.stringify(authData));
-
-                    // ✅ Backward compatibility
-                    localStorage.setItem("inspectorName", data.name);
-                    localStorage.setItem("inspectorMobile", data.mobile);
-
-                    window.location.href = "/inspector";
-                } else {
-                    alert("Invalid Inspector Credentials");
-                }
-            }
-        } catch (error) {
-            console.error(error);
-            alert("Connection error.");
-        } finally {
-            setLoading(false);
+        if (!response.ok || result.success !== true) {
+          setError(result.message || "Invalid admin password.");
+          return;
         }
-    };
 
-    if (!mounted) return null;
+        // Redirect after the server confirms the password.
+        router.push("/admin/bookings");
+        return;
+      }
 
-    return (
-        <main className="min-h-screen bg-[#f8fafc] px-6 font-sans pb-20 pt-32 flex flex-col items-center">
+      // Inspector login remains based on the existing Firestore records.
+      if (!mobile.trim() || !password) {
+        setError("Please enter your mobile number and password.");
+        return;
+      }
 
-            <div className="max-w-md w-full animate-in fade-in slide-in-from-top-4 duration-700">
+      const inspectorsQuery = query(
+        collection(db, "inspectors"),
+        where("mobile", "==", mobile.trim()),
+        where("password", "==", password)
+      );
 
-                {/* --- SEGMENTED TOGGLE --- */}
-                <div className="relative z-10 flex bg-slate-200/50 p-1.5 rounded-[2rem] mb-8 backdrop-blur-md border border-white/50 shadow-inner">
-                    <button
-                        type="button"
-                        onClick={() => setMode("inspector")}
-                        className={`flex-1 py-4 rounded-[1.8rem] text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${mode === 'inspector'
-                            ? 'bg-white text-slate-900 shadow-lg scale-[1.02]'
-                            : 'text-slate-400 hover:text-slate-600'
-                            }`}
-                    >
-                        Inspector Entry
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => setMode("admin")}
-                        className={`flex-1 py-4 rounded-[1.8rem] text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${mode === 'admin'
-                            ? 'bg-white text-slate-900 shadow-lg scale-[1.02]'
-                            : 'text-slate-400 hover:text-slate-600'
-                            }`}
-                    >
-                        Admin Portal
-                    </button>
-                </div>
+      const snapshot = await getDocs(inspectorsQuery);
 
-                {/* --- MAIN CARD --- */}
-                <form onSubmit={handleLogin} className="bg-white p-10 rounded-[3rem] shadow-[0_40px_80px_rgba(0,0,0,0.06)] border border-slate-100 relative overflow-hidden">
+      if (snapshot.empty) {
+        setError("Invalid inspector mobile number or password.");
+        return;
+      }
 
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50/50 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+      const inspectorDoc = snapshot.docs[0];
+      const inspectorData = inspectorDoc.data();
 
-                    <div className="mb-10 text-center relative z-10">
-                        <div className="inline-flex w-16 h-16 items-center justify-center rounded-[1.5rem] bg-slate-900 text-2xl mb-6 shadow-xl text-white">
-                            {mode === "admin" ? "🔑" : "📋"}
-                        </div>
-                        <h1 className="text-3xl font-black text-slate-900 tracking-tighter">
-                            {mode === "admin" ? "System" : "Field"} <span className="text-indigo-600 italic">Auth</span>
-                        </h1>
-                        <p className="text-[10px] font-black text-slate-300 mt-3 uppercase tracking-[0.3em]">
-                            {mode === "admin" ? "Encrypted Master Key" : "Personnel Credentials Required"}
-                        </p>
-                    </div>
+      const inspector = {
+        id: inspectorDoc.id,
+        name: inspectorData.name,
+        mobile: inspectorData.mobile,
+      };
 
-                    <div className="space-y-5 relative z-10">
-                        {mode === "inspector" && (
-                            <div className="space-y-2 animate-in fade-in slide-in-from-left-4 duration-500">
-                                <label className="text-[10px] font-black uppercase text-slate-400 ml-5 tracking-widest">Registered Mobile</label>
-                                <input
-                                    type="tel"
-                                    required
-                                    placeholder="Enter Mobile Number"
-                                    className="w-full p-6 rounded-[1.8rem] bg-slate-50 border-2 border-transparent focus:border-indigo-100 focus:bg-white outline-none transition-all font-bold text-slate-700 shadow-inner"
-                                    onChange={(e) => setMobile(e.target.value)}
-                                />
-                            </div>
-                        )}
+      localStorage.setItem("pdi_inspector", JSON.stringify(inspector));
 
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase text-slate-400 ml-5 tracking-widest">
-                                {mode === "admin" ? "Access Key" : "Private Password"}
-                            </label>
-                            <input
-                                type="password"
-                                required
-                                placeholder="••••••••"
-                                className="w-full p-6 rounded-[1.8rem] bg-slate-50 border-2 border-transparent focus:border-indigo-100 focus:bg-white outline-none transition-all font-bold text-slate-700 text-center tracking-[0.4em] shadow-inner"
-                                onChange={(e) => setPassword(e.target.value)}
-                            />
-                        </div>
-                    </div>
+      // Keep the existing compatibility keys for inspector pages.
+      localStorage.setItem("inspectorName", inspectorData.name ?? "");
+      localStorage.setItem("inspectorMobile", inspectorData.mobile ?? "");
 
-                    <button
-                        disabled={loading}
-                        className="relative w-full bg-slate-900 text-white py-6 rounded-[2rem] font-black uppercase tracking-[0.2em] text-[10px] mt-10 shadow-2xl hover:bg-indigo-600 hover:-translate-y-1 active:translate-y-0 transition-all disabled:opacity-50 overflow-hidden"
-                    >
-                        <span className={loading ? "opacity-0" : "opacity-100"}>
-                            {mode === "admin" ? "Open Dashboard" : "Sync & Start"}
-                        </span>
-                        {loading && (
-                            <div className="absolute inset-0 flex items-center justify-center">
-                                <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
-                            </div>
-                        )}
-                    </button>
-                </form>
+      router.push("/inspector");
+    } catch (error) {
+      console.error("Login error:", error);
+      setError("Unable to log in. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
 
-                <div className="mt-12 flex flex-col items-center gap-2">
-                    <p className="text-[9px] font-black text-slate-300 uppercase tracking-[0.4em]">
-                        PDI Digital Infrastructure
-                    </p>
-                    <div className="w-1 h-1 bg-indigo-200 rounded-full"></div>
-                </div>
+  return (
+    <main className="flex min-h-screen items-center justify-center bg-gray-100 px-4 py-10">
+      <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-lg">
+        <div className="mb-8 text-center">
+          <h1 className="text-2xl font-bold text-gray-900">
+            InspectMyCar
+          </h1>
+
+          <p className="mt-2 text-sm text-gray-500">
+            Sign in to continue
+          </p>
+        </div>
+
+        <div className="mb-6 grid grid-cols-2 gap-2 rounded-lg bg-gray-100 p-1">
+          <button
+            type="button"
+            onClick={() => {
+              setMode("inspector");
+              setPassword("");
+              setError("");
+            }}
+            className={`rounded-md px-4 py-2 text-sm font-medium transition ${
+              mode === "inspector"
+                ? "bg-white text-gray-900 shadow"
+                : "text-gray-600 hover:text-gray-900"
+            }`}
+          >
+            Inspector Login
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setMode("admin");
+              setMobile("");
+              setPassword("");
+              setError("");
+            }}
+            className={`rounded-md px-4 py-2 text-sm font-medium transition ${
+              mode === "admin"
+                ? "bg-white text-gray-900 shadow"
+                : "text-gray-600 hover:text-gray-900"
+            }`}
+          >
+            Admin Login
+          </button>
+        </div>
+
+        <form onSubmit={handleLogin} className="space-y-5">
+          {mode === "inspector" && (
+            <div>
+              <label
+                htmlFor="mobile"
+                className="mb-1 block text-sm font-medium text-gray-700"
+              >
+                Mobile Number
+              </label>
+
+              <input
+                id="mobile"
+                type="tel"
+                autoComplete="username"
+                value={mobile}
+                onChange={(event) => setMobile(event.target.value)}
+                placeholder="Enter mobile number"
+                required
+                disabled={loading}
+                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:bg-gray-100"
+              />
             </div>
-        </main>
-    );
+          )}
+
+          <div>
+            <label
+              htmlFor="password"
+              className="mb-1 block text-sm font-medium text-gray-700"
+            >
+              {mode === "admin" ? "Admin Password" : "Inspector Password"}
+            </label>
+
+            <input
+              id="password"
+              type="password"
+              autoComplete="current-password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              placeholder="Enter password"
+              required
+              disabled={loading}
+              className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:bg-gray-100"
+            />
+          </div>
+
+          {error && (
+            <div
+              role="alert"
+              className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+            >
+              {error}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="flex w-full items-center justify-center rounded-lg bg-blue-600 px-4 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {loading ? "Signing in..." : "Sign In"}
+          </button>
+        </form>
+
+        <p className="mt-6 text-center text-xs text-gray-400">
+          InspectMyCar PDI Booking System
+        </p>
+      </div>
+    </main>
+  );
 }
