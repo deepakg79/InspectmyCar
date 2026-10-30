@@ -16,7 +16,9 @@ import {
 
     doc,
 
-    deleteDoc
+    deleteDoc,
+    query,
+    where
 
 } from "firebase/firestore"
 
@@ -39,6 +41,8 @@ interface Booking {
     slot: string;
 
     location: string;
+
+    city?: string;
 
     fullAddress?: string;
 
@@ -90,11 +94,16 @@ export default function AdminBookings() {
 
     const [selectedExecs, setSelectedExecs] = useState<Record<string, string>>({});
 
-    const [activeDate, setActiveDate] = useState<string | null>(null);
+    const [activeDate, setActiveDate] = useState<string | null>(() => {
+        const today = new Date();
+        return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+    });
+
+    const [expandedCity, setExpandedCity] = useState<string | null>(null);
 
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
-    const [statusFilter, setStatusFilter] = useState<string>("All");
+    const [statusFilter, setStatusFilter] = useState<string>("Confirmed");
 
     const [typeFilter, setTypeFilter] = useState("All");
 
@@ -125,65 +134,55 @@ export default function AdminBookings() {
 
     };
 
+    // Fetch only the status group currently selected. This avoids downloading every booking
+    // when the page opens. Selecting "All Status" intentionally fetches the full collection.
     useEffect(() => {
+        setLoading(true);
 
-        setMounted(true)
+        const bookingsRef = collection(db, "bookings");
+        const bookingsQuery = statusFilter === "Confirmed"
+            ? query(bookingsRef, where("status", "in", ["Confirmed", "Assigned"]))
+            : statusFilter === "Completed" || statusFilter === "Cancelled"
+                ? query(bookingsRef, where("status", "==", statusFilter))
+                : bookingsRef;
 
-        const unsubBookings = onSnapshot(collection(db, "bookings"), (snapshot) => {
+        const unsubscribe = onSnapshot(
+            bookingsQuery,
+            (snapshot) => {
+                const data: Booking[] = snapshot.docs.map((bookingDoc) => {
+                    const raw = bookingDoc.data() as Omit<Booking, "id">;
+                    return {
+                        ...raw,
+                        id: bookingDoc.id,
+                        date: normalizeDate(raw.date),
+                    } as Booking;
+                });
 
-            const data: any[] = []
+                data.sort((a, b) => b.date.localeCompare(a.date));
+                setBookings(data);
+                setLoading(false);
+            },
+            (error) => {
+                console.error("Bookings sync failed", error);
+                setToast({ msg: "Could not load bookings", type: "error" });
+                setLoading(false);
+            }
+        );
 
-            snapshot.forEach(doc => {
+        return () => unsubscribe();
+    }, [statusFilter]);
 
-                data.push({
-
-                    id: doc.id,
-
-                    ...doc.data()
-
-                })
-
-            })
-
-            setBookings(
-
-                data.reverse().map(b => ({
-
-                    ...b,
-
-                    date: normalizeDate(b.date)
-
-                }))
-
-            );
-
-            setLoading(false)
-
-        })
-
-        // ✅ ADD THIS
-
+    // Keep these listeners separate so changing the booking status filter does not
+    // re-read blocked slots or the inspector list every time.
+    useEffect(() => {
         const unsubBlocked = onSnapshot(collection(db, "blockedSlots"), (snapshot) => {
+            setBlockedSlots(snapshot.docs.map((blockedDoc) => blockedDoc.data()));
+        });
 
-            const data: any[] = []
+        fetchExecutives();
 
-            snapshot.forEach(doc => data.push(doc.data()))
-
-            setBlockedSlots(data)
-
-        })
-
-        fetchExecutives()
-
-        return () => {
-
-            unsubBookings()
-
-            unsubBlocked() // ✅ cleanup
-
-        }
-
-    }, [])
+        return () => unsubBlocked();
+    }, []);
 
     useEffect(() => {
 
@@ -324,6 +323,28 @@ export default function AdminBookings() {
         return counts;
 
     }, [bookings]);
+
+    const cityWiseBookings = useMemo(() => {
+        const groups: Record<string, Booking[]> = {};
+
+        // The calendar can be toggled off; in that state, show no date-specific city list.
+        if (!activeDate) return [];
+
+        bookings.forEach((booking) => {
+            if (normalizeDate(booking.date) !== activeDate) return;
+            const cityName = (booking.city || booking.location || "Unknown city").trim() || "Unknown city";
+            if (!groups[cityName]) groups[cityName] = [];
+            groups[cityName].push(booking);
+        });
+
+        return Object.entries(groups)
+            .map(([city, cityBookings]) => ({
+                city,
+                bookings: cityBookings.sort((a, b) => a.slot.localeCompare(b.slot)),
+                count: cityBookings.length,
+            }))
+            .sort((a, b) => b.count - a.count || a.city.localeCompare(b.city));
+    }, [bookings, activeDate]);
 
     const getAvailableSlots = (date: string, currentMobile?: string) => {
 
@@ -1251,6 +1272,97 @@ export default function AdminBookings() {
 
                 </section>
 
+                {/* CITY-WISE BOOKINGS FOR THE SELECTED CALENDAR DATE */}
+                <section className="mb-8 rounded-2xl sm:rounded-3xl border border-slate-100 bg-white p-4 sm:p-6 shadow-sm">
+                    <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                            <h2 className="text-lg sm:text-xl font-black text-slate-900">City-wise bookings</h2>
+                            <p className="mt-1 text-xs sm:text-sm font-medium text-slate-500">
+                                {activeDate
+                                    ? `Bookings for ${new Date(`${activeDate}T12:00:00`).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}`
+                                    : "Select a calendar date to view bookings"}
+                            </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <input
+                                type="date"
+                                value={activeDate ?? ""}
+                                onChange={(e) => setActiveDate(e.target.value || null)}
+                                className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-100"
+                                aria-label="Select booking date"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    const today = new Date();
+                                    setActiveDate(`${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`);
+                                }}
+                                className="rounded-xl bg-indigo-50 px-3 py-2 text-sm font-black text-indigo-700 hover:bg-indigo-100"
+                            >
+                                Today
+                            </button>
+                        </div>
+                    </div>
+
+                    {loading ? (
+                        <p className="py-5 text-sm font-semibold text-slate-400">Loading bookings...</p>
+                    ) : cityWiseBookings.length === 0 ? (
+                        <p className="rounded-xl bg-slate-50 px-4 py-6 text-center text-sm font-semibold text-slate-500">
+                            No bookings found for this date with the selected status filter.
+                        </p>
+                    ) : (
+                        <div className="space-y-2">
+                            {cityWiseBookings.map(({ city, count, bookings: cityBookings }) => (
+                                <div key={city} className="overflow-hidden rounded-xl border border-slate-100">
+                                    <button
+                                        type="button"
+                                        onClick={() => setExpandedCity((previous) => previous === city ? null : city)}
+                                        className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition hover:bg-indigo-50/60"
+                                        aria-expanded={expandedCity === city}
+                                    >
+                                        <span className="font-extrabold text-slate-800">{city}</span>
+                                        <span className="flex items-center gap-3">
+                                            <span className="rounded-full bg-indigo-100 px-3 py-1 text-xs font-black text-indigo-700">{count}</span>
+                                            <span className="text-slate-400">{expandedCity === city ? "−" : "+"}</span>
+                                        </span>
+                                    </button>
+                                    {expandedCity === city && (
+                                        <div className="overflow-x-auto border-t border-slate-100">
+                                            <table className="w-full min-w-[650px] text-left text-sm">
+                                                <thead className="bg-slate-50 text-[11px] uppercase tracking-wide text-slate-500">
+                                                    <tr>
+                                                        <th className="px-4 py-3 font-black">Time</th>
+                                                        <th className="px-4 py-3 font-black">Customer</th>
+                                                        <th className="px-4 py-3 font-black">Mobile</th>
+                                                        <th className="px-4 py-3 font-black">Vehicle</th>
+                                                        <th className="px-4 py-3 font-black">Status</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-slate-100">
+                                                    {cityBookings.map((booking) => (
+                                                        <tr key={booking.id} className="hover:bg-slate-50">
+                                                            <td className="whitespace-nowrap px-4 py-3 font-bold text-slate-700">{booking.slot || "—"}</td>
+                                                            <td className="px-4 py-3 font-bold text-slate-800">{booking.name || "—"}</td>
+                                                            <td className="whitespace-nowrap px-4 py-3 text-slate-600">{booking.mobile || "—"}</td>
+                                                            <td className="px-4 py-3 text-slate-600">{[booking.brand, booking.model].filter(Boolean).join(" ") || "—"}</td>
+                                                            <td className="px-4 py-3">
+                                                                <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-700">{booking.status || "—"}</span>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                    <p className="mt-3 text-[11px] text-slate-400">
+                        City grouping uses the booking’s <code>city</code> field when present, otherwise <code>location</code>.
+                    </p>
+                </section>
+
                 <div className="relative max-w-xl mb-5 md:mb-10">
 
                     <input
@@ -1283,9 +1395,9 @@ export default function AdminBookings() {
 
                     >
 
-                        <option value="All">All Status</option>
+                        <option value="Confirmed">Confirmed &amp; Assigned</option>
 
-                        <option value="Confirmed">Confirmed</option>
+                        <option value="All">All Status (more reads)</option>
 
                         <option value="Completed">Completed</option>
 
