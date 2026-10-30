@@ -3,10 +3,9 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { collection, onSnapshot } from "firebase/firestore";
+import { collection, onSnapshot, query, where } from "firebase/firestore";
 import {
   CalendarDays,
-  CalendarCheck,
   CarFront,
   ChevronDown,
   ChevronLeft,
@@ -154,32 +153,49 @@ export default function AdminSchedulesPage() {
   const [error, setError] = useState("");
   const [mounted, setMounted] = useState(false);
 
-  // Initialize date-dependent UI after hydration.
+  // Initialize the date-dependent UI after hydration.
   useEffect(() => {
     setMounted(true);
     setSelectedDate(getDateOffset(0));
+  }, []);
 
-const unsubscribe = onSnapshot(
-  collection(db, "bookings"),
-  (snapshot) => {
-    const data: Booking[] = snapshot.docs.map((item) => ({
-      id: item.id,
-      ...(item.data() as Omit<Booking, "id">),
-    }));
+  // Subscribe only to bookings for the currently selected date.
+  // This avoids downloading and listening to the entire bookings collection.
+  useEffect(() => {
+    if (!selectedDate) return;
 
-    setBookings(data);
+    setLoading(true);
     setError("");
-    setLoading(false);
-  },
-  (listenerError) => {
-    console.error("Failed to load schedule bookings:", listenerError);
-    setError("Unable to load bookings. Please check your connection and permissions.");
-    setLoading(false);
-  }
-);
+
+    const bookingsForSelectedDate = query(
+      collection(db, "bookings"),
+      where("date", "==", selectedDate)
+    );
+
+    const unsubscribe = onSnapshot(
+      bookingsForSelectedDate,
+      (snapshot) => {
+        const data: Booking[] = snapshot.docs.map((item) => ({
+          id: item.id,
+          ...(item.data() as Omit<Booking, "id">),
+        }));
+
+        setBookings(data);
+        setError("");
+        setLoading(false);
+      },
+      (listenerError) => {
+        console.error("Failed to load schedule bookings:", listenerError);
+        setBookings([]);
+        setError(
+          "Unable to load bookings. Please check your connection and permissions."
+        );
+        setLoading(false);
+      }
+    );
 
     return () => unsubscribe();
-  }, []);
+  }, [selectedDate]);
 
   const today = getDateOffset(0);
   const tomorrow = getDateOffset(1);
