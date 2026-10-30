@@ -12,6 +12,9 @@ import { buildPDF } from "@/app/lib/pdfGenerator";
 import {
     collection,
     query,
+    where,
+    orderBy,
+    limit,
     onSnapshot,
     updateDoc,
     doc
@@ -285,29 +288,58 @@ export default function ApprovePDIsPage() {
     };
 
 
-    // 🔥 FETCH REPORTS READY FOR APPROVAL
+    // Load only the report set needed by the selected tab.
+    // Pending: all reports waiting for approval (status = "Completed").
+    // Approved: latest 20 approved reports, ordered by createdAt.
     useEffect(() => {
-        const q = query(collection(db, "reports"));
+        setLoading(true);
 
-        const unsub = onSnapshot(q, (snap) => {
-            const data: any[] = [];
+        const reportsRef = collection(db, "reports");
+        const reportsQuery =
+            filter === "pending"
+                ? query(reportsRef, where("status", "==", "Completed"))
+                : query(
+                    reportsRef,
+                    where("status", "==", "Approved"),
+                    orderBy("createdAt", "desc"),
+                    limit(20)
+                );
 
-            snap.forEach((docSnap) => {
-                const d = docSnap.data();
+        const unsub = onSnapshot(
+            reportsQuery,
+            (snap) => {
+                const data: any[] = snap.docs.map((docSnap) => {
+                    const d = docSnap.data();
 
-                data.push({
-                    id: docSnap.id,
-                    ...d,
-                    results: d.checklistResults
+                    return {
+                        id: docSnap.id,
+                        ...d,
+                        results: d.checklistResults,
+                    };
                 });
-            });
 
-            setReports(data);
-            setLoading(false);
-        });
+                // Keep the pending list newest-first in the UI as before.
+                if (filter === "pending") {
+                    data.sort((a, b) => {
+                        const timeA = a.createdAt?.toMillis?.() ?? 0;
+                        const timeB = b.createdAt?.toMillis?.() ?? 0;
+                        return timeB - timeA;
+                    });
+                }
+
+                setReports(data);
+                setLoading(false);
+            },
+            (error) => {
+                console.error("Failed to load PDI reports:", error);
+                setReports([]);
+                setLoading(false);
+                alert("Unable to load reports. Please check your connection and Firestore permissions.");
+            }
+        );
 
         return () => unsub();
-    }, []);
+    }, [filter]);
 
 
     // 🔥 FULL PDF GENERATOR (same as customer)
@@ -658,20 +690,7 @@ if (safeValue === 0) {
                         <option value="approved">Approved</option>
                     </select>
                 </div>
-                {reports
-                    .filter((r) =>
-                        filter === "pending"
-                            ? r.status === "Completed"
-                            : r.status === "Approved"
-                    )
-
-                    .sort((a, b) => {
-                        const timeA = a.createdAt?.toMillis?.() ?? 0;
-                        const timeB = b.createdAt?.toMillis?.() ?? 0;
-
-                        return timeB - timeA; // newest first
-                    })
-                    .map((r) => (
+                {reports.map((r) => (
 
                         <div key={r.id} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all">
                             <p className="text-[10px] font-black tracking-[0.25em] text-indigo-600">
