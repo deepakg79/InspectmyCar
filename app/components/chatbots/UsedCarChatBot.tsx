@@ -1081,7 +1081,7 @@ PDI price varies by city & vehicle type. Select your city and car type to see th
 
                                 <div className="grid grid-cols-7 gap-1.5">
                                     {Array.from(
-                                        { length: 11 },
+                                        { length: 21 },
                                         (_, i) => {
                                             // Build calendar dates from India-local today,
                                             // avoiding host-timezone/UTC date shifts.

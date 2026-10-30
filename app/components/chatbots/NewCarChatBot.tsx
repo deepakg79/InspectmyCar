@@ -2141,7 +2141,7 @@ setIsConfirmed(true);
 
                                 <div className="grid grid-cols-7 gap-1.5">
 
-                                    {Array.from({ length: 11 }, (_, i) => {
+                                    {Array.from({ length: 21 }, (_, i) => {
 
                                         const dateStr = addDaysToISODate(getIndiaDateString(), i);
                                         // Parse at UTC midnight so the displayed day/month cannot shift by timezone.
