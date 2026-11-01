@@ -145,6 +145,13 @@ export default function ChatBot({ forceOpen, setForceOpen, initialPlan }: ChatBo
 
 
     const [isConfirmed, setIsConfirmed] = useState(false);
+    const [confirmedBooking, setConfirmedBooking] = useState<{
+        name: string;
+        brand: string;
+        model: string;
+        date: string;
+        slot: string;
+    } | null>(null);
 
     const [availability, setAvailability] = useState<
 
@@ -1264,7 +1271,14 @@ await createBooking({
 
 });
 
-
+// Preserve the successful booking details before clearing the form.
+setConfirmedBooking({
+    name: form.name,
+    brand: form.brand,
+    model: form.model,
+    date: form.date,
+    slot: form.slot,
+});
 
 // Clear the form after successful booking.
 
@@ -2315,16 +2329,40 @@ setIsConfirmed(true);
                             <h2 className="text-4xl font-black text-slate-900 mb-4 tracking-tighter italic">Confirmed!</h2>
 
                             <p className="text-slate-500 font-medium mb-10 px-6 text-sm leading-relaxed">
+                                Your inspection for the{" "}
+                                <span className="text-indigo-600 font-black">
+                                    {confirmedBooking?.brand} {confirmedBooking?.model}
+                                </span>{" "}
+                                is scheduled.
 
-                                Your inspection for the <span className="text-indigo-600 font-black">{form.model}</span> is scheduled. Our team will contact you shortly.
+                                <span className="block mt-3 text-slate-700 font-bold">
+                                    Booking Confirmed On: {" "}
+                                    {confirmedBooking?.date
+                                        ? new Date(
+                                              `${confirmedBooking.date}T00:00:00.000Z`
+                                          ).toLocaleDateString("en-IN", {
+                                              day: "2-digit",
+                                              month: "long",
+                                              year: "numeric",
+                                              timeZone: "UTC",
+                                          })
+                                        : "Date unavailable"}
+                                </span>
 
+                                <span className="block mt-1 text-slate-700 font-bold">
+                                    Time: {confirmedBooking?.slot || "Not available"}
+                                </span>
+
+                                Our team will contact you shortly.
                             </p>
 
                             <div className="space-y-4">
 
                                 <a
 
-                                    href={`https://wa.me/919975934213?text=Booking Confirmed: ${form.brand} ${form.model} on ${form.date}`}
+                                    href={`https://wa.me/919975934213?text=${encodeURIComponent(
+                                        `Booking Confirmed: ${confirmedBooking?.brand} ${confirmedBooking?.model} on ${confirmedBooking?.date} at ${confirmedBooking?.slot}`
+                                    )}`}
 
                                     target="_blank"
 
