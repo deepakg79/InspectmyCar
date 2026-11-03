@@ -1742,7 +1742,7 @@ return normalizedComment
     const tyreMapItems = [
 
         {
-            id: "C",
+            id: "D",
             title: "LHS FRONT TYRE",
             x: 8,
             y: 38,
@@ -1751,7 +1751,7 @@ return normalizedComment
         },
 
         {
-            id: "D",
+            id: "A",
             title: "RHS FRONT TYRE",
             x: 148,
             y: 38,
@@ -1760,7 +1760,7 @@ return normalizedComment
         },
 
         {
-            id: "A",
+            id: "C",
             title: "LHS REAR TYRE",
             x: 8,
             y: 112,
