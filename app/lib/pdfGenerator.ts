@@ -1751,7 +1751,7 @@ return normalizedComment
         },
 
         {
-            id: "B",
+            id: "D",
             title: "RHS FRONT TYRE",
             x: 148,
             y: 38,
@@ -1769,7 +1769,7 @@ return normalizedComment
         },
 
         {
-            id: "D",
+            id: "B",
             title: "RHS REAR TYRE",
             x: 148,
             y: 112,
