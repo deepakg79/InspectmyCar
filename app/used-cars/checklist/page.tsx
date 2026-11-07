@@ -170,7 +170,7 @@ export default function UsedCarPDIChecklistPage() {
                             <p className="subtext leading-relaxed">
                                 If you want expert help, book a{" "}
                                 <Link
-                                    href="/used-cars/pdi-pune"
+                                    href="/book"
                                     className="text-pink-600 underline underline-offset-4 font-bold hover:text-indigo-600 transition-colors"
                                 >
                                     used car PDI service
@@ -258,7 +258,7 @@ export default function UsedCarPDIChecklistPage() {
 
                             <div className="flex flex-col sm:flex-row gap-4 justify-center">
                                 <Link
-                                    href="/used-cars/pdi-pune"
+                                    href="/book"
                                     className="btn-primary px-10 py-4 text-lg shadow-xl"
                                 >
                                     Book Used Car Inspection

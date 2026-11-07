@@ -167,7 +167,7 @@ export default function Page() {
 
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
                         <Link
-                            href="/used-cars/pdi-pune"
+                            href="/book"
                             className="btn-primary px-10 py-4 text-lg shadow-xl"
                         >
                             Book Inspection
