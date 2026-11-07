@@ -429,9 +429,10 @@ onChange={(e) => {
 
 
 
-                                       href="https\\://wa.me/919975934213"
+                                       href="https://wa.me/919975934213"
 
-
+ target="_blank"
+    rel="noopener noreferrer"
 
                                        className="card-glass px-10 py-5 font-bold border border-[#E0E7FF] hover:shadow-xl hover:-translate-y-1 transition-all"
 
@@ -2515,10 +2516,9 @@ onChange={(e) => {
                    <a
 
 
-
-                       href="https\\://wa.me/919975934213"
-
-
+href="https://wa.me/919975934213"
+    target="_blank"
+    rel="noopener noreferrer"
 
                        className="rounded-2xl border border-white/50 bg-white/10 text-white backdrop-blur-xl px-8 sm:px-10 py-5 font-black hover:bg-white/20 hover:-translate-y-1 transition-all duration-300"
 
