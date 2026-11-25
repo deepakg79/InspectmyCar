@@ -2117,7 +2117,7 @@ setIsConfirmed(true);
 
                                     <p className="mt-2.5 text-[10px] text-slate-400 text-center">
 
-                                        * Final price may vary based on vehicle type and location in your city.
+                                        * Final prices may vary depending on the vehicle model and your specific location within the city.
 
                                     </p>
 
