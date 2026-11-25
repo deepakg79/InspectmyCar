@@ -2117,7 +2117,7 @@ setIsConfirmed(true);
 
                                     <p className="mt-2.5 text-[10px] text-slate-400 text-center">
 
-                                        * Estimate is calculated using the selected city and vehicle type.
+                                        * Final price may vary based on vehicle type and location in your city.
 
                                     </p>
 

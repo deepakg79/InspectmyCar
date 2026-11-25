@@ -1051,8 +1051,7 @@ PDI price varies by city & vehicle type. Select your city and car type to see th
                             </div>
 
                             <p className="mt-3 text-[10px] text-slate-400">
-                                * Estimate is calculated using the selected
-                                city and vehicle type.
+                                * Final price may vary based on vehicle type and location in your city.
                             </p>
                         </div>
 
